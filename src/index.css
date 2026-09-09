@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+:root {
+  /* MLX User Side Brand Colors */
+  --primary: #FF6F00;
+  --primary-hover: #E65F00;
+  --primary-light: rgba(255, 111, 0, 0.12);
+  --secondary: #FF9E40;
+  
+  --bg-dark: #0F1117;
+  --bg-card: #161B26;
+  --bg-card-hover: #1F2737;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-orange: rgba(255, 111, 0, 0.3);
+  
+  --accent-primary: #FF6F00;
+  --accent-glow: rgba(255, 111, 0, 0.2);
+
+  --font-sans: 'Poppins', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: #F9FAFB;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0F1117;
+}
+::-webkit-scrollbar-thumb {
+  background: #2D3748;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FF6F00;
+}
+
+/* Premium Glassmorphism styling matching MLX User Theme */
+.glass-panel {
+  background: rgba(22, 27, 38, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4);
+}
+
+.glass-panel-hover {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-panel-hover:hover {
+  background: rgba(31, 39, 55, 0.9);
+  border-color: rgba(255, 111, 0, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px 0 rgba(255, 111, 0, 0.15);
+}
+
+.glass-input {
+  background: rgba(15, 17, 23, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #F9FAFB;
+  transition: all 0.2s ease;
+}
+.glass-input:focus {
+  outline: none;
+  border-color: #FF6F00;
+  box-shadow: 0 0 0 3px rgba(255, 111, 0, 0.2);
+}
+
+/* Pulsing badge animation */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 10px rgba(255, 111, 0, 0.4);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 2px rgba(255, 111, 0, 0.1);
+  }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out forwards;
+}
