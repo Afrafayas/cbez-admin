@@ -1,6 +1,6 @@
 import { Shop, AdminStats, UserAccount } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cbez-web-backend.onrender.com/api';
 
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem('cbez_admin_token');
