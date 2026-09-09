@@ -35,17 +35,17 @@ export const UserActivityModal: React.FC<UserActivityModalProps> = ({
   if (!isOpen || !userId) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fadeIn">
-      <div className="glass-panel w-full max-w-2xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden bg-slate-900/90 flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-md animate-fadeIn">
+      <div className="glass-panel w-full max-w-2xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden bg-slate-900/95 flex flex-col max-h-[85vh]">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400 shrink-0">
               <History className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-lg text-white">User Activity Timeline</h3>
-              <p className="text-xs text-slate-400">
+              <h3 className="font-bold text-base sm:text-lg text-white">User Activity Timeline</h3>
+              <p className="text-[11px] sm:text-xs text-slate-400">
                 Activity history for <span className="text-orange-400 font-semibold">{userName || userId}</span>
               </p>
             </div>
@@ -59,7 +59,7 @@ export const UserActivityModal: React.FC<UserActivityModalProps> = ({
         </div>
 
         {/* Timeline Body */}
-        <div className="p-6 overflow-y-auto space-y-4 flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12 text-slate-400 space-y-3">
               <Loader2 className="w-8 h-8 animate-spin text-orange-500" />

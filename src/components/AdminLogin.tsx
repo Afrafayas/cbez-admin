@@ -48,16 +48,16 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
 
   return (
     <div className="min-h-screen bg-[#0F1117] flex items-center justify-center p-4 selection:bg-orange-500/30 selection:text-orange-300">
-      <div className="glass-panel w-full max-w-md p-8 rounded-3xl border border-white/10 shadow-2xl space-y-6">
+      <div className="glass-panel w-full max-w-md p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-white/10 shadow-2xl space-y-5 sm:space-y-6">
         {/* Header Logo & Title */}
         <div className="text-center space-y-2">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-orange-500 via-amber-500 to-orange-600 flex items-center justify-center mx-auto shadow-xl shadow-orange-500/30 border border-orange-400/30">
-            <ShieldCheck className="w-9 h-9 text-white" />
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-orange-500 via-amber-500 to-orange-600 flex items-center justify-center mx-auto shadow-xl shadow-orange-500/30 border border-orange-400/30 shrink-0">
+            <ShieldCheck className="w-8 h-8 sm:w-9 sm:h-9 text-white" />
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-white">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
             MLX <span className="text-orange-500">ADMIN</span>
           </h1>
-          <p className="text-xs text-slate-400">Sign in with your Super Admin credentials to access Control Center.</p>
+          <p className="text-[11px] sm:text-xs text-slate-400">Sign in with your Super Admin credentials to access Control Center.</p>
         </div>
 
         {/* Error Alert */}

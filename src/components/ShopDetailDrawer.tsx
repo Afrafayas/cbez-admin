@@ -15,27 +15,27 @@ export const ShopDetailDrawer: React.FC<ShopDetailDrawerProps> = ({ shop, isOpen
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm animate-fade-in">
-      <div className="glass-panel w-full max-w-2xl h-full border-l border-white/10 flex flex-col justify-between overflow-hidden shadow-2xl">
-        <div className="p-6 border-b border-white/10 bg-slate-900/80 flex items-start justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-500 via-amber-500 to-orange-600 flex items-center justify-center text-white font-extrabold text-xl shadow-lg shadow-orange-500/30 border border-orange-400/30">
+      <div className="glass-panel w-full max-w-2xl h-full border-l border-white/10 flex flex-col justify-between overflow-hidden shadow-2xl bg-slate-950/95">
+        <div className="p-4 sm:p-6 border-b border-white/10 bg-slate-900/80 flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-orange-500 via-amber-500 to-orange-600 flex items-center justify-center text-white font-extrabold text-lg sm:text-xl shadow-lg shadow-orange-500/30 border border-orange-400/30 shrink-0">
               {shop.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-white">{shop.name}</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-base sm:text-xl font-bold text-white">{shop.name}</h2>
                 {shop.verified ? (
-                  <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
+                  <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-semibold">
                     <ShieldCheck className="w-3.5 h-3.5" />
                     Verified Store
                   </span>
                 ) : (
-                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold">
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[11px] font-semibold">
                     Pending Verification
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-400 mt-1 flex items-center gap-3">
+              <p className="text-xs text-slate-400 mt-1 flex flex-wrap items-center gap-2 sm:gap-3">
                 <span className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5 text-orange-400" />
                   {shop.city}
@@ -53,13 +53,14 @@ export const ShopDetailDrawer: React.FC<ShopDetailDrawerProps> = ({ shop, isOpen
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-white/10 transition-colors"
+            className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
+            aria-label="Close Drawer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 sm:space-y-6">
           <div className="p-4 rounded-2xl glass-panel border border-white/5 space-y-3 bg-slate-900/40">
             <h3 className="text-xs font-bold uppercase tracking-wider text-orange-400">Store Contact Info</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">

@@ -59,27 +59,27 @@ export const EditShopModal: React.FC<EditShopModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-      <div className="glass-panel w-full max-w-xl rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-slate-900/60">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-md animate-fade-in">
+      <div className="glass-panel w-full max-w-xl rounded-2xl border border-white/10 overflow-hidden shadow-2xl bg-slate-900/95">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-white/10 flex items-center justify-between bg-slate-900/80">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400 shrink-0">
               <Store className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Edit Store Profile</h3>
-              <p className="text-xs text-slate-400">Update shop details, location, contacts & verification status.</p>
+              <h3 className="text-sm sm:text-base font-bold text-white">Edit Store Profile</h3>
+              <p className="text-[11px] sm:text-xs text-slate-400">Update shop details, location, contacts & verification status.</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">

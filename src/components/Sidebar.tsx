@@ -1,14 +1,23 @@
 import React from 'react';
-import { LayoutDashboard, Store, ShoppingBag, Users, Settings, ShieldCheck, LogOut, History, Server, CheckCircle2 } from 'lucide-react';
+import { LayoutDashboard, Store, ShoppingBag, Users, Settings, ShieldCheck, LogOut, History, Server, CheckCircle2, X } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   pendingCount: number;
   onLogout?: () => void;
+  isOpenMobile?: boolean;
+  onCloseMobile?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, pendingCount, onLogout }) => {
+export const Sidebar: React.FC<SidebarProps> = ({
+  activeTab,
+  setActiveTab,
+  pendingCount,
+  onLogout,
+  isOpenMobile = false,
+  onCloseMobile,
+}) => {
   const mainNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'shops', label: 'Manage Shops', icon: Store, badge: pendingCount > 0 ? pendingCount : null },
@@ -21,20 +30,38 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, pendi
     { id: 'settings', label: 'Platform Settings', icon: Settings },
   ];
 
-  return (
-    <aside className="w-64 glass-panel border-r border-white/10 h-screen sticky top-0 p-4 flex flex-col justify-between hidden md:flex shrink-0 z-40 overflow-y-auto">
+  const handleTabClick = (tabId: string) => {
+    setActiveTab(tabId);
+    if (onCloseMobile) onCloseMobile();
+  };
+
+  const navContent = (
+    <div className="space-y-5 flex-1 flex flex-col justify-between">
       <div className="space-y-5">
         {/* Brand Logo */}
-        <div className="flex items-center gap-3 px-3 py-3 border-b border-white/10">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/30 border border-orange-400/30">
-            <ShieldCheck className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <div className="font-extrabold text-xl tracking-tight text-white">
-              MLX<span className="text-orange-500 text-sm font-semibold ml-1">ADMIN</span>
+        <div className="flex items-center justify-between px-3 py-3 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/30 border border-orange-400/30">
+              <ShieldCheck className="w-6 h-6 text-white" />
             </div>
-            <div className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Shop Control Center</div>
+            <div>
+              <div className="font-extrabold text-xl tracking-tight text-white">
+                MLX<span className="text-orange-500 text-sm font-semibold ml-1">ADMIN</span>
+              </div>
+              <div className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Shop Control Center</div>
+            </div>
           </div>
+
+          {/* Close button for Mobile Drawer */}
+          {onCloseMobile && (
+            <button
+              onClick={onCloseMobile}
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 md:hidden cursor-pointer"
+              aria-label="Close Mobile Menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Navigation Section */}
@@ -47,10 +74,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, pendi
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${
+                  onClick={() => handleTabClick(item.id)}
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${
                     isActive
-                      ? 'bg-orange-500/15 text-orange-400 border border-orange-500/30 shadow-inner'
+                      ? 'bg-orange-500/15 text-orange-400 border border-orange-500/30 shadow-inner font-bold'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                   }`}
                 >
@@ -79,10 +106,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, pendi
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${
+                  onClick={() => handleTabClick(item.id)}
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${
                     isActive
-                      ? 'bg-orange-500/15 text-orange-400 border border-orange-500/30 shadow-inner'
+                      ? 'bg-orange-500/15 text-orange-400 border border-orange-500/30 shadow-inner font-bold'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                   }`}
                 >
@@ -112,7 +139,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, pendi
             <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px]">
               <span className="text-amber-400 font-semibold">{pendingCount} Action Required</span>
               <button
-                onClick={() => setActiveTab('shops')}
+                onClick={() => handleTabClick('shops')}
                 className="text-orange-400 hover:underline font-bold text-[10px] cursor-pointer"
               >
                 Review Now →
@@ -125,7 +152,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, pendi
       {/* Admin User Card Footer */}
       <div className="pt-4 border-t border-white/10 mt-4">
         <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-900/50 border border-white/5">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-orange-500 to-amber-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-orange-500/20">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-orange-500 to-amber-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-orange-500/20 shrink-0">
             AD
           </div>
           <div className="flex-1 min-w-0">
@@ -136,14 +163,42 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, pendi
             </div>
           </div>
           <button
-            onClick={onLogout}
-            className="text-slate-400 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-500/10 transition-colors cursor-pointer"
+            onClick={() => {
+              if (onLogout) onLogout();
+              if (onCloseMobile) onCloseMobile();
+            }}
+            className="text-slate-400 hover:text-red-400 p-2 rounded-lg hover:bg-red-500/10 transition-colors cursor-pointer"
             title="Log out from Admin"
           >
             <LogOut className="w-4 h-4" />
           </button>
         </div>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Permanent Sidebar */}
+      <aside className="w-64 glass-panel border-r border-white/10 h-screen sticky top-0 p-4 hidden md:flex flex-col justify-between shrink-0 z-40 overflow-y-auto">
+        {navContent}
+      </aside>
+
+      {/* Mobile Overlay Navigation Drawer */}
+      {isOpenMobile && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop Blur Overlay */}
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm animate-fade-in"
+            onClick={onCloseMobile}
+          />
+
+          {/* Drawer Body */}
+          <aside className="relative w-72 max-w-[85vw] glass-panel bg-slate-950/95 border-r border-white/10 h-full p-4 flex flex-col justify-between z-10 shadow-2xl overflow-y-auto animate-fade-in">
+            {navContent}
+          </aside>
+        </div>
+      )}
+    </>
   );
 };

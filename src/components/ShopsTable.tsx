@@ -51,9 +51,9 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
   return (
     <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
       {/* Table Header Controls */}
-      <div className="p-5 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/40">
+      <div className="p-4 sm:p-5 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/40">
         <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
             User Shops Directory
             <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30">
               {filteredShops.length} Stores
@@ -65,11 +65,11 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
         </div>
 
         {/* Filter Controls */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex p-1 rounded-xl bg-slate-950/80 border border-white/10 text-xs font-semibold">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex p-1 rounded-xl bg-slate-950/80 border border-white/10 text-xs font-semibold overflow-x-auto max-w-full">
             <button
               onClick={() => setFilterStatus('all')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${
                 filterStatus === 'all'
                   ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20'
                   : 'text-slate-400 hover:text-white'
@@ -79,7 +79,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
             </button>
             <button
               onClick={() => setFilterStatus('verified')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${
                 filterStatus === 'verified'
                   ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
                   : 'text-slate-400 hover:text-white'
@@ -89,7 +89,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
             </button>
             <button
               onClick={() => setFilterStatus('pending')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${
                 filterStatus === 'pending'
                   ? 'bg-amber-600 text-white shadow-md shadow-amber-500/20'
                   : 'text-slate-400 hover:text-white'
@@ -99,32 +99,155 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
             </button>
           </div>
 
-          <select
-            value={selectedCity}
-            onChange={(e) => setSelectedCity(e.target.value)}
-            className="px-3 py-1.5 text-xs rounded-xl glass-input text-slate-300"
-          >
-            <option value="all" className="bg-slate-900">All Cities</option>
-            {cities.map((city) => (
-              <option key={city} value={city} className="bg-slate-900">{city}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <select
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              className="flex-1 sm:flex-none px-3 py-1.5 text-xs rounded-xl glass-input text-slate-300"
+            >
+              <option value="all" className="bg-slate-900">All Cities</option>
+              {cities.map((city) => (
+                <option key={city} value={city} className="bg-slate-900">{city}</option>
+              ))}
+            </select>
 
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-1.5 text-xs rounded-xl glass-input text-slate-300"
-          >
-            <option value="all" className="bg-slate-900">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat} className="bg-slate-900">{cat}</option>
-            ))}
-          </select>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="flex-1 sm:flex-none px-3 py-1.5 text-xs rounded-xl glass-input text-slate-300"
+            >
+              <option value="all" className="bg-slate-900">All Categories</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat} className="bg-slate-900">{cat}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Table Data View */}
-      <div className="overflow-x-auto">
+      {/* Mobile Card List View (visible < md) */}
+      <div className="block md:hidden p-4 space-y-3">
+        {filteredShops.length === 0 ? (
+          <div className="text-center py-8 text-slate-400">
+            <ShieldAlert className="w-8 h-8 text-slate-500 opacity-60 mx-auto mb-2" />
+            <p className="font-semibold text-slate-300">No shops found</p>
+            <p className="text-xs text-slate-500">Try adjusting your filters or search query.</p>
+          </div>
+        ) : (
+          filteredShops.map((shop) => {
+            const productCount = shop.products?.length ?? shop._count?.products ?? 0;
+
+            return (
+              <div
+                key={shop.id}
+                className="p-4 rounded-2xl glass-panel border border-white/10 bg-slate-900/60 space-y-3 hover:border-orange-500/30 transition-all"
+              >
+                {/* Header: Name, Verified Badge & Verification Toggle */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-lg shrink-0">
+                      {shop.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="font-bold text-white text-sm flex items-center gap-1.5">
+                        {shop.name}
+                        {shop.verified && <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />}
+                      </div>
+                      <div className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
+                        <span>{shop.ownerName}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Verification Toggle */}
+                  <div className="flex flex-col items-end gap-1">
+                    <button
+                      onClick={() => onToggleVerify(shop.id, shop.verified)}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                        shop.verified ? 'bg-emerald-500' : 'bg-slate-700'
+                      }`}
+                      title={shop.verified ? 'Click to Unverify Shop' : 'Click to Verify Shop'}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition duration-200 ease-in-out ${
+                          shop.verified ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                    <span
+                      className={`text-[9px] font-bold uppercase tracking-wider ${
+                        shop.verified ? 'text-emerald-400' : 'text-amber-400'
+                      }`}
+                    >
+                      {shop.verified ? 'Verified' : 'Pending'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Details Badges */}
+                <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-white/5">
+                  <div className="flex items-center gap-1.5 text-slate-300">
+                    <MapPin className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                    <span className="truncate">{shop.city}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-slate-300">
+                    <Tag className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span className="truncate">{shop.category}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-slate-300">
+                    <Phone className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                    <span className="truncate">{shop.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-emerald-400">
+                    <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">{shop.whatsapp || 'N/A'}</span>
+                  </div>
+                </div>
+
+                {/* Footer Controls: Products, Rating & Actions */}
+                <div className="flex items-center justify-between pt-2.5 border-t border-white/5 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-800 border border-white/10 text-slate-200">
+                      {productCount} Items
+                    </span>
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] font-bold">
+                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                      {shop.rating ? shop.rating.toFixed(1) : '4.5'}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => onViewDetails(shop)}
+                      className="p-2 rounded-xl text-slate-300 hover:text-orange-300 bg-slate-800/80 hover:bg-orange-500/20 transition-colors cursor-pointer"
+                      title="View Details"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => onEdit(shop)}
+                      className="p-2 rounded-xl text-slate-300 hover:text-amber-300 bg-slate-800/80 hover:bg-amber-500/20 transition-colors cursor-pointer"
+                      title="Edit Shop"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => onDelete(shop)}
+                      className="p-2 rounded-xl text-slate-300 hover:text-red-400 bg-slate-800/80 hover:bg-red-500/20 transition-colors cursor-pointer"
+                      title="Delete Shop"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop Table View (visible >= md) */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead className="bg-slate-950/60 text-slate-400 uppercase text-[11px] font-bold tracking-wider border-b border-white/10">
             <tr>

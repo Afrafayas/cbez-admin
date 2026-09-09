@@ -102,9 +102,9 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
   return (
     <div className="space-y-4">
       {/* Header Controls */}
-      <div className="glass-panel p-5 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
             User Activity Audit Logs
             <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30">
               {filteredLogs.length} Events
@@ -116,30 +116,30 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
         </div>
 
         {/* Filter Action Buttons */}
-        <div className="flex items-center gap-1.5 bg-slate-900/60 p-1.5 rounded-xl border border-white/5 text-xs font-semibold">
+        <div className="flex items-center gap-1.5 bg-slate-900/60 p-1.5 rounded-xl border border-white/5 text-xs font-semibold overflow-x-auto max-w-full">
           <button
             onClick={() => setFilterAction('all')}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${
               filterAction === 'all'
                 ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            All Logs ({logs.length})
+            All ({logs.length})
           </button>
           <button
             onClick={() => setFilterAction('auth')}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${
               filterAction === 'auth'
                 ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            Auth (Login/Register)
+            Auth
           </button>
           <button
             onClick={() => setFilterAction('shop')}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${
               filterAction === 'shop'
                 ? 'bg-amber-600 text-white shadow-md shadow-amber-500/20'
                 : 'text-slate-400 hover:text-white'
@@ -149,7 +149,7 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
           </button>
           <button
             onClick={() => setFilterAction('product')}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${
               filterAction === 'product'
                 ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20'
                 : 'text-slate-400 hover:text-white'
@@ -160,9 +160,70 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
         </div>
       </div>
 
-      {/* Main Activity Logs Table */}
+      {/* Main Activity Logs View Container */}
       <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto">
+        {/* Mobile Card List View (visible < md) */}
+        <div className="block md:hidden p-4 space-y-3">
+          {filteredLogs.length === 0 ? (
+            <div className="py-8 text-center text-slate-400 space-y-2">
+              <History className="w-8 h-8 mx-auto text-slate-500 opacity-60" />
+              <p className="font-semibold text-slate-300">No Activity Logs Found</p>
+              <p className="text-xs text-slate-500">Try adjusting your filters or search query.</p>
+            </div>
+          ) : (
+            filteredLogs.map((log) => (
+              <div
+                key={log.id}
+                className="p-4 rounded-2xl glass-panel border border-white/10 bg-slate-900/60 space-y-2.5 hover:border-orange-500/30 transition-all"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-xs shrink-0">
+                      {log.user?.name ? log.user.name.charAt(0).toUpperCase() : 'U'}
+                    </div>
+                    <div className="min-w-0">
+                      <button
+                        onClick={() =>
+                          onSelectUserLogs && log.user && onSelectUserLogs(log.userId, log.user.name)
+                        }
+                        className="font-bold text-white hover:text-orange-400 text-xs truncate block text-left cursor-pointer"
+                      >
+                        {log.user?.name || 'User ID: ' + log.userId.slice(-6)}
+                      </button>
+                      <div className="text-[10px] text-slate-400 truncate">
+                        {log.user?.email || log.user?.role}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>{getActionBadge(log.action)}</div>
+                </div>
+
+                <div className="text-xs text-slate-200 bg-slate-950/40 p-2.5 rounded-xl border border-white/5">
+                  {log.details || 'Action executed'}
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                  <span className="font-mono text-[10px] text-slate-500">ID: {log.userId}</span>
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-slate-500" />
+                    <span>
+                      {new Date(log.createdAt).toLocaleString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table View (visible >= md) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/10 bg-slate-900/50 text-[11px] uppercase tracking-wider font-bold text-slate-400">

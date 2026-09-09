@@ -59,9 +59,9 @@ export const UsersTable: React.FC<UsersTableProps> = ({
   return (
     <div className="space-y-4">
       {/* Table Header Controls */}
-      <div className="glass-panel p-5 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
             User Accounts Directory
             <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30">
               {filteredUsers.length} Users
@@ -73,20 +73,20 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         </div>
 
         {/* Filter Role Buttons */}
-        <div className="flex items-center gap-1.5 bg-slate-900/60 p-1.5 rounded-xl border border-white/5 text-xs font-semibold">
+        <div className="flex items-center gap-1.5 bg-slate-900/60 p-1.5 rounded-xl border border-white/5 text-xs font-semibold overflow-x-auto max-w-full">
           <button
             onClick={() => setFilterRole('all')}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${
               filterRole === 'all'
                 ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            All Roles ({users.length})
+            All ({users.length})
           </button>
           <button
             onClick={() => setFilterRole('customer')}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${
               filterRole === 'customer'
                 ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
                 : 'text-slate-400 hover:text-white'
@@ -96,7 +96,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
           </button>
           <button
             onClick={() => setFilterRole('seller')}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${
               filterRole === 'seller'
                 ? 'bg-orange-600 text-white shadow-md shadow-orange-500/20'
                 : 'text-slate-400 hover:text-white'
@@ -106,7 +106,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
           </button>
           <button
             onClick={() => setFilterRole('admin')}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${
               filterRole === 'admin'
                 ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20'
                 : 'text-slate-400 hover:text-white'
@@ -117,9 +117,101 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         </div>
       </div>
 
-      {/* Main Users Table Container */}
+      {/* Main Users View Container */}
       <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto">
+        {/* Mobile Card List View (visible < md) */}
+        <div className="block md:hidden p-4 space-y-3">
+          {filteredUsers.length === 0 ? (
+            <div className="py-8 text-center text-slate-400 space-y-2">
+              <Users className="w-8 h-8 mx-auto text-slate-500 opacity-60" />
+              <p className="font-semibold text-slate-300">No User Accounts Found</p>
+              <p className="text-xs text-slate-500">Try adjusting your role filter or search query.</p>
+            </div>
+          ) : (
+            filteredUsers.map((user) => (
+              <div
+                key={user.id}
+                className="p-4 rounded-2xl glass-panel border border-white/10 bg-slate-900/60 space-y-3 hover:border-orange-500/30 transition-all"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-base shrink-0">
+                      {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                    </div>
+                    <div>
+                      <div className="font-bold text-white text-sm">{user.name}</div>
+                      <div className="text-[10px] text-slate-400 font-mono">ID: {user.id}</div>
+                    </div>
+                  </div>
+
+                  <div>{getRoleBadge(user.role)}</div>
+                </div>
+
+                {/* Contact & Linked Shop */}
+                <div className="grid grid-cols-1 gap-2 text-xs pt-1 border-t border-white/5">
+                  <div className="flex items-center gap-1.5 text-slate-300">
+                    <Mail className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                    <span className="truncate">{user.email || 'No email provided'}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-slate-400">
+                    <Phone className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">{user.phone || 'No phone provided'}</span>
+                  </div>
+                  {user.shop && (
+                    <div className="flex items-center gap-1.5 text-orange-300 font-medium">
+                      <Store className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                      <span className="truncate">{user.shop.name} ({user.shop.city})</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer Controls */}
+                <div className="flex items-center justify-between pt-2.5 border-t border-white/5 text-xs">
+                  <div className="flex items-center gap-1.5 text-slate-400 text-[11px]">
+                    <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                    <span>
+                      {new Date(user.createdAt).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    {onViewLogs && (
+                      <button
+                        onClick={() => onViewLogs(user.id, user.name)}
+                        className="p-2 rounded-xl text-slate-300 hover:text-orange-300 bg-slate-800/80 hover:bg-orange-500/20 transition-colors cursor-pointer"
+                        title="View Logs"
+                      >
+                        <History className="w-4 h-4" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => onEdit(user)}
+                      className="p-2 rounded-xl text-slate-300 hover:text-amber-300 bg-slate-800/80 hover:bg-amber-500/20 transition-colors cursor-pointer"
+                      title="Edit User"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => onDelete(user)}
+                      className="p-2 rounded-xl text-slate-300 hover:text-red-400 bg-slate-800/80 hover:bg-red-500/20 transition-colors cursor-pointer"
+                      title="Delete User"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table View (visible >= md) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/10 bg-slate-900/50 text-[11px] uppercase tracking-wider font-bold text-slate-400">

@@ -67,7 +67,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ stats, onFilterSta
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
       {cards.map((card) => {
         const Icon = card.icon;
         const isClickable = card.filterKey !== null;
@@ -77,22 +77,22 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ stats, onFilterSta
           <div
             key={card.id}
             onClick={() => isClickable && card.filterKey && onFilterStatus(card.filterKey)}
-            className={`glass-panel p-4 rounded-2xl border bg-gradient-to-br ${card.color} transition-all duration-200 ${
+            className={`glass-panel p-3.5 sm:p-4 rounded-2xl border bg-gradient-to-br ${card.color} transition-all duration-200 ${
               isClickable ? 'cursor-pointer hover:scale-[1.02]' : ''
             } ${isSelected ? 'ring-2 ring-orange-500 shadow-lg shadow-orange-500/20' : ''}`}
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-300 line-clamp-1">
                 {card.title}
               </span>
-              <div className={`p-2 rounded-xl bg-slate-900/60 border border-white/10 ${card.color.split(' ').pop()}`}>
-                <Icon className="w-4 h-4" />
+              <div className={`p-1.5 sm:p-2 rounded-xl bg-slate-900/60 border border-white/10 shrink-0 ${card.color.split(' ').pop()}`}>
+                <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
             </div>
 
-            <div className="flex items-baseline justify-between">
-              <div className="text-2xl font-black text-white tracking-tight">{card.value}</div>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-900/80 border border-white/10 text-slate-300">
+            <div className="flex flex-wrap items-baseline justify-between gap-1">
+              <div className="text-xl sm:text-2xl font-black text-white tracking-tight">{card.value}</div>
+              <span className="text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full bg-slate-900/80 border border-white/10 text-slate-300 truncate max-w-full">
                 {card.badge}
               </span>
             </div>

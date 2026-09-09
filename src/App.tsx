@@ -63,6 +63,7 @@ export const App: React.FC = () => {
   } | null>(null);
 
   const [isActionLoading, setIsActionLoading] = useState<boolean>(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
   // Toast notification state
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -205,6 +206,8 @@ export const App: React.FC = () => {
         setActiveTab={setActiveTab}
         pendingCount={stats.pendingShops}
         onLogout={handleLogout}
+        isOpenMobile={isMobileMenuOpen}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
 
       {/* Main Content Area */}
@@ -215,6 +218,7 @@ export const App: React.FC = () => {
           setSearchTerm={setSearchTerm}
           onRefresh={loadData}
           isLoading={isLoading}
+          onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         />
 
         {/* Toast Notification Banner */}
