@@ -1,4 +1,4 @@
-import { Shop, AdminStats, UserAccount } from '../types';
+import { Shop, AdminStats, UserAccount, Product } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cbez-web-backend.onrender.com/api';
 
@@ -153,5 +153,35 @@ export async function fetchAllActivityLogs(): Promise<any[]> {
   const result = await res.json();
   return result.data?.logs ?? [];
 }
+
+// Product Management API Services
+export async function fetchProducts(params?: {
+  category?: string;
+  brand?: string;
+  search?: string;
+}): Promise<Product[]> {
+  const query = new URLSearchParams();
+  if (params?.category && params.category !== 'all') query.append('category', params.category);
+  if (params?.brand && params.brand !== 'all') query.append('brand', params.brand);
+  if (params?.search) query.append('search', params.search);
+
+  const res = await fetch(`${API_BASE_URL}/products?${query.toString()}`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch products catalog');
+  const result = await res.json();
+  return result.data?.products ?? [];
+}
+
+export async function deleteProduct(id: string): Promise<{ success: boolean; message: string }> {
+  const res = await fetch(`${API_BASE_URL}/products/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to delete product');
+  return result;
+}
+
 
 

@@ -3,15 +3,19 @@ import { Sidebar } from './components/Sidebar';
 import { Navbar } from './components/Navbar';
 import { StatsOverview } from './components/StatsOverview';
 import { ShopsTable } from './components/ShopsTable';
+import { ProductsTable } from './components/ProductsTable';
 import { UsersTable } from './components/UsersTable';
 import { ActivityLogsTable } from './components/ActivityLogsTable';
+import { SettingsView } from './components/SettingsView';
 import { UserActivityModal } from './components/UserActivityModal';
 import { EditShopModal } from './components/EditShopModal';
 import { EditUserModal } from './components/EditUserModal';
 import { ShopDetailDrawer } from './components/ShopDetailDrawer';
 import { DeleteShopModal } from './components/DeleteShopModal';
+import { ProductDetailModal } from './components/ProductDetailModal';
+import { DeleteProductModal } from './components/DeleteProductModal';
 import { AdminLogin } from './components/AdminLogin';
-import { Shop, AdminStats, UserAccount, ActivityLogItem } from './types';
+import { Shop, AdminStats, UserAccount, ActivityLogItem, Product } from './types';
 import {
   fetchStats,
   fetchShops,
@@ -23,6 +27,8 @@ import {
   updateUser,
   deleteUser,
   fetchAllActivityLogs,
+  fetchProducts,
+  deleteProduct,
 } from './services/adminApi';
 import { CheckCircle2, AlertCircle, RefreshCw, AlertTriangle, Loader2 } from 'lucide-react';
 
@@ -40,6 +46,7 @@ export const App: React.FC = () => {
     totalUsers: 0,
   });
   const [shops, setShops] = useState<Shop[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLogItem[]>([]);
 
@@ -51,6 +58,10 @@ export const App: React.FC = () => {
   const [selectedShopForEdit, setSelectedShopForEdit] = useState<Shop | null>(null);
   const [selectedShopForDrawer, setSelectedShopForDrawer] = useState<Shop | null>(null);
   const [selectedShopForDelete, setSelectedShopForDelete] = useState<Shop | null>(null);
+
+  // Product Modals state
+  const [selectedProductForDetails, setSelectedProductForDetails] = useState<Product | null>(null);
+  const [selectedProductForDelete, setSelectedProductForDelete] = useState<Product | null>(null);
 
   // User Modals state
   const [selectedUserForEdit, setSelectedUserForEdit] = useState<UserAccount | null>(null);
@@ -73,20 +84,22 @@ export const App: React.FC = () => {
     setTimeout(() => setToast(null), 4000);
   };
 
-  // Load stats, shops, users, and activity logs from backend
+  // Load stats, shops, products, users, and activity logs from backend
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [statsData, shopsData, usersData, logsData] = await Promise.all([
+      const [statsData, shopsData, usersData, logsData, productsData] = await Promise.all([
         fetchStats(),
         fetchShops(),
         fetchUsers().catch(() => []),
         fetchAllActivityLogs().catch(() => []),
+        fetchProducts().catch(() => []),
       ]);
       setStats(statsData);
       setShops(shopsData);
       setUsers(usersData);
       setActivityLogs(logsData);
+      setProducts(productsData);
     } catch (err: any) {
       console.error('Failed to fetch admin data:', err);
       showToast(err.message || 'Failed to connect to backend server', 'error');
@@ -151,6 +164,22 @@ export const App: React.FC = () => {
       loadData();
     } catch (err: any) {
       showToast(err.message || 'Failed to delete shop', 'error');
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  // Handler: Delete Product Confirm
+  const handleConfirmDeleteProduct = async () => {
+    if (!selectedProductForDelete) return;
+    setIsActionLoading(true);
+    try {
+      await deleteProduct(selectedProductForDelete.id);
+      showToast(`Product "${selectedProductForDelete.name}" deleted successfully!`);
+      setSelectedProductForDelete(null);
+      loadData();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete product', 'error');
     } finally {
       setIsActionLoading(false);
     }
@@ -264,7 +293,14 @@ export const App: React.FC = () => {
           />
 
           {/* Active Tab View Rendering */}
-          {activeTab === 'users' ? (
+          {activeTab === 'products' ? (
+            <ProductsTable
+              products={products}
+              onViewDetails={(product) => setSelectedProductForDetails(product)}
+              onDelete={(product) => setSelectedProductForDelete(product)}
+              searchTerm={searchTerm}
+            />
+          ) : activeTab === 'users' ? (
             <UsersTable
               users={users}
               onEdit={(user) => setSelectedUserForEdit(user)}
@@ -280,6 +316,8 @@ export const App: React.FC = () => {
                 setSelectedUserForActivityModal({ userId, userName })
               }
             />
+          ) : activeTab === 'settings' ? (
+            <SettingsView onShowToast={showToast} />
           ) : (
             <ShopsTable
               shops={shops}
@@ -315,6 +353,21 @@ export const App: React.FC = () => {
         isOpen={Boolean(selectedShopForDelete)}
         onClose={() => setSelectedShopForDelete(null)}
         onConfirm={handleConfirmDeleteShop}
+        isLoading={isActionLoading}
+      />
+
+      {/* Product Modals */}
+      <ProductDetailModal
+        product={selectedProductForDetails}
+        isOpen={Boolean(selectedProductForDetails)}
+        onClose={() => setSelectedProductForDetails(null)}
+      />
+
+      <DeleteProductModal
+        product={selectedProductForDelete}
+        isOpen={Boolean(selectedProductForDelete)}
+        onClose={() => setSelectedProductForDelete(null)}
+        onConfirm={handleConfirmDeleteProduct}
         isLoading={isActionLoading}
       />
 

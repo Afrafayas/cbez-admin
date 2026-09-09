@@ -27,6 +27,18 @@ export interface Product {
   price: number;
   stock: number;
   shopId: string;
+  shop?: {
+    id: string;
+    name: string;
+    ownerName?: string;
+    phone?: string;
+    whatsapp?: string;
+    address?: string;
+    city?: string;
+    category?: string;
+    verified?: boolean;
+    rating?: number;
+  };
   specs?: Record<string, string>;
   images?: string[];
   createdAt: string;
