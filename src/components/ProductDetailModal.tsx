@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Product } from '../types';
-import { X, ShoppingBag, Store, MapPin, Phone, MessageSquare, Tag, ShieldCheck, CheckCircle2, AlertTriangle, Layers } from 'lucide-react';
+import { X, ShoppingBag, Store, MapPin, Phone, MessageSquare, Tag, ShieldCheck, CheckCircle2, AlertTriangle, Layers, ArrowLeft } from 'lucide-react';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -29,6 +29,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-white/10 bg-slate-900/80 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs font-semibold transition-colors cursor-pointer shrink-0"
+              title="Back"
+            >
+              <ArrowLeft className="w-4 h-4 text-orange-400" />
+              <span>Back</span>
+            </button>
+
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20 border border-orange-400/30 shrink-0">
               <ShoppingBag className="w-5 h-5" />
             </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Product } from '../types';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2, ArrowLeft } from 'lucide-react';
 
 interface DeleteProductModalProps {
   product: Product | null;
@@ -42,9 +42,10 @@ export const DeleteProductModal: React.FC<DeleteProductModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl border border-white/10 text-slate-300 text-sm font-semibold hover:bg-white/5 transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-xl border border-white/10 text-slate-300 text-sm font-semibold hover:bg-white/5 transition-colors cursor-pointer flex items-center gap-1.5"
           >
-            Cancel
+            <ArrowLeft className="w-4 h-4" />
+            Back
           </button>
           <button
             type="button"

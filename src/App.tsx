@@ -30,7 +30,7 @@ import {
   fetchProducts,
   deleteProduct,
 } from './services/adminApi';
-import { CheckCircle2, AlertCircle, RefreshCw, AlertTriangle, Loader2 } from 'lucide-react';
+import { CheckCircle2, AlertCircle, RefreshCw, AlertTriangle, Loader2, ArrowLeft } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -248,6 +248,8 @@ export const App: React.FC = () => {
           onRefresh={loadData}
           isLoading={isLoading}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+          activeTab={activeTab}
+          onBackToShops={() => setActiveTab('shops')}
         />
 
         {/* Toast Notification Banner */}
@@ -317,7 +319,7 @@ export const App: React.FC = () => {
               }
             />
           ) : activeTab === 'settings' ? (
-            <SettingsView onShowToast={showToast} />
+            <SettingsView onShowToast={showToast} onBackToShops={() => setActiveTab('shops')} />
           ) : (
             <ShopsTable
               shops={shops}
@@ -412,9 +414,10 @@ export const App: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedUserForDelete(null)}
-                className="px-4 py-2 rounded-xl border border-white/10 text-slate-300 text-sm font-semibold hover:bg-white/5 transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-white/10 text-slate-300 text-sm font-semibold hover:bg-white/5 transition-colors cursor-pointer flex items-center gap-1.5"
               >
-                Cancel
+                <ArrowLeft className="w-4 h-4" />
+                Back
               </button>
               <button
                 type="button"

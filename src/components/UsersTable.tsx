@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserAccount } from '../types';
 import { Users, Search, Edit2, Trash2, Mail, Phone, Shield, Store, UserCheck, Calendar, History } from 'lucide-react';
+import { Pagination } from './Pagination';
 
 interface UsersTableProps {
   users: UserAccount[];
@@ -18,6 +19,8 @@ export const UsersTable: React.FC<UsersTableProps> = ({
   searchTerm,
 }) => {
   const [filterRole, setFilterRole] = useState<'all' | 'customer' | 'seller' | 'admin'>('all');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 
   const filteredUsers = users.filter((user) => {
     const matchesRole = filterRole === 'all' || user.role === filterRole;
@@ -29,6 +32,16 @@ export const UsersTable: React.FC<UsersTableProps> = ({
 
     return matchesRole && matchesSearch;
   });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterRole, searchTerm]);
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const getRoleBadge = (role: string) => {
     switch (role.toLowerCase()) {
@@ -121,14 +134,14 @@ export const UsersTable: React.FC<UsersTableProps> = ({
       <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
         {/* Mobile Card List View (visible < md) */}
         <div className="block md:hidden p-4 space-y-3">
-          {filteredUsers.length === 0 ? (
+          {paginatedUsers.length === 0 ? (
             <div className="py-8 text-center text-slate-400 space-y-2">
               <Users className="w-8 h-8 mx-auto text-slate-500 opacity-60" />
               <p className="font-semibold text-slate-300">No User Accounts Found</p>
               <p className="text-xs text-slate-500">Try adjusting your role filter or search query.</p>
             </div>
           ) : (
-            filteredUsers.map((user) => (
+            paginatedUsers.map((user) => (
               <div
                 key={user.id}
                 className="p-4 rounded-2xl glass-panel border border-white/10 bg-slate-900/60 space-y-3 hover:border-orange-500/30 transition-all"
@@ -224,7 +237,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-sm">
-              {filteredUsers.length === 0 ? (
+              {paginatedUsers.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-12 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-400 space-y-3">
@@ -239,7 +252,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                   </td>
                 </tr>
               ) : (
-                filteredUsers.map((user) => (
+                paginatedUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-white/[0.03] transition-colors group">
                     {/* User Name & Initial */}
                     <td className="px-5 py-4">
@@ -340,6 +353,17 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Footer */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredUsers.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+          itemLabel="users"
+        />
       </div>
     </div>
   );

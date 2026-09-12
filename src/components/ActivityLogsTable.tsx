@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ActivityLogItem } from '../types';
 import { History, LogIn, UserPlus, Store, ShoppingBag, ShieldAlert, Calendar, UserCheck } from 'lucide-react';
+import { Pagination } from './Pagination';
 
 interface ActivityLogsTableProps {
   logs: ActivityLogItem[];
@@ -14,6 +15,8 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
   onSelectUserLogs,
 }) => {
   const [filterAction, setFilterAction] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 
   const filteredLogs = logs.filter((log) => {
     const matchesAction =
@@ -36,6 +39,16 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
 
     return matchesAction && matchesSearch;
   });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterAction, searchTerm]);
+
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+  const paginatedLogs = filteredLogs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const getActionBadge = (action: string) => {
     switch (action) {
@@ -164,14 +177,14 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
       <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
         {/* Mobile Card List View (visible < md) */}
         <div className="block md:hidden p-4 space-y-3">
-          {filteredLogs.length === 0 ? (
+          {paginatedLogs.length === 0 ? (
             <div className="py-8 text-center text-slate-400 space-y-2">
               <History className="w-8 h-8 mx-auto text-slate-500 opacity-60" />
               <p className="font-semibold text-slate-300">No Activity Logs Found</p>
               <p className="text-xs text-slate-500">Try adjusting your filters or search query.</p>
             </div>
           ) : (
-            filteredLogs.map((log) => (
+            paginatedLogs.map((log) => (
               <div
                 key={log.id}
                 className="p-4 rounded-2xl glass-panel border border-white/10 bg-slate-900/60 space-y-2.5 hover:border-orange-500/30 transition-all"
@@ -234,7 +247,7 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-sm">
-              {filteredLogs.length === 0 ? (
+              {paginatedLogs.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-5 py-12 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-400 space-y-3">
@@ -249,7 +262,7 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
                   </td>
                 </tr>
               ) : (
-                filteredLogs.map((log) => (
+                paginatedLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-white/[0.03] transition-colors group">
                     {/* User info */}
                     <td className="px-5 py-4 whitespace-nowrap">
@@ -306,6 +319,17 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Footer */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredLogs.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+          itemLabel="events"
+        />
       </div>
     </div>
   );

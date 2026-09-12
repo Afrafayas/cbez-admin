@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, RefreshCw, Bell, ShieldCheck, Server, Menu, X } from 'lucide-react';
+import { Search, RefreshCw, Bell, ShieldCheck, Server, Menu, X, ArrowLeft } from 'lucide-react';
 
 interface NavbarProps {
   searchTerm: string;
@@ -7,6 +7,8 @@ interface NavbarProps {
   onRefresh: () => void;
   isLoading: boolean;
   onOpenMobileMenu?: () => void;
+  activeTab?: string;
+  onBackToShops?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -15,27 +17,44 @@ export const Navbar: React.FC<NavbarProps> = ({
   onRefresh,
   isLoading,
   onOpenMobileMenu,
+  activeTab,
+  onBackToShops,
 }) => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   return (
     <header className="glass-panel sticky top-0 z-30 px-4 sm:px-6 py-3.5 border-b border-white/10 flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
-        {/* Mobile Left Section: Hamburger Menu & Mobile Brand Logo */}
-        <div className="flex items-center gap-2.5 md:hidden">
-          <button
-            onClick={onOpenMobileMenu}
-            className="p-2 rounded-xl glass-panel text-slate-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-            aria-label="Open Navigation Menu"
-          >
-            <Menu className="w-5 h-5 text-orange-400" />
-          </button>
+        {/* Left Section: Back Button / Mobile Menu & Logo */}
+        <div className="flex items-center gap-2.5">
+          {activeTab && activeTab !== 'shops' && onBackToShops && (
+            <button
+              onClick={onBackToShops}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-500/15 hover:bg-orange-500/25 text-orange-300 border border-orange-500/40 text-xs font-bold transition-all shadow-md shadow-orange-500/10 cursor-pointer shrink-0"
+              title="Back to Shops Directory"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Back to Shops</span>
+              <span className="sm:hidden">Back</span>
+            </button>
+          )}
 
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-md shadow-orange-500/30 shrink-0">
-              <ShieldCheck className="w-4 h-4" />
+          {/* Mobile Left Section: Hamburger Menu & Mobile Brand Logo */}
+          <div className="flex items-center gap-2.5 md:hidden">
+            <button
+              onClick={onOpenMobileMenu}
+              className="p-2 rounded-xl glass-panel text-slate-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              aria-label="Open Navigation Menu"
+            >
+              <Menu className="w-5 h-5 text-orange-400" />
+            </button>
+
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-md shadow-orange-500/30 shrink-0">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div className="font-extrabold text-base text-white tracking-tight">MLX <span className="text-orange-500 font-semibold text-xs">ADMIN</span></div>
             </div>
-            <div className="font-extrabold text-base text-white tracking-tight">MLX <span className="text-orange-500 font-semibold text-xs">ADMIN</span></div>
           </div>
         </div>
 

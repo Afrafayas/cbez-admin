@@ -1,6 +1,6 @@
 import React from 'react';
 import { Shop } from '../types';
-import { AlertTriangle, Trash2 } from 'lucide-react';
+import { AlertTriangle, Trash2, ArrowLeft } from 'lucide-react';
 
 interface DeleteShopModalProps {
   shop: Shop | null;
@@ -41,9 +41,10 @@ export const DeleteShopModal: React.FC<DeleteShopModalProps> = ({
             <button
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1 py-2.5 text-xs font-semibold rounded-xl text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors"
+              className="flex-1 py-2.5 text-xs font-semibold rounded-xl text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              Cancel
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Back
             </button>
             <button
               onClick={onConfirm}

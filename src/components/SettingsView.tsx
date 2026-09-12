@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Settings, Shield, Bell, Server, Database, Key, Save, CheckCircle2 } from 'lucide-react';
+import { Settings, Shield, Bell, Server, Database, Key, Save, CheckCircle2, ArrowLeft } from 'lucide-react';
 
 interface SettingsViewProps {
   onShowToast: (message: string, type?: 'success' | 'error') => void;
+  onBackToShops?: () => void;
 }
 
-export const SettingsView: React.FC<SettingsViewProps> = ({ onShowToast }) => {
+export const SettingsView: React.FC<SettingsViewProps> = ({ onShowToast, onBackToShops }) => {
   const [platformName, setPlatformName] = useState('MLX Used Gadgets Directory');
   const [supportPhone, setSupportPhone] = useState('+91 7902613259');
   const [autoVerifyShops, setAutoVerifyShops] = useState(false);
@@ -24,13 +25,26 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onShowToast }) => {
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="glass-panel p-6 rounded-2xl border border-white/10 shadow-2xl bg-slate-900/60 space-y-6">
-        <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-          <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
-            <Settings className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-white">Platform Settings & Controls</h2>
-            <p className="text-xs text-slate-400">Configure global marketplace behavior, shop rules, and backend API parameters.</p>
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="flex items-center gap-3">
+            {onBackToShops && (
+              <button
+                type="button"
+                onClick={onBackToShops}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs font-semibold transition-colors cursor-pointer shrink-0"
+                title="Back to Shops"
+              >
+                <ArrowLeft className="w-4 h-4 text-orange-400" />
+                <span>Back</span>
+              </button>
+            )}
+            <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
+              <Settings className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Platform Settings & Controls</h2>
+              <p className="text-xs text-slate-400">Configure global marketplace behavior, shop rules, and backend API parameters.</p>
+            </div>
           </div>
         </div>
 

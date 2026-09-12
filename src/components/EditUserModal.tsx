@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserAccount } from '../types';
-import { X, UserCheck, Mail, Phone, Shield, Loader2, Save } from 'lucide-react';
+import { X, UserCheck, Mail, Phone, Shield, Loader2, Save, ArrowLeft } from 'lucide-react';
 
 interface EditUserModalProps {
   user: UserAccount | null;
@@ -48,6 +48,16 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
         {/* Modal Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              type="button"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs font-semibold transition-colors cursor-pointer shrink-0"
+              title="Back"
+            >
+              <ArrowLeft className="w-4 h-4 text-orange-400" />
+              <span>Back</span>
+            </button>
+
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400 shrink-0">
               <UserCheck className="w-5 h-5" />
             </div>

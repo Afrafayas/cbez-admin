@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shop } from '../types';
 import { ShieldCheck, ShieldAlert, Edit2, Trash2, Eye, Phone, MessageSquare, MapPin, Tag, Star } from 'lucide-react';
+import { Pagination } from './Pagination';
 
 interface ShopsTableProps {
   shops: Shop[];
@@ -25,6 +26,8 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
 }) => {
   const [selectedCity, setSelectedCity] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 
   const cities = Array.from(new Set(shops.map((s) => s.city).filter(Boolean)));
   const categories = Array.from(new Set(shops.map((s) => s.category).filter(Boolean)));
@@ -47,6 +50,16 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
 
     return true;
   });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus, selectedCity, selectedCategory, searchTerm]);
+
+  const totalPages = Math.ceil(filteredShops.length / itemsPerPage);
+  const paginatedShops = filteredShops.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
@@ -127,14 +140,14 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
 
       {/* Mobile Card List View (visible < md) */}
       <div className="block md:hidden p-4 space-y-3">
-        {filteredShops.length === 0 ? (
+        {paginatedShops.length === 0 ? (
           <div className="text-center py-8 text-slate-400">
             <ShieldAlert className="w-8 h-8 text-slate-500 opacity-60 mx-auto mb-2" />
             <p className="font-semibold text-slate-300">No shops found</p>
             <p className="text-xs text-slate-500">Try adjusting your filters or search query.</p>
           </div>
         ) : (
-          filteredShops.map((shop) => {
+          paginatedShops.map((shop) => {
             const productCount = shop.products?.length ?? shop._count?.products ?? 0;
 
             return (
@@ -261,7 +274,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {filteredShops.length === 0 ? (
+            {paginatedShops.length === 0 ? (
               <tr>
                 <td colSpan={7} className="text-center py-12 text-slate-400">
                   <div className="flex flex-col items-center justify-center gap-2">
@@ -272,7 +285,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                 </td>
               </tr>
             ) : (
-              filteredShops.map((shop) => {
+              paginatedShops.map((shop) => {
                 const productCount = shop.products?.length ?? shop._count?.products ?? 0;
 
                 return (
@@ -397,6 +410,17 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Footer */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filteredShops.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+        onItemsPerPageChange={setItemsPerPage}
+        itemLabel="shops"
+      />
     </div>
   );
 };

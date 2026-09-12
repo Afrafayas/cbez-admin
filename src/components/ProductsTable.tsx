@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Product, Shop } from '../types';
 import { ShoppingBag, Eye, Trash2, Tag, Layers, Store, CheckCircle2, AlertTriangle, Search, Filter, Box } from 'lucide-react';
+import { Pagination } from './Pagination';
 
 interface ProductsTableProps {
   products: Product[];
@@ -20,6 +21,8 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedBrand, setSelectedBrand] = useState<string>('all');
   const [selectedStockStatus, setSelectedStockStatus] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock'>('all');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 
   const categories = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
   const brands = Array.from(new Set(products.map((p) => p.brand).filter(Boolean)));
@@ -44,6 +47,16 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
 
     return true;
   });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, selectedBrand, selectedStockStatus, searchTerm]);
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
@@ -126,14 +139,14 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
 
       {/* Mobile Card List View (< md) */}
       <div className="block md:hidden p-4 space-y-3">
-        {filteredProducts.length === 0 ? (
+        {paginatedProducts.length === 0 ? (
           <div className="text-center py-10 text-slate-400">
             <ShoppingBag className="w-8 h-8 text-slate-500 opacity-60 mx-auto mb-2" />
             <p className="font-semibold text-slate-300">No products found</p>
             <p className="text-xs text-slate-500">Try adjusting your filters or search query.</p>
           </div>
         ) : (
-          filteredProducts.map((product) => {
+          paginatedProducts.map((product) => {
             const thumbnail = product.images?.[0] || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800';
 
             return (
@@ -219,7 +232,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {filteredProducts.length === 0 ? (
+            {paginatedProducts.length === 0 ? (
               <tr>
                 <td colSpan={6} className="text-center py-12 text-slate-400">
                   <div className="flex flex-col items-center justify-center gap-2">
@@ -230,7 +243,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                 </td>
               </tr>
             ) : (
-              filteredProducts.map((product) => {
+              paginatedProducts.map((product) => {
                 const thumbnail = product.images?.[0] || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800';
 
                 return (
@@ -330,6 +343,17 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Footer */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filteredProducts.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+        onItemsPerPageChange={setItemsPerPage}
+        itemLabel="products"
+      />
     </div>
   );
 };

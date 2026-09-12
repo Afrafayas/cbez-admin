@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shop } from '../types';
-import { X, Save, ShieldCheck, Store, MapPin, Phone, MessageSquare, Tag, Star } from 'lucide-react';
+import { X, Save, ShieldCheck, Store, MapPin, Phone, MessageSquare, Tag, Star, ArrowLeft } from 'lucide-react';
 
 interface EditShopModalProps {
   shop: Shop | null;
@@ -63,6 +63,16 @@ export const EditShopModal: React.FC<EditShopModalProps> = ({
       <div className="glass-panel w-full max-w-xl rounded-2xl border border-white/10 overflow-hidden shadow-2xl bg-slate-900/95">
         <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-white/10 flex items-center justify-between bg-slate-900/80">
           <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              type="button"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs font-semibold transition-colors cursor-pointer shrink-0"
+              title="Back"
+            >
+              <ArrowLeft className="w-4 h-4 text-orange-400" />
+              <span>Back</span>
+            </button>
+
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400 shrink-0">
               <Store className="w-5 h-5" />
             </div>
