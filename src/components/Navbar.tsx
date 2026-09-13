@@ -30,12 +30,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           {activeTab && activeTab !== 'shops' && onBackToShops && (
             <button
               onClick={onBackToShops}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-500/15 hover:bg-orange-500/25 text-orange-300 border border-orange-500/40 text-xs font-bold transition-all shadow-md shadow-orange-500/10 cursor-pointer shrink-0"
-              title="Back to Shops Directory"
+              className="p-2 rounded-xl bg-orange-500/15 hover:bg-orange-500/25 text-orange-300 border border-orange-500/40 transition-all shadow-md shadow-orange-500/10 cursor-pointer shrink-0"
+              title="Back to Shops"
+              aria-label="Back to Shops"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Back to Shops</span>
-              <span className="sm:hidden">Back</span>
             </button>
           )}
 

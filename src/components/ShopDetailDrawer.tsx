@@ -20,11 +20,11 @@ export const ShopDetailDrawer: React.FC<ShopDetailDrawerProps> = ({ shop, isOpen
           <div className="flex items-center gap-3 sm:gap-4">
             <button
               onClick={onClose}
-              className="p-2 text-slate-300 hover:text-white rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors shrink-0 cursor-pointer flex items-center gap-1 text-xs font-semibold"
+              className="p-2 text-slate-300 hover:text-white rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors shrink-0 cursor-pointer"
               title="Back"
+              aria-label="Back"
             >
               <ArrowLeft className="w-4 h-4 text-orange-400" />
-              <span className="hidden sm:inline">Back</span>
             </button>
 
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-orange-500 via-amber-500 to-orange-600 flex items-center justify-center text-white font-extrabold text-lg sm:text-xl shadow-lg shadow-orange-500/30 border border-orange-400/30 shrink-0">
