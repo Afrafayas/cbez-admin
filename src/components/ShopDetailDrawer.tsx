@@ -70,6 +70,32 @@ export const ShopDetailDrawer: React.FC<ShopDetailDrawerProps> = ({ shop, isOpen
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 sm:space-y-6">
+
+          {/* Subscription Usage Widget */}
+          {shop.subscriptionUsage && (
+            <div className="p-4 rounded-2xl glass-panel border border-white/5 space-y-2 bg-slate-900/40">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-orange-400">💳 Subscription & Product Limit Usage</h3>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="text-slate-400">Current Plan:</span>
+                  <p className="font-bold text-white mt-0.5">{shop.subscriptionUsage.planName}</p>
+                </div>
+                <div>
+                  <span className="text-slate-400">Product Limit:</span>
+                  <p className="font-bold text-amber-400 mt-0.5">{shop.subscriptionUsage.productLimit} Listings</p>
+                </div>
+                <div>
+                  <span className="text-slate-400">Products Used:</span>
+                  <p className="font-bold text-white mt-0.5">{shop.subscriptionUsage.currentProducts} Items</p>
+                </div>
+                <div>
+                  <span className="text-slate-400">Remaining Slots:</span>
+                  <p className="font-bold text-emerald-400 mt-0.5">{shop.subscriptionUsage.remaining} Slots</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="p-4 rounded-2xl glass-panel border border-white/5 space-y-3 bg-slate-900/40">
             <h3 className="text-xs font-bold uppercase tracking-wider text-orange-400">Store Contact Info</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">

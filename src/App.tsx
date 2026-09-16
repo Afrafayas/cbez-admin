@@ -7,6 +7,7 @@ import { ProductsTable } from './components/ProductsTable';
 import { UsersTable } from './components/UsersTable';
 import { ActivityLogsTable } from './components/ActivityLogsTable';
 import { SettingsView } from './components/SettingsView';
+import { SubscriptionsTable } from './components/SubscriptionsTable';
 import { UserActivityModal } from './components/UserActivityModal';
 import { EditShopModal } from './components/EditShopModal';
 import { EditUserModal } from './components/EditUserModal';
@@ -15,7 +16,7 @@ import { DeleteShopModal } from './components/DeleteShopModal';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { DeleteProductModal } from './components/DeleteProductModal';
 import { AdminLogin } from './components/AdminLogin';
-import { Shop, AdminStats, UserAccount, ActivityLogItem, Product } from './types';
+import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan } from './types';
 import {
   fetchStats,
   fetchShops,
@@ -29,6 +30,11 @@ import {
   fetchAllActivityLogs,
   fetchProducts,
   deleteProduct,
+  fetchSubscriptionPlans,
+  createSubscriptionPlan,
+  updateSubscriptionPlan,
+  toggleSubscriptionPlanStatus,
+  deleteSubscriptionPlan,
 } from './services/adminApi';
 import { CheckCircle2, AlertCircle, RefreshCw, AlertTriangle, Loader2, ArrowLeft } from 'lucide-react';
 
@@ -49,6 +55,7 @@ export const App: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLogItem[]>([]);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
 
   const [filterStatus, setFilterStatus] = useState<'all' | 'verified' | 'pending'>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -88,18 +95,20 @@ export const App: React.FC = () => {
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [statsData, shopsData, usersData, logsData, productsData] = await Promise.all([
+      const [statsData, shopsData, usersData, logsData, productsData, plansData] = await Promise.all([
         fetchStats(),
         fetchShops(),
         fetchUsers().catch(() => []),
         fetchAllActivityLogs().catch(() => []),
         fetchProducts().catch(() => []),
+        fetchSubscriptionPlans().catch(() => []),
       ]);
       setStats(statsData);
       setShops(shopsData);
       setUsers(usersData);
       setActivityLogs(logsData);
       setProducts(productsData);
+      if (Array.isArray(plansData)) setSubscriptionPlans(plansData);
     } catch (err: any) {
       console.error('Failed to fetch admin data:', err);
       showToast(err.message || 'Failed to connect to backend server', 'error');

@@ -1,4 +1,4 @@
-import { Shop, AdminStats, UserAccount, Product } from '../types';
+import { Shop, AdminStats, UserAccount, Product, SubscriptionPlan } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cbez-web-backend.onrender.com/api';
 
@@ -185,3 +185,79 @@ export async function deleteProduct(id: string): Promise<{ success: boolean; mes
 
 
 
+
+// Subscription Plan API Services
+export async function fetchSubscriptionPlans(): Promise<SubscriptionPlan[]> {
+  const res = await fetch(`${API_BASE_URL}/subscriptions/plans`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch subscription plans');
+  const result = await res.json();
+  return result.data?.plans ?? [];
+}
+
+export async function createSubscriptionPlan(planData: {
+  name: string;
+  description?: string;
+  productLimit: number;
+  price: number;
+  status?: string;
+}): Promise<SubscriptionPlan> {
+  const res = await fetch(`${API_BASE_URL}/subscriptions/plans`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(planData),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to create subscription plan');
+  return result.data?.plan ?? result;
+}
+
+export async function updateSubscriptionPlan(
+  id: string,
+  planData: Partial<SubscriptionPlan>
+): Promise<SubscriptionPlan> {
+  const res = await fetch(`${API_BASE_URL}/subscriptions/plans/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(planData),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to update subscription plan');
+  return result.data?.plan ?? result;
+}
+
+export async function toggleSubscriptionPlanStatus(
+  id: string,
+  status?: string
+): Promise<SubscriptionPlan> {
+  const res = await fetch(`${API_BASE_URL}/subscriptions/plans/${id}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ status }),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to toggle plan status');
+  return result.data?.plan ?? result;
+}
+
+export async function deleteSubscriptionPlan(
+  id: string
+): Promise<{ success: boolean; message: string }> {
+  const res = await fetch(`${API_BASE_URL}/subscriptions/plans/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to delete subscription plan');
+  return result;
+}

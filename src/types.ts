@@ -13,6 +13,18 @@ export interface Shop {
   updatedAt: string;
   ownerId?: string;
   products?: Product[];
+  subscription?: {
+    id: string;
+    planId: string;
+    plan?: SubscriptionPlan;
+  };
+  subscriptionUsage?: {
+    planName: string;
+    productLimit: number;
+    currentProducts: number;
+    remaining: number;
+    isLimitReached: boolean;
+  };
   _count?: {
     products: number;
   };
@@ -88,3 +100,17 @@ export interface ActivityLogItem {
 }
 
 
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description?: string;
+  productLimit: number;
+  status: 'ACTIVE' | 'INACTIVE' | string;
+  price: number;
+  createdAt?: string;
+  updatedAt?: string;
+  _count?: {
+    subscriptions: number;
+  };
+}
