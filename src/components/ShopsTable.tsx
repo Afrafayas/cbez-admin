@@ -62,7 +62,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
   );
 
   return (
-    <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+    <div id="shops-table-section" className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
       {/* Table Header Controls */}
       <div className="p-4 sm:p-5 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/40">
         <div>

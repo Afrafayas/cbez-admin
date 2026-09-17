@@ -240,6 +240,17 @@ export const App: React.FC = () => {
     setIsAuthenticated(false);
   };
 
+  const handleNavigateToPendingShops = () => {
+    setActiveTab('shops');
+    setFilterStatus('pending');
+    setTimeout(() => {
+      const section = document.getElementById('shops-table-section');
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 50);
+  };
+
   if (!isAuthenticated) {
     return <AdminLogin onLoginSuccess={() => setIsAuthenticated(true)} />;
   }
@@ -318,10 +329,7 @@ export const App: React.FC = () => {
                 </div>
               </div>
               <button
-                onClick={() => {
-                  setActiveTab('shops');
-                  setFilterStatus('pending');
-                }}
+                onClick={handleNavigateToPendingShops}
                 className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
               >
                 <span>Review Pending Shops ({stats.pendingShops})</span>

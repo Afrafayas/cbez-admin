@@ -76,7 +76,17 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ stats, onFilterSta
         return (
           <div
             key={card.id}
-            onClick={() => isClickable && card.filterKey && onFilterStatus(card.filterKey)}
+            onClick={() => {
+              if (isClickable && card.filterKey) {
+                onFilterStatus(card.filterKey);
+                setTimeout(() => {
+                  const section = document.getElementById('shops-table-section');
+                  if (section) {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }, 50);
+              }
+            }}
             className={`glass-panel p-3.5 sm:p-4 rounded-2xl border bg-gradient-to-br ${card.color} transition-all duration-200 ${
               isClickable ? 'cursor-pointer hover:scale-[1.02]' : ''
             } ${isSelected ? 'ring-2 ring-orange-500 shadow-lg shadow-orange-500/20' : ''}`}
