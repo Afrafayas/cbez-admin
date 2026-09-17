@@ -96,9 +96,6 @@ export const ShopDetailDrawer: React.FC<ShopDetailDrawerProps> = ({ shop, isOpen
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-amber-300">Pending Verification Audit</h3>
-                  <p className="text-xs text-slate-300 mt-0.5">
-                    Inspect store details, phone numbers, and product catalog below. Click approve once details are verified.
-                  </p>
                 </div>
               </div>
 
