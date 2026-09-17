@@ -78,7 +78,14 @@ export const ShopDetailDrawer: React.FC<ShopDetailDrawerProps> = ({ shop, isOpen
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <span className="text-slate-400">Current Plan:</span>
-                  <p className="font-bold text-white mt-0.5">{shop.subscriptionUsage.planName}</p>
+                  <p className="font-bold text-white mt-0.5">
+                    {shop.subscriptionUsage.planName}
+                    {shop.subscription?.plan?.price !== undefined && (
+                      <span className="text-xs text-amber-300 font-normal ml-1.5">
+                        (₹{shop.subscription.plan.price})
+                      </span>
+                    )}
+                  </p>
                 </div>
                 <div>
                   <span className="text-slate-400">Product Limit:</span>

@@ -261,3 +261,37 @@ export async function deleteSubscriptionPlan(
   if (!res.ok) throw new Error(result.message || 'Failed to delete subscription plan');
   return result;
 }
+
+export async function assignSubscriptionToShop(
+  shopId: string,
+  planId: string
+): Promise<any> {
+  const res = await fetch(`${API_BASE_URL}/subscriptions/assign`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ shopId, planId }),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to assign subscription plan');
+  return result.data?.subscription ?? result;
+}
+
+export async function createShopByAdmin(shopData: any): Promise<Shop> {
+  const res = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({
+      ...shopData,
+      role: 'seller',
+    }),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to create dealer shop');
+  return result.data?.user?.shop ?? result.data?.user ?? result;
+}

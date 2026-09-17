@@ -10,6 +10,7 @@ import { SettingsView } from './components/SettingsView';
 import { SubscriptionsTable } from './components/SubscriptionsTable';
 import { UserActivityModal } from './components/UserActivityModal';
 import { EditShopModal } from './components/EditShopModal';
+import { CreateShopModal } from './components/CreateShopModal';
 import { EditUserModal } from './components/EditUserModal';
 import { ShopDetailDrawer } from './components/ShopDetailDrawer';
 import { DeleteShopModal } from './components/DeleteShopModal';
@@ -35,6 +36,8 @@ import {
   updateSubscriptionPlan,
   toggleSubscriptionPlanStatus,
   deleteSubscriptionPlan,
+  assignSubscriptionToShop,
+  createShopByAdmin,
 } from './services/adminApi';
 import { CheckCircle2, AlertCircle, RefreshCw, AlertTriangle, Loader2, ArrowLeft } from 'lucide-react';
 
@@ -63,6 +66,7 @@ export const App: React.FC = () => {
 
   // Shop Modals state
   const [selectedShopForEdit, setSelectedShopForEdit] = useState<Shop | null>(null);
+  const [isCreateShopOpen, setIsCreateShopOpen] = useState(false);
   const [selectedShopForDrawer, setSelectedShopForDrawer] = useState<Shop | null>(null);
   const [selectedShopForDelete, setSelectedShopForDelete] = useState<Shop | null>(null);
 
@@ -147,11 +151,15 @@ export const App: React.FC = () => {
   };
 
   // Handler: Save Shop Edit
-  const handleSaveEdit = async (updatedData: Partial<Shop>) => {
+  const handleSaveEdit = async (updatedData: Partial<Shop> & { subscriptionPlanId?: string }) => {
     if (!selectedShopForEdit) return;
     setIsActionLoading(true);
     try {
-      const updated = await updateShop(selectedShopForEdit.id, updatedData);
+      const { subscriptionPlanId, ...shopDetails } = updatedData;
+      const updated = await updateShop(selectedShopForEdit.id, shopDetails);
+      if (subscriptionPlanId) {
+        await assignSubscriptionToShop(selectedShopForEdit.id, subscriptionPlanId);
+      }
       showToast(`Store "${updated.name}" details updated successfully!`);
       setSelectedShopForEdit(null);
       loadData();
@@ -327,6 +335,36 @@ export const App: React.FC = () => {
                 setSelectedUserForActivityModal({ userId, userName })
               }
             />
+          ) : activeTab === 'subscriptions' ? (
+            <SubscriptionsTable
+              plans={subscriptionPlans}
+              shops={shops}
+              onCreatePlan={async (dto) => {
+                await createSubscriptionPlan(dto);
+                showToast('Subscription plan created successfully');
+                loadData();
+              }}
+              onUpdatePlan={async (id, dto) => {
+                await updateSubscriptionPlan(id, dto);
+                showToast('Subscription plan updated successfully');
+                loadData();
+              }}
+              onToggleStatus={async (id) => {
+                await toggleSubscriptionPlanStatus(id);
+                showToast('Subscription plan status updated');
+                loadData();
+              }}
+              onDeletePlan={async (id) => {
+                await deleteSubscriptionPlan(id);
+                showToast('Subscription plan deleted successfully');
+                loadData();
+              }}
+              onAssignPlanToShop={async (shopId, planId) => {
+                await assignSubscriptionToShop(shopId, planId);
+                showToast('Subscription plan assigned to shop successfully');
+                loadData();
+              }}
+            />
           ) : activeTab === 'settings' ? (
             <SettingsView onShowToast={showToast} onBackToShops={() => setActiveTab('shops')} />
           ) : (
@@ -336,6 +374,7 @@ export const App: React.FC = () => {
               onEdit={(shop) => setSelectedShopForEdit(shop)}
               onDelete={(shop) => setSelectedShopForDelete(shop)}
               onViewDetails={handleOpenDetails}
+              onOpenCreateShop={() => setIsCreateShopOpen(true)}
               filterStatus={filterStatus}
               setFilterStatus={setFilterStatus}
               searchTerm={searchTerm}
@@ -350,6 +389,27 @@ export const App: React.FC = () => {
         isOpen={Boolean(selectedShopForEdit)}
         onClose={() => setSelectedShopForEdit(null)}
         onSave={handleSaveEdit}
+        subscriptionPlans={subscriptionPlans}
+        isLoading={isActionLoading}
+      />
+
+      <CreateShopModal
+        isOpen={isCreateShopOpen}
+        onClose={() => setIsCreateShopOpen(false)}
+        onSave={async (shopData) => {
+          setIsActionLoading(true);
+          try {
+            await createShopByAdmin(shopData);
+            showToast('New dealer shop created successfully!');
+            setIsCreateShopOpen(false);
+            loadData();
+          } catch (err: any) {
+            showToast(err.message || 'Failed to create dealer shop', 'error');
+          } finally {
+            setIsActionLoading(false);
+          }
+        }}
+        subscriptionPlans={subscriptionPlans}
         isLoading={isActionLoading}
       />
 
