@@ -36,7 +36,7 @@ import {
   toggleSubscriptionPlanStatus,
   deleteSubscriptionPlan,
 } from './services/adminApi';
-import { CheckCircle2, AlertCircle, RefreshCw, AlertTriangle, Loader2, ArrowLeft } from 'lucide-react';
+import { CheckCircle2, AlertCircle, RefreshCw, AlertTriangle, Loader2, ArrowLeft, ShieldAlert } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -109,6 +109,11 @@ export const App: React.FC = () => {
       setActivityLogs(logsData);
       setProducts(productsData);
       if (Array.isArray(plansData)) setSubscriptionPlans(plansData);
+
+      // Priority Emphasis: If pending shops exist on load, set default filter to 'pending'
+      if (statsData.pendingShops > 0) {
+        setFilterStatus('pending');
+      }
     } catch (err: any) {
       console.error('Failed to fetch admin data:', err);
       showToast(err.message || 'Failed to connect to backend server', 'error');
@@ -129,6 +134,9 @@ export const App: React.FC = () => {
       const updatedShop = await toggleVerifyShop(id, !currentStatus);
       showToast(`Store "${updatedShop.name}" ${!currentStatus ? 'Verified' : 'Unverified'} successfully!`);
       setShops((prev) => prev.map((s) => (s.id === id ? { ...s, verified: !currentStatus } : s)));
+      if (selectedShopForDrawer && selectedShopForDrawer.id === id) {
+        setSelectedShopForDrawer((prev) => (prev ? { ...prev, verified: !currentStatus } : null));
+      }
       const statsData = await fetchStats();
       setStats(statsData);
     } catch (err: any) {
@@ -152,17 +160,17 @@ export const App: React.FC = () => {
     setIsActionLoading(true);
     try {
       const updated = await updateShop(selectedShopForEdit.id, updatedData);
-      showToast(`Store "${updated.name}" details updated successfully!`);
+      showToast(`Store "${updated.name}" updated successfully!`);
       setSelectedShopForEdit(null);
       loadData();
     } catch (err: any) {
-      showToast(err.message || 'Failed to update shop details', 'error');
+      showToast(err.message || 'Failed to update store details', 'error');
     } finally {
       setIsActionLoading(false);
     }
   };
 
-  // Handler: Delete Shop Confirm
+  // Handler: Confirm Delete Shop
   const handleConfirmDeleteShop = async () => {
     if (!selectedShopForDelete) return;
     setIsActionLoading(true);
@@ -172,7 +180,7 @@ export const App: React.FC = () => {
       setSelectedShopForDelete(null);
       loadData();
     } catch (err: any) {
-      showToast(err.message || 'Failed to delete shop', 'error');
+      showToast(err.message || 'Failed to delete store', 'error');
     } finally {
       setIsActionLoading(false);
     }
@@ -296,6 +304,39 @@ export const App: React.FC = () => {
             </div>
           </div>
 
+          {/* Priority Hero Alert Banner for Pending Shops */}
+          {stats.pendingShops > 0 && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/10 border border-amber-500/40 shadow-xl shadow-amber-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
+              <div className="flex items-start sm:items-center gap-3.5">
+                <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+                  <ShieldAlert className="w-6 h-6 animate-bounce" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-500/30 text-amber-300 border border-amber-500/40">
+                      Priority Action Required
+                    </span>
+                    <span className="text-xs font-bold text-amber-400">
+                      {stats.pendingShops} {stats.pendingShops === 1 ? 'Shop' : 'Shops'} Awaiting Audit
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-1">
+                    Verify seller contact info, physical address, and product listings before granting verified seller status.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setActiveTab('shops');
+                  setFilterStatus('pending');
+                }}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
+              >
+                <span>Review & Verify Pending Shops ({stats.pendingShops})</span>
+              </button>
+            </div>
+          )}
+
           {/* Stats KPI Overview */}
           <StatsOverview
             stats={stats}
@@ -357,6 +398,7 @@ export const App: React.FC = () => {
         shop={selectedShopForDrawer}
         isOpen={Boolean(selectedShopForDrawer)}
         onClose={() => setSelectedShopForDrawer(null)}
+        onToggleVerify={handleToggleVerify}
       />
 
       <DeleteShopModal

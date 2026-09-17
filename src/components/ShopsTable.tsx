@@ -153,7 +153,11 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
             return (
               <div
                 key={shop.id}
-                className="p-4 rounded-2xl glass-panel border border-white/10 bg-slate-900/60 space-y-3 hover:border-orange-500/30 transition-all"
+                className={`p-4 rounded-2xl glass-panel space-y-3 transition-all ${
+                  !shop.verified
+                    ? 'border border-amber-500/40 bg-slate-900/80 shadow-lg shadow-amber-500/5'
+                    : 'border border-white/10 bg-slate-900/60 hover:border-orange-500/30'
+                }`}
               >
                 {/* Header: Name, Verified Badge & Verification Toggle */}
                 <div className="flex items-start justify-between gap-3">
@@ -164,7 +168,13 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                     <div>
                       <div className="font-bold text-white text-sm flex items-center gap-1.5">
                         {shop.name}
-                        {shop.verified && <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />}
+                        {shop.verified ? (
+                          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            Pending Audit
+                          </span>
+                        )}
                       </div>
                       <div className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
                         <span>{shop.ownerName}</span>
@@ -218,7 +228,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                 </div>
 
                 {/* Footer Controls: Products, Rating & Actions */}
-                <div className="flex items-center justify-between pt-2.5 border-t border-white/5 text-xs">
+                <div className="flex items-center justify-between pt-2.5 border-t border-white/5 text-xs gap-2">
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-800 border border-white/10 text-slate-200">
                       {productCount} Items
@@ -229,14 +239,24 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => onViewDetails(shop)}
-                      className="p-2 rounded-xl text-slate-300 hover:text-orange-300 bg-slate-800/80 hover:bg-orange-500/20 transition-colors cursor-pointer"
-                      title="View Details"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
+                  <div className="flex items-center gap-1.5">
+                    {!shop.verified ? (
+                      <button
+                        onClick={() => onViewDetails(shop)}
+                        className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs border border-amber-500/40 flex items-center gap-1.5 cursor-pointer shadow-md shadow-amber-500/10 transition-all"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Review & Verify</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => onViewDetails(shop)}
+                        className="p-2 rounded-xl text-slate-300 hover:text-orange-300 bg-slate-800/80 hover:bg-orange-500/20 transition-colors cursor-pointer"
+                        title="View Details"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
                       onClick={() => onEdit(shop)}
                       className="p-2 rounded-xl text-slate-300 hover:text-amber-300 bg-slate-800/80 hover:bg-amber-500/20 transition-colors cursor-pointer"
@@ -279,8 +299,8 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                 <td colSpan={7} className="text-center py-12 text-slate-400">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <ShieldAlert className="w-8 h-8 text-slate-500 opacity-60" />
-                    <p className="font-semibold text-slate-300">No shops found</p>
-                    <p className="text-xs text-slate-500">Try adjusting your filters or search query.</p>
+                    <p className="font-semibold text-slate-300">No stores found</p>
+                    <p className="text-xs text-slate-500">Try changing your search term or filter status.</p>
                   </div>
                 </td>
               </tr>
@@ -289,18 +309,29 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                 const productCount = shop.products?.length ?? shop._count?.products ?? 0;
 
                 return (
-                  <tr key={shop.id} className="hover:bg-white/[0.03] transition-colors group">
+                  <tr
+                    key={shop.id}
+                    className={`transition-colors ${
+                      !shop.verified
+                        ? 'bg-amber-500/5 hover:bg-amber-500/10'
+                        : 'hover:bg-white/5'
+                    }`}
+                  >
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-lg shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-base shrink-0">
                           {shop.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-bold text-white group-hover:text-orange-400 transition-colors flex items-center gap-2">
+                          <div className="font-semibold text-white flex items-center gap-1.5">
                             {shop.name}
-                            {shop.verified && (
+                            {shop.verified ? (
                               <span title="Verified Store">
                                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse">
+                                Pending
                               </span>
                             )}
                           </div>
@@ -378,13 +409,24 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
 
                     <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          onClick={() => onViewDetails(shop)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-orange-300 hover:bg-orange-500/10 transition-colors cursor-pointer"
-                          title="View Store Products & Details"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
+                        {!shop.verified ? (
+                          <button
+                            onClick={() => onViewDetails(shop)}
+                            className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs border border-amber-500/40 flex items-center gap-1.5 cursor-pointer shadow-md shadow-amber-500/10 transition-all"
+                            title="Review store details & verify"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Review & Verify</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => onViewDetails(shop)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-orange-300 hover:bg-orange-500/10 transition-colors cursor-pointer"
+                            title="View Store Products & Details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        )}
 
                         <button
                           onClick={() => onEdit(shop)}
