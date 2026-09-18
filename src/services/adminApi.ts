@@ -263,105 +263,65 @@ export async function deleteSubscriptionPlan(
   return result;
 }
 
-// Category API Services
-export async function fetchCategories(): Promise<Category[]> {
-  const res = await fetch(`${API_BASE_URL}/categories`, {
-    headers: getAuthHeaders(),
-  });
-  if (!res.ok) throw new Error('Failed to fetch categories');
-  const result = await res.json();
-  return result.data?.categories ?? (Array.isArray(result) ? result : []);
-}
-
-export async function createCategory(data: { name: string; slug?: string; image?: string }): Promise<Category> {
-  const res = await fetch(`${API_BASE_URL}/categories`, {
+export async function assignSubscriptionToShop(
+  shopId: string,
+  planId: string
+): Promise<any> {
+  const res = await fetch(`${API_BASE_URL}/subscriptions/assign`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify({ shopId, planId }),
   });
   const result = await res.json();
-  if (!res.ok) throw new Error(result.message || 'Failed to create category');
-  return result.data?.category ?? result;
+  if (!res.ok) throw new Error(result.message || 'Failed to assign subscription plan');
+  return result.data?.subscription ?? result;
 }
 
-export async function updateCategory(
-  id: string,
-  data: { name?: string; slug?: string; image?: string }
-): Promise<Category> {
-  const res = await fetch(`${API_BASE_URL}/categories/${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      ...getAuthHeaders(),
-    },
-    body: JSON.stringify(data),
-  });
-  const result = await res.json();
-  if (!res.ok) throw new Error(result.message || 'Failed to update category');
-  return result.data?.category ?? result;
-}
-
-export async function deleteCategory(id: string): Promise<{ success: boolean; message: string }> {
-  const res = await fetch(`${API_BASE_URL}/categories/${id}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders(),
-  });
-  const result = await res.json();
-  if (!res.ok) throw new Error(result.message || 'Failed to delete category');
-  return result;
-}
-
-// Brand API Services
-export async function fetchBrands(): Promise<Brand[]> {
-  const res = await fetch(`${API_BASE_URL}/brands`, {
-    headers: getAuthHeaders(),
-  });
-  if (!res.ok) throw new Error('Failed to fetch brands');
-  const result = await res.json();
-  return result.data?.brands ?? (Array.isArray(result) ? result : []);
-}
-
-export async function createBrand(data: { name: string; logo?: string }): Promise<Brand> {
-  const res = await fetch(`${API_BASE_URL}/brands`, {
+export async function createShopByAdmin(shopData: any): Promise<Shop> {
+  const res = await fetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      ...shopData,
+      role: 'seller',
+    }),
   });
   const result = await res.json();
-  if (!res.ok) throw new Error(result.message || 'Failed to create brand');
-  return result.data?.brand ?? result;
+  if (!res.ok) throw new Error(result.message || 'Failed to create dealer shop');
+  return result.data?.user?.shop ?? result.data?.user ?? result;
 }
 
-export async function updateBrand(
-  id: string,
-  data: { name?: string; logo?: string }
-): Promise<Brand> {
-  const res = await fetch(`${API_BASE_URL}/brands/${id}`, {
+
+export async function createProductByAdmin(productData: any): Promise<Product> {
+  const res = await fetch(`${API_BASE_URL}/products`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(productData),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to create product for shop');
+  return result.data?.product ?? result;
+}
+
+export async function updateProductByAdmin(id: string, productData: any): Promise<Product> {
+  const res = await fetch(`${API_BASE_URL}/products/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(productData),
   });
   const result = await res.json();
-  if (!res.ok) throw new Error(result.message || 'Failed to update brand');
-  return result.data?.brand ?? result;
+  if (!res.ok) throw new Error(result.message || 'Failed to update product');
+  return result.data?.product ?? result;
 }
-
-export async function deleteBrand(id: string): Promise<{ success: boolean; message: string }> {
-  const res = await fetch(`${API_BASE_URL}/brands/${id}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders(),
-  });
-  const result = await res.json();
-  if (!res.ok) throw new Error(result.message || 'Failed to delete brand');
-  return result;
-}
-

@@ -11,11 +11,13 @@ import { SubscriptionsTable } from './components/SubscriptionsTable';
 import { CategoriesBrandsView } from './components/CategoriesBrandsView';
 import { UserActivityModal } from './components/UserActivityModal';
 import { EditShopModal } from './components/EditShopModal';
+import { CreateShopModal } from './components/CreateShopModal';
 import { EditUserModal } from './components/EditUserModal';
 import { ShopDetailDrawer } from './components/ShopDetailDrawer';
 import { DeleteShopModal } from './components/DeleteShopModal';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { DeleteProductModal } from './components/DeleteProductModal';
+import { AddEditProductModal } from './components/AddEditProductModal';
 import { AdminLogin } from './components/AdminLogin';
 import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan, Category, Brand } from './types';
 import {
@@ -44,6 +46,10 @@ import {
   createBrand,
   updateBrand,
   deleteBrand,
+  assignSubscriptionToShop,
+  createShopByAdmin,
+  createProductByAdmin,
+  updateProductByAdmin,
 } from './services/adminApi';
 
 import { CheckCircle2, AlertCircle, RefreshCw, AlertTriangle, Loader2, ArrowLeft, ShieldAlert } from 'lucide-react';
@@ -75,10 +81,13 @@ export const App: React.FC = () => {
 
   // Shop Modals state
   const [selectedShopForEdit, setSelectedShopForEdit] = useState<Shop | null>(null);
+  const [isCreateShopOpen, setIsCreateShopOpen] = useState(false);
   const [selectedShopForDrawer, setSelectedShopForDrawer] = useState<Shop | null>(null);
   const [selectedShopForDelete, setSelectedShopForDelete] = useState<Shop | null>(null);
 
   // Product Modals state
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const [selectedProductForEdit, setSelectedProductForEdit] = useState<Product | null>(null);
   const [selectedProductForDetails, setSelectedProductForDetails] = useState<Product | null>(null);
   const [selectedProductForDelete, setSelectedProductForDelete] = useState<Product | null>(null);
 
@@ -302,11 +311,15 @@ export const App: React.FC = () => {
   };
 
   // Handler: Save Shop Edit
-  const handleSaveEdit = async (updatedData: Partial<Shop>) => {
+  const handleSaveEdit = async (updatedData: Partial<Shop> & { subscriptionPlanId?: string }) => {
     if (!selectedShopForEdit) return;
     setIsActionLoading(true);
     try {
-      const updated = await updateShop(selectedShopForEdit.id, updatedData);
+      const { subscriptionPlanId, ...shopDetails } = updatedData;
+      const updated = await updateShop(selectedShopForEdit.id, shopDetails);
+      if (subscriptionPlanId) {
+        await assignSubscriptionToShop(selectedShopForEdit.id, subscriptionPlanId);
+      }
       showToast(`Store "${updated.name}" updated successfully!`);
       setSelectedShopForEdit(null);
       loadData();
@@ -402,6 +415,27 @@ export const App: React.FC = () => {
     return <AdminLogin onLoginSuccess={() => setIsAuthenticated(true)} />;
   }
 
+  // Handler: Admin Create / Edit Product
+  const handleSaveProduct = async (productData: any) => {
+    setIsActionLoading(true);
+    try {
+      if (selectedProductForEdit) {
+        await updateProductByAdmin(selectedProductForEdit.id, productData);
+        showToast('Product updated successfully!');
+      } else {
+        await createProductByAdmin(productData);
+        showToast('New product created successfully for dealer!');
+      }
+      setIsAddProductOpen(false);
+      setSelectedProductForEdit(null);
+      loadData();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to save product', 'error');
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0F1117] text-slate-100 flex flex-col md:flex-row font-['Poppins',sans-serif]">
       {/* Sidebar Navigation */}
@@ -431,11 +465,10 @@ export const App: React.FC = () => {
         {toast && (
           <div className="fixed bottom-6 right-6 z-50 animate-bounce">
             <div
-              className={`flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl border text-sm font-semibold glass-panel ${
-                toast.type === 'success'
+              className={`flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl border text-sm font-semibold glass-panel ${toast.type === 'success'
                   ? 'border-emerald-500/40 text-emerald-300 bg-emerald-950/80'
                   : 'border-red-500/40 text-red-300 bg-red-950/80'
-              }`}
+                }`}
             >
               {toast.type === 'success' ? (
                 <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
@@ -521,6 +554,8 @@ export const App: React.FC = () => {
             <ProductsTable
               products={products}
               onViewDetails={(product) => setSelectedProductForDetails(product)}
+              onEditProduct={(product) => setSelectedProductForEdit(product)}
+              onOpenCreateProduct={() => setIsAddProductOpen(true)}
               onDelete={(product) => setSelectedProductForDelete(product)}
               searchTerm={searchTerm}
             />
@@ -540,6 +575,36 @@ export const App: React.FC = () => {
                 setSelectedUserForActivityModal({ userId, userName })
               }
             />
+          ) : activeTab === 'subscriptions' ? (
+            <SubscriptionsTable
+              plans={subscriptionPlans}
+              shops={shops}
+              onCreatePlan={async (dto) => {
+                await createSubscriptionPlan(dto);
+                showToast('Subscription plan created successfully');
+                loadData();
+              }}
+              onUpdatePlan={async (id, dto) => {
+                await updateSubscriptionPlan(id, dto);
+                showToast('Subscription plan updated successfully');
+                loadData();
+              }}
+              onToggleStatus={async (id) => {
+                await toggleSubscriptionPlanStatus(id);
+                showToast('Subscription plan status updated');
+                loadData();
+              }}
+              onDeletePlan={async (id) => {
+                await deleteSubscriptionPlan(id);
+                showToast('Subscription plan deleted successfully');
+                loadData();
+              }}
+              onAssignPlanToShop={async (shopId, planId) => {
+                await assignSubscriptionToShop(shopId, planId);
+                showToast('Subscription plan assigned to shop successfully');
+                loadData();
+              }}
+            />
           ) : activeTab === 'settings' ? (
             <SettingsView onShowToast={showToast} onBackToShops={() => setActiveTab('shops')} />
           ) : (
@@ -549,6 +614,7 @@ export const App: React.FC = () => {
               onEdit={(shop) => setSelectedShopForEdit(shop)}
               onDelete={(shop) => setSelectedShopForDelete(shop)}
               onViewDetails={handleOpenDetails}
+              onOpenCreateShop={() => setIsCreateShopOpen(true)}
               filterStatus={filterStatus}
               setFilterStatus={setFilterStatus}
               searchTerm={searchTerm}
@@ -564,6 +630,27 @@ export const App: React.FC = () => {
         isOpen={Boolean(selectedShopForEdit)}
         onClose={() => setSelectedShopForEdit(null)}
         onSave={handleSaveEdit}
+        subscriptionPlans={subscriptionPlans}
+        isLoading={isActionLoading}
+      />
+
+      <CreateShopModal
+        isOpen={isCreateShopOpen}
+        onClose={() => setIsCreateShopOpen(false)}
+        onSave={async (shopData) => {
+          setIsActionLoading(true);
+          try {
+            await createShopByAdmin(shopData);
+            showToast('New dealer shop created successfully!');
+            setIsCreateShopOpen(false);
+            loadData();
+          } catch (err: any) {
+            showToast(err.message || 'Failed to create dealer shop', 'error');
+          } finally {
+            setIsActionLoading(false);
+          }
+        }}
+        subscriptionPlans={subscriptionPlans}
         isLoading={isActionLoading}
       />
 
@@ -583,6 +670,19 @@ export const App: React.FC = () => {
       />
 
       {/* Product Modals */}
+      <AddEditProductModal
+        isOpen={isAddProductOpen || Boolean(selectedProductForEdit)}
+        onClose={() => {
+          setIsAddProductOpen(false);
+          setSelectedProductForEdit(null);
+        }}
+        onSave={handleSaveProduct}
+        productToEdit={selectedProductForEdit}
+        shops={shops}
+        subscriptionPlans={subscriptionPlans}
+        isLoading={isActionLoading}
+      />
+
       <ProductDetailModal
         product={selectedProductForDetails}
         isOpen={Boolean(selectedProductForDetails)}
