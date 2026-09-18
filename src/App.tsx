@@ -626,18 +626,20 @@ export const App: React.FC = () => {
 
         {/* Dashboard Main View Container */}
         <main id="admin-main-container" className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
-          {/* Welcome Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
-                MLX Admin Control Center
-                {isLoading && <RefreshCw className="w-4 h-4 animate-spin text-orange-500" />}
-              </h1>
-              <p className="text-xs text-slate-400 mt-1">
-                Monitor platform analytics, manage user accounts, inspect activity logs, and verify store listings.
-              </p>
+          {/* Welcome Header (Dashboard only) */}
+          {!activeSingleView && activeTab === 'dashboard' && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
+                  MLX Admin Control Center
+                  {isLoading && <RefreshCw className="w-4 h-4 animate-spin text-orange-500" />}
+                </h1>
+                <p className="text-xs text-slate-400 mt-1">
+                  Monitor platform analytics, manage user accounts, inspect activity logs, and verify store listings.
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Active Single View or Tab Views */}
           {activeSingleView ? (
@@ -698,8 +700,8 @@ export const App: React.FC = () => {
             )
           ) : (
             <>
-              {/* Priority Hero Alert Banner for Pending Shops */}
-              {stats.pendingShops > 0 && (
+              {/* Priority Hero Alert Banner for Pending Shops (only on dashboard and manage shops) */}
+              {(activeTab === 'dashboard' || activeTab === 'shops') && stats.pendingShops > 0 && (
                 <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/10 border border-amber-500/40 shadow-xl shadow-amber-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
                   <div className="flex items-center gap-3.5">
                     <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
@@ -720,8 +722,8 @@ export const App: React.FC = () => {
                 </div>
               )}
 
-              {/* Stats KPI Overview (Dashboard / Shops) */}
-              {(activeTab === 'dashboard' || activeTab === 'shops') && (
+              {/* Stats KPI Overview (Dashboard only) */}
+              {activeTab === 'dashboard' && (
                 <StatsOverview
                   stats={stats}
                   onFilterStatus={setFilterStatus}
