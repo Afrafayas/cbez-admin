@@ -230,8 +230,8 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                 {/* Footer Controls: Products, Rating & Actions */}
                 <div className="flex items-center justify-between pt-2.5 border-t border-white/5 text-xs gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-800 border border-white/10 text-slate-200">
-                      {productCount} Items
+                    <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-800 border border-white/10 text-slate-200 whitespace-nowrap shrink-0">
+                      {productCount} {productCount === 1 ? 'Item' : 'Items'}
                     </span>
                     <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] font-bold">
                       <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
@@ -369,9 +369,9 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                       </div>
                     </td>
 
-                    <td className="px-5 py-4">
-                      <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-800 border border-white/10 text-slate-200">
-                        {productCount} Items
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-800 border border-white/10 text-slate-200 whitespace-nowrap shrink-0">
+                        {productCount} {productCount === 1 ? 'Item' : 'Items'}
                       </span>
                     </td>
 
