@@ -266,6 +266,15 @@ export const App: React.FC = () => {
     }
   }, [isAuthenticated, loadData]);
 
+  // Scroll main content container to top on tab navigation
+  useEffect(() => {
+    const mainEl = document.getElementById('admin-main-container');
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [activeTab]);
+
+
   // Handler: Toggle Verification Switch
   const handleToggleVerify = async (id: string, currentStatus: boolean) => {
     try {
@@ -439,7 +448,7 @@ export const App: React.FC = () => {
         )}
 
         {/* Dashboard Main View Container */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
+        <main id="admin-main-container" className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
           {/* Welcome Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -475,12 +484,15 @@ export const App: React.FC = () => {
             </div>
           )}
 
-          {/* Stats KPI Overview */}
-          <StatsOverview
-            stats={stats}
-            onFilterStatus={setFilterStatus}
-            selectedStatus={filterStatus}
-          />
+          {/* Stats KPI Overview (Dashboard / Shops) */}
+          {(activeTab === 'dashboard' || activeTab === 'shops') && (
+            <StatsOverview
+              stats={stats}
+              onFilterStatus={setFilterStatus}
+              selectedStatus={filterStatus}
+            />
+          )}
+
 
           {/* Active Tab View Rendering */}
           {activeTab === 'subscriptions' ? (

@@ -27,16 +27,17 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="flex items-center justify-between gap-3">
         {/* Left Section: Back Button / Mobile Menu & Logo */}
         <div className="flex items-center gap-2.5">
-          {activeTab && activeTab !== 'shops' && onBackToShops && (
+          {activeTab && activeTab !== 'shops' && activeTab !== 'dashboard' && onBackToShops && (
             <button
               onClick={onBackToShops}
               className="p-2 rounded-xl bg-orange-500/15 hover:bg-orange-500/25 text-orange-300 border border-orange-500/40 transition-all shadow-md shadow-orange-500/10 cursor-pointer shrink-0"
-              title="Back to Shops"
-              aria-label="Back to Shops"
+              title="Back to Dashboard"
+              aria-label="Back to Dashboard"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
           )}
+
 
           {/* Mobile Left Section: Hamburger Menu & Mobile Brand Logo */}
           <div className="flex items-center gap-2.5 md:hidden">
