@@ -8,6 +8,7 @@ import { UsersTable } from './components/UsersTable';
 import { ActivityLogsTable } from './components/ActivityLogsTable';
 import { SettingsView } from './components/SettingsView';
 import { SubscriptionsTable } from './components/SubscriptionsTable';
+import { CategoriesBrandsView } from './components/CategoriesBrandsView';
 import { UserActivityModal } from './components/UserActivityModal';
 import { EditShopModal } from './components/EditShopModal';
 import { CreateShopModal } from './components/CreateShopModal';
@@ -18,7 +19,7 @@ import { ProductDetailModal } from './components/ProductDetailModal';
 import { DeleteProductModal } from './components/DeleteProductModal';
 import { AddEditProductModal } from './components/AddEditProductModal';
 import { AdminLogin } from './components/AdminLogin';
-import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan } from './types';
+import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan, Category, Brand } from './types';
 import {
   fetchStats,
   fetchShops,
@@ -37,12 +38,21 @@ import {
   updateSubscriptionPlan,
   toggleSubscriptionPlanStatus,
   deleteSubscriptionPlan,
+  fetchCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  fetchBrands,
+  createBrand,
+  updateBrand,
+  deleteBrand,
   assignSubscriptionToShop,
   createShopByAdmin,
   createProductByAdmin,
   updateProductByAdmin,
 } from './services/adminApi';
-import { CheckCircle2, AlertCircle, RefreshCw, AlertTriangle, Loader2, ArrowLeft } from 'lucide-react';
+
+import { CheckCircle2, AlertCircle, RefreshCw, AlertTriangle, Loader2, ArrowLeft, ShieldAlert } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -62,6 +72,8 @@ export const App: React.FC = () => {
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLogItem[]>([]);
   const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
 
   const [filterStatus, setFilterStatus] = useState<'all' | 'verified' | 'pending'>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -100,17 +112,19 @@ export const App: React.FC = () => {
     setTimeout(() => setToast(null), 4000);
   };
 
-  // Load stats, shops, products, users, and activity logs from backend
+  // Load stats, shops, products, users, activity logs, plans, categories, and brands from backend
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [statsData, shopsData, usersData, logsData, productsData, plansData] = await Promise.all([
+      const [statsData, shopsData, usersData, logsData, productsData, plansData, catsData, brandsData] = await Promise.all([
         fetchStats(),
         fetchShops(),
         fetchUsers().catch(() => []),
         fetchAllActivityLogs().catch(() => []),
         fetchProducts().catch(() => []),
         fetchSubscriptionPlans().catch(() => []),
+        fetchCategories().catch(() => []),
+        fetchBrands().catch(() => []),
       ]);
       setStats(statsData);
       setShops(shopsData);
@@ -118,6 +132,13 @@ export const App: React.FC = () => {
       setActivityLogs(logsData);
       setProducts(productsData);
       if (Array.isArray(plansData)) setSubscriptionPlans(plansData);
+      if (Array.isArray(catsData)) setCategories(catsData);
+      if (Array.isArray(brandsData)) setBrands(brandsData);
+
+      // Priority Emphasis: If pending shops exist on load, set default filter to 'pending'
+      if (statsData.pendingShops > 0) {
+        setFilterStatus('pending');
+      }
     } catch (err: any) {
       console.error('Failed to fetch admin data:', err);
       showToast(err.message || 'Failed to connect to backend server', 'error');
@@ -126,11 +147,142 @@ export const App: React.FC = () => {
     }
   }, []);
 
+  // Handlers for Subscription Plans
+  const handleCreatePlan = async (dto: any) => {
+    try {
+      const newPlan = await createSubscriptionPlan(dto);
+      showToast(`Subscription Plan "${newPlan.name}" created successfully!`);
+      const plans = await fetchSubscriptionPlans();
+      setSubscriptionPlans(plans);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to create subscription plan', 'error');
+      throw err;
+    }
+  };
+
+  const handleUpdatePlan = async (id: string, dto: any) => {
+    try {
+      const updatedPlan = await updateSubscriptionPlan(id, dto);
+      showToast(`Subscription Plan "${updatedPlan.name}" updated successfully!`);
+      const plans = await fetchSubscriptionPlans();
+      setSubscriptionPlans(plans);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update subscription plan', 'error');
+      throw err;
+    }
+  };
+
+  const handleTogglePlanStatus = async (id: string) => {
+    try {
+      const updated = await toggleSubscriptionPlanStatus(id);
+      showToast(`Subscription Plan status updated to ${updated.status}!`);
+      const plans = await fetchSubscriptionPlans();
+      setSubscriptionPlans(plans);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to toggle plan status', 'error');
+    }
+  };
+
+  const handleDeletePlan = async (id: string) => {
+    try {
+      await deleteSubscriptionPlan(id);
+      showToast('Subscription Plan deleted successfully!');
+      const plans = await fetchSubscriptionPlans();
+      setSubscriptionPlans(plans);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete subscription plan', 'error');
+    }
+  };
+
+  // Handlers for Categories
+  const handleCreateCategory = async (data: { name: string; slug?: string; image?: string }) => {
+    try {
+      const cat = await createCategory(data);
+      showToast(`Category "${cat.name}" created successfully!`);
+      const cats = await fetchCategories();
+      setCategories(cats);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to create category', 'error');
+      throw err;
+    }
+  };
+
+  const handleUpdateCategory = async (id: string, data: { name?: string; slug?: string; image?: string }) => {
+    try {
+      const cat = await updateCategory(id, data);
+      showToast(`Category "${cat.name}" updated successfully!`);
+      const cats = await fetchCategories();
+      setCategories(cats);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update category', 'error');
+      throw err;
+    }
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    try {
+      await deleteCategory(id);
+      showToast('Category deleted successfully!');
+      const cats = await fetchCategories();
+      setCategories(cats);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete category', 'error');
+      throw err;
+    }
+  };
+
+  // Handlers for Brands
+  const handleCreateBrand = async (data: { name: string; logo?: string }) => {
+    try {
+      const b = await createBrand(data);
+      showToast(`Brand "${b.name}" created successfully!`);
+      const bList = await fetchBrands();
+      setBrands(bList);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to create brand', 'error');
+      throw err;
+    }
+  };
+
+  const handleUpdateBrand = async (id: string, data: { name?: string; logo?: string }) => {
+    try {
+      const b = await updateBrand(id, data);
+      showToast(`Brand "${b.name}" updated successfully!`);
+      const bList = await fetchBrands();
+      setBrands(bList);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update brand', 'error');
+      throw err;
+    }
+  };
+
+  const handleDeleteBrand = async (id: string) => {
+    try {
+      await deleteBrand(id);
+      showToast('Brand deleted successfully!');
+      const bList = await fetchBrands();
+      setBrands(bList);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete brand', 'error');
+      throw err;
+    }
+  };
+
+
   useEffect(() => {
     if (isAuthenticated) {
       loadData();
     }
   }, [isAuthenticated, loadData]);
+
+  // Scroll main content container to top on tab navigation
+  useEffect(() => {
+    const mainEl = document.getElementById('admin-main-container');
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [activeTab]);
+
 
   // Handler: Toggle Verification Switch
   const handleToggleVerify = async (id: string, currentStatus: boolean) => {
@@ -138,6 +290,9 @@ export const App: React.FC = () => {
       const updatedShop = await toggleVerifyShop(id, !currentStatus);
       showToast(`Store "${updatedShop.name}" ${!currentStatus ? 'Verified' : 'Unverified'} successfully!`);
       setShops((prev) => prev.map((s) => (s.id === id ? { ...s, verified: !currentStatus } : s)));
+      if (selectedShopForDrawer && selectedShopForDrawer.id === id) {
+        setSelectedShopForDrawer((prev) => (prev ? { ...prev, verified: !currentStatus } : null));
+      }
       const statsData = await fetchStats();
       setStats(statsData);
     } catch (err: any) {
@@ -165,17 +320,17 @@ export const App: React.FC = () => {
       if (subscriptionPlanId) {
         await assignSubscriptionToShop(selectedShopForEdit.id, subscriptionPlanId);
       }
-      showToast(`Store "${updated.name}" details updated successfully!`);
+      showToast(`Store "${updated.name}" updated successfully!`);
       setSelectedShopForEdit(null);
       loadData();
     } catch (err: any) {
-      showToast(err.message || 'Failed to update shop details', 'error');
+      showToast(err.message || 'Failed to update store details', 'error');
     } finally {
       setIsActionLoading(false);
     }
   };
 
-  // Handler: Delete Shop Confirm
+  // Handler: Confirm Delete Shop
   const handleConfirmDeleteShop = async () => {
     if (!selectedShopForDelete) return;
     setIsActionLoading(true);
@@ -185,7 +340,7 @@ export const App: React.FC = () => {
       setSelectedShopForDelete(null);
       loadData();
     } catch (err: any) {
-      showToast(err.message || 'Failed to delete shop', 'error');
+      showToast(err.message || 'Failed to delete store', 'error');
     } finally {
       setIsActionLoading(false);
     }
@@ -245,6 +400,17 @@ export const App: React.FC = () => {
     setIsAuthenticated(false);
   };
 
+  const handleNavigateToPendingShops = () => {
+    setActiveTab('shops');
+    setFilterStatus('pending');
+    setTimeout(() => {
+      const section = document.getElementById('shops-table-section');
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 50);
+  };
+
   if (!isAuthenticated) {
     return <AdminLogin onLoginSuccess={() => setIsAuthenticated(true)} />;
   }
@@ -299,11 +465,10 @@ export const App: React.FC = () => {
         {toast && (
           <div className="fixed bottom-6 right-6 z-50 animate-bounce">
             <div
-              className={`flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl border text-sm font-semibold glass-panel ${
-                toast.type === 'success'
+              className={`flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl border text-sm font-semibold glass-panel ${toast.type === 'success'
                   ? 'border-emerald-500/40 text-emerald-300 bg-emerald-950/80'
                   : 'border-red-500/40 text-red-300 bg-red-950/80'
-              }`}
+                }`}
             >
               {toast.type === 'success' ? (
                 <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
@@ -316,7 +481,7 @@ export const App: React.FC = () => {
         )}
 
         {/* Dashboard Main View Container */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
+        <main id="admin-main-container" className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
           {/* Welcome Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -330,15 +495,62 @@ export const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Stats KPI Overview */}
-          <StatsOverview
-            stats={stats}
-            onFilterStatus={setFilterStatus}
-            selectedStatus={filterStatus}
-          />
+          {/* Priority Hero Alert Banner for Pending Shops */}
+          {stats.pendingShops > 0 && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/10 border border-amber-500/40 shadow-xl shadow-amber-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
+              <div className="flex items-center gap-3.5">
+                <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+                  <ShieldAlert className="w-5 h-5 animate-bounce" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-amber-300">
+                    {stats.pendingShops} {stats.pendingShops === 1 ? 'Shop' : 'Shops'} Pending Verification
+                  </h2>
+                </div>
+              </div>
+              <button
+                onClick={handleNavigateToPendingShops}
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
+              >
+                <span>Review Pending Shops ({stats.pendingShops})</span>
+              </button>
+            </div>
+          )}
+
+          {/* Stats KPI Overview (Dashboard / Shops) */}
+          {(activeTab === 'dashboard' || activeTab === 'shops') && (
+            <StatsOverview
+              stats={stats}
+              onFilterStatus={setFilterStatus}
+              selectedStatus={filterStatus}
+            />
+          )}
+
 
           {/* Active Tab View Rendering */}
-          {activeTab === 'products' ? (
+          {activeTab === 'subscriptions' ? (
+            <SubscriptionsTable
+              plans={subscriptionPlans}
+              onCreatePlan={handleCreatePlan}
+              onUpdatePlan={handleUpdatePlan}
+              onToggleStatus={handleTogglePlanStatus}
+              onDeletePlan={handleDeletePlan}
+              isLoading={isLoading}
+            />
+          ) : activeTab === 'categories-brands' ? (
+            <CategoriesBrandsView
+              categories={categories}
+              brands={brands}
+              onCreateCategory={handleCreateCategory}
+              onUpdateCategory={handleUpdateCategory}
+              onDeleteCategory={handleDeleteCategory}
+              onCreateBrand={handleCreateBrand}
+              onUpdateBrand={handleUpdateBrand}
+              onDeleteBrand={handleDeleteBrand}
+              isLoading={isLoading}
+              searchTerm={searchTerm}
+            />
+          ) : activeTab === 'products' ? (
             <ProductsTable
               products={products}
               onViewDetails={(product) => setSelectedProductForDetails(product)}
@@ -408,6 +620,7 @@ export const App: React.FC = () => {
               searchTerm={searchTerm}
             />
           )}
+
         </main>
       </div>
 
@@ -445,6 +658,7 @@ export const App: React.FC = () => {
         shop={selectedShopForDrawer}
         isOpen={Boolean(selectedShopForDrawer)}
         onClose={() => setSelectedShopForDrawer(null)}
+        onToggleVerify={handleToggleVerify}
       />
 
       <DeleteShopModal

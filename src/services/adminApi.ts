@@ -1,4 +1,5 @@
-import { Shop, AdminStats, UserAccount, Product, SubscriptionPlan } from '../types';
+import { Shop, AdminStats, UserAccount, Product, SubscriptionPlan, Category, Brand } from '../types';
+
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cbez-web-backend.onrender.com/api';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Store, ShoppingBag, Users, Settings, ShieldCheck, LogOut, History, Server, CheckCircle2, X, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Store, ShoppingBag, Users, Settings, ShieldCheck, LogOut, History, Server, CheckCircle2, X, CreditCard, Tags } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -22,10 +22,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'shops', label: 'Manage Shops', icon: Store, badge: pendingCount > 0 ? pendingCount : null },
     { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard },
+    { id: 'categories-brands', label: 'Categories & Brands', icon: Tags },
     { id: 'products', label: 'Products Directory', icon: ShoppingBag },
     { id: 'users', label: 'User Accounts', icon: Users },
     { id: 'activity', label: 'Activity Logs', icon: History },
   ];
+
 
   const systemNavItems = [
     { id: 'settings', label: 'Platform Settings', icon: Settings },
@@ -87,8 +89,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <span>{item.label}</span>
                   </div>
                   {item.badge && (
-                    <span className="px-2 py-0.5 text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full animate-pulse-glow">
-                      {item.badge}
+                    <span className="px-2 py-0.5 text-[11px] font-extrabold bg-amber-500/25 text-amber-300 border border-amber-500/40 rounded-full flex items-center gap-1 shadow-md shadow-amber-500/10 animate-pulse">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                      <span>{item.badge} Pending</span>
                     </span>
                   )}
                 </button>
