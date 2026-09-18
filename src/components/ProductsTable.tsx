@@ -189,14 +189,15 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                     <button
                       type="button"
                       onClick={() => onViewDetails(product)}
-                      className="font-bold text-white hover:text-orange-400 text-sm line-clamp-1 text-left cursor-pointer transition-colors"
+                      className="w-full font-bold text-white hover:text-orange-400 text-sm line-clamp-1 text-left cursor-pointer transition-colors block"
+                      title={product.name}
                     >
                       {product.name}
                     </button>
-                    <div className="text-xs text-slate-400 mt-0.5 line-clamp-1">{product.description || 'No description'}</div>
+                    <div className="text-xs text-slate-400 mt-0.5 line-clamp-1" title={product.description}>{product.description || 'No description'}</div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="font-bold text-orange-400 text-xs">{product.brand}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-slate-300 border border-white/10">{product.category}</span>
+                      <span className="font-bold text-orange-400 text-xs truncate max-w-[120px]">{product.brand}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-slate-300 border border-white/10 truncate max-w-[120px]">{product.category}</span>
                     </div>
                   </div>
                 </div>
@@ -273,12 +274,12 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
         <table className="w-full text-left text-sm">
           <thead className="bg-slate-950/60 text-slate-400 uppercase text-[11px] font-bold tracking-wider border-b border-white/10">
             <tr>
-              <th className="px-5 py-3.5">Product Info</th>
-              <th className="px-5 py-3.5">Category & Brand</th>
-              <th className="px-5 py-3.5">Store / Seller</th>
-              <th className="px-5 py-3.5 text-right">Price</th>
-              <th className="px-5 py-3.5 text-center">Stock Level</th>
-              <th className="px-5 py-3.5 text-right">Actions</th>
+              <th className="px-5 py-3.5 min-w-[280px]">Product Info</th>
+              <th className="px-5 py-3.5 whitespace-nowrap min-w-[150px]">Category & Brand</th>
+              <th className="px-5 py-3.5 whitespace-nowrap min-w-[160px]">Store / Seller</th>
+              <th className="px-5 py-3.5 text-right whitespace-nowrap min-w-[100px]">Price</th>
+              <th className="px-5 py-3.5 text-center whitespace-nowrap min-w-[120px]">Stock Level</th>
+              <th className="px-5 py-3.5 text-right whitespace-nowrap min-w-[110px]">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
@@ -299,8 +300,8 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                 return (
                   <tr key={product.id} className="hover:bg-white/[0.03] transition-colors group">
                     {/* Product Info */}
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
+                    <td className="px-5 py-4 min-w-[280px] max-w-[360px]">
+                      <div className="flex items-center gap-3 min-w-0">
                         <button
                           type="button"
                           onClick={() => onViewDetails(product)}
@@ -316,13 +317,16 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                             }}
                           />
                         </button>
-                        <div className="min-w-0 max-w-[280px]">
+                        <div className="min-w-0 flex-1 overflow-hidden">
                           <button
                             type="button"
                             onClick={() => onViewDetails(product)}
-                            className="font-bold text-white hover:text-orange-400 transition-colors truncate block text-left cursor-pointer"
+                            className="w-full block text-left cursor-pointer group/title min-w-0"
+                            title={product.name}
                           >
-                            <span className="hover:underline">{product.name}</span>
+                            <span className="font-bold text-white group-hover/title:text-orange-400 group-hover/title:underline transition-colors truncate block text-sm">
+                              {product.name}
+                            </span>
                           </button>
                           <div className="text-xs text-slate-400 truncate mt-0.5" title={product.description}>
                             {product.description || 'No description available'}
@@ -332,31 +336,32 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                     </td>
 
                     {/* Category & Brand */}
-                    <td className="px-5 py-4">
-                      <div className="font-semibold text-orange-400 text-xs">{product.brand}</div>
-                      <div className="text-xs text-slate-400 mt-0.5">{product.category}</div>
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <div className="font-semibold text-orange-400 text-xs truncate max-w-[160px]">{product.brand}</div>
+                      <div className="text-xs text-slate-400 mt-0.5 truncate max-w-[160px]">{product.category}</div>
                     </td>
 
                     {/* Store / Seller */}
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 whitespace-nowrap">
                       {product.shop ? (
-                        <div>
+                        <div className="min-w-0 max-w-[180px]">
                           {onViewShop ? (
                             <button
                               type="button"
                               onClick={() => onViewShop(product.shop as any)}
-                              className="font-semibold text-slate-200 hover:text-orange-400 text-xs flex items-center gap-1.5 transition-colors cursor-pointer text-left group/shop"
+                              className="font-semibold text-slate-200 hover:text-orange-400 text-xs flex items-center gap-1.5 transition-colors cursor-pointer text-left group/shop truncate w-full"
+                              title={product.shop.name}
                             >
                               <Store className="w-3.5 h-3.5 text-orange-400 shrink-0" />
-                              <span className="group-shop:underline">{product.shop.name}</span>
+                              <span className="group-shop:underline truncate">{product.shop.name}</span>
                             </button>
                           ) : (
-                            <div className="font-semibold text-slate-200 text-xs flex items-center gap-1.5">
+                            <div className="font-semibold text-slate-200 text-xs flex items-center gap-1.5 truncate" title={product.shop.name}>
                               <Store className="w-3.5 h-3.5 text-orange-400 shrink-0" />
-                              {product.shop.name}
+                              <span className="truncate">{product.shop.name}</span>
                             </div>
                           )}
-                          <div className="text-xs text-slate-400 mt-0.5">
+                          <div className="text-xs text-slate-400 mt-0.5 truncate">
                             {product.shop.city || product.shop.ownerName || 'Verified Store'}
                           </div>
                         </div>
@@ -366,29 +371,29 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                     </td>
 
                     {/* Price */}
-                    <td className="px-5 py-4 text-right">
+                    <td className="px-5 py-4 text-right whitespace-nowrap">
                       <div className="font-black text-white text-sm">
                         ₹{product.price?.toLocaleString('en-IN')}
                       </div>
                     </td>
 
                     {/* Stock Level */}
-                    <td className="px-5 py-4 text-center">
+                    <td className="px-5 py-4 text-center whitespace-nowrap">
                       {product.stock > 0 ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                           {product.stock} in stock
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/15 text-red-300 border border-red-500/30">
-                          <AlertTriangle className="w-3.5 h-3.5" />
+                          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                           Out of Stock
                         </span>
                       )}
                     </td>
 
                     {/* Actions */}
-                    <td className="px-5 py-4 text-right">
+                    <td className="px-5 py-4 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1.5">
                         {onEditProduct && (
                           <button
