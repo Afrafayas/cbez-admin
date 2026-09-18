@@ -170,18 +170,29 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
             return (
               <div key={product.id} className="p-4 rounded-xl bg-slate-900/60 border border-white/10 space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-14 h-14 rounded-xl bg-slate-950 border border-white/10 overflow-hidden shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => onViewDetails(product)}
+                    className="w-14 h-14 rounded-xl bg-slate-950 border border-white/10 overflow-hidden shrink-0 cursor-pointer hover:border-orange-500/50 transition-colors"
+                    title="View Product Details"
+                  >
                     <img
                       src={thumbnail}
                       alt={product.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover hover:scale-105 transition-transform"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800';
                       }}
                     />
-                  </div>
+                  </button>
                   <div className="min-w-0 flex-1">
-                    <div className="font-bold text-white text-sm line-clamp-1">{product.name}</div>
+                    <button
+                      type="button"
+                      onClick={() => onViewDetails(product)}
+                      className="font-bold text-white hover:text-orange-400 text-sm line-clamp-1 text-left cursor-pointer transition-colors"
+                    >
+                      {product.name}
+                    </button>
                     <div className="text-xs text-slate-400 mt-0.5 line-clamp-1">{product.description || 'No description'}</div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="font-bold text-orange-400 text-xs">{product.brand}</span>
@@ -193,7 +204,18 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                 <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
                   <div>
                     <span className="text-slate-400 block text-[10px]">Seller Store</span>
-                    <span className="font-semibold text-slate-200">{product.shop?.name || 'Unknown Store'}</span>
+                    {product.shop && onViewShop ? (
+                      <button
+                        type="button"
+                        onClick={() => onViewShop(product.shop as any)}
+                        className="font-semibold text-slate-200 hover:text-orange-400 transition-colors flex items-center gap-1 text-left cursor-pointer"
+                      >
+                        <Store className="w-3 h-3 text-orange-400 shrink-0" />
+                        <span className="underline-offset-2 hover:underline">{product.shop.name}</span>
+                      </button>
+                    ) : (
+                      <span className="font-semibold text-slate-200">{product.shop?.name || 'Unknown Store'}</span>
+                    )}
                   </div>
                   <div className="text-right">
                     <span className="text-slate-400 block text-[10px]">Price</span>
@@ -279,7 +301,12 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                     {/* Product Info */}
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-slate-900 border border-white/10 overflow-hidden shrink-0 flex items-center justify-center">
+                        <button
+                          type="button"
+                          onClick={() => onViewDetails(product)}
+                          className="w-12 h-12 rounded-xl bg-slate-900 border border-white/10 overflow-hidden shrink-0 flex items-center justify-center cursor-pointer hover:border-orange-500/50 transition-colors"
+                          title="View Product Details"
+                        >
                           <img
                             src={thumbnail}
                             alt={product.name}
@@ -288,11 +315,15 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                               (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800';
                             }}
                           />
-                        </div>
+                        </button>
                         <div className="min-w-0 max-w-[280px]">
-                          <div className="font-bold text-white group-hover:text-orange-400 transition-colors truncate">
-                            {product.name}
-                          </div>
+                          <button
+                            type="button"
+                            onClick={() => onViewDetails(product)}
+                            className="font-bold text-white hover:text-orange-400 transition-colors truncate block text-left cursor-pointer"
+                          >
+                            <span className="hover:underline">{product.name}</span>
+                          </button>
                           <div className="text-xs text-slate-400 truncate mt-0.5" title={product.description}>
                             {product.description || 'No description available'}
                           </div>
@@ -310,10 +341,21 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                     <td className="px-5 py-4">
                       {product.shop ? (
                         <div>
-                          <div className="font-semibold text-slate-200 text-xs flex items-center gap-1.5">
-                            <Store className="w-3.5 h-3.5 text-orange-400 shrink-0" />
-                            {product.shop.name}
-                          </div>
+                          {onViewShop ? (
+                            <button
+                              type="button"
+                              onClick={() => onViewShop(product.shop as any)}
+                              className="font-semibold text-slate-200 hover:text-orange-400 text-xs flex items-center gap-1.5 transition-colors cursor-pointer text-left group/shop"
+                            >
+                              <Store className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                              <span className="group-shop:underline">{product.shop.name}</span>
+                            </button>
+                          ) : (
+                            <div className="font-semibold text-slate-200 text-xs flex items-center gap-1.5">
+                              <Store className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                              {product.shop.name}
+                            </div>
+                          )}
                           <div className="text-xs text-slate-400 mt-0.5">
                             {product.shop.city || product.shop.ownerName || 'Verified Store'}
                           </div>

@@ -7,12 +7,14 @@ interface ActivityLogsTableProps {
   logs: ActivityLogItem[];
   searchTerm: string;
   onSelectUserLogs?: (userId: string, userName: string) => void;
+  onViewUser?: (userId: string, userName: string) => void;
 }
 
 export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
   logs,
   searchTerm,
   onSelectUserLogs,
+  onViewUser,
 }) => {
   const [filterAction, setFilterAction] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -196,12 +198,16 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
                     </div>
                     <div className="min-w-0">
                       <button
-                        onClick={() =>
-                          onSelectUserLogs && log.user && onSelectUserLogs(log.userId, log.user.name)
-                        }
-                        className="font-bold text-white hover:text-orange-400 text-xs truncate block text-left cursor-pointer"
+                        onClick={() => {
+                          if (onViewUser && log.user) {
+                            onViewUser(log.userId, log.user.name);
+                          } else if (onSelectUserLogs && log.user) {
+                            onSelectUserLogs(log.userId, log.user.name);
+                          }
+                        }}
+                        className="font-bold text-white hover:text-orange-400 text-xs truncate block text-left cursor-pointer group"
                       >
-                        {log.user?.name || 'User ID: ' + log.userId.slice(-6)}
+                        <span className="group-hover:underline">{log.user?.name || 'User ID: ' + log.userId.slice(-6)}</span>
                       </button>
                       <div className="text-[10px] text-slate-400 truncate">
                         {log.user?.email || log.user?.role}
@@ -272,12 +278,16 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
                         </div>
                         <div>
                           <button
-                            onClick={() =>
-                              onSelectUserLogs && log.user && onSelectUserLogs(log.userId, log.user.name)
-                            }
-                            className="font-bold text-white hover:text-orange-400 transition-colors text-left cursor-pointer"
+                            onClick={() => {
+                              if (onViewUser && log.user) {
+                                onViewUser(log.userId, log.user.name);
+                              } else if (onSelectUserLogs && log.user) {
+                                onSelectUserLogs(log.userId, log.user.name);
+                              }
+                            }}
+                            className="font-bold text-white hover:text-orange-400 transition-colors text-left cursor-pointer group"
                           >
-                            {log.user?.name || 'User ID: ' + log.userId.slice(-6)}
+                            <span className="group-hover:underline">{log.user?.name || 'User ID: ' + log.userId.slice(-6)}</span>
                           </button>
                           <div className="text-xs text-slate-400">
                             {log.user?.email || log.user?.role || 'User Activity'}

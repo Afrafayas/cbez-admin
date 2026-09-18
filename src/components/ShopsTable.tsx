@@ -194,12 +194,21 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                 {/* Header: Name, Verified Badge & Verification Toggle */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-lg shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => onViewDetails(shop)}
+                      className="w-11 h-11 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-lg shrink-0 hover:scale-105 hover:bg-orange-500/25 transition-all cursor-pointer"
+                      title="View Store Details"
+                    >
                       {shop.name.charAt(0).toUpperCase()}
-                    </div>
+                    </button>
                     <div>
-                      <div className="font-bold text-white text-sm flex items-center gap-1.5">
-                        {shop.name}
+                      <button
+                        type="button"
+                        onClick={() => onViewDetails(shop)}
+                        className="font-bold text-white hover:text-orange-400 text-sm flex items-center gap-1.5 transition-colors text-left cursor-pointer group"
+                      >
+                        <span className="group-hover:underline">{shop.name}</span>
                         {shop.verified ? (
                           <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                         ) : (
@@ -207,7 +216,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                             Pending Audit
                           </span>
                         )}
-                      </div>
+                      </button>
                       <div className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
                         <span>{shop.ownerName}</span>
                       </div>
@@ -349,12 +358,21 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                   >
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-base shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => onViewDetails(shop)}
+                          className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-base shrink-0 hover:scale-105 hover:bg-orange-500/25 transition-all cursor-pointer"
+                          title="View Store Details"
+                        >
                           {shop.name.charAt(0).toUpperCase()}
-                        </div>
+                        </button>
                         <div>
-                          <div className="font-semibold text-white flex items-center gap-1.5">
-                            {shop.name}
+                          <button
+                            type="button"
+                            onClick={() => onViewDetails(shop)}
+                            className="font-semibold text-white hover:text-orange-400 flex items-center gap-1.5 transition-colors text-left cursor-pointer group"
+                          >
+                            <span className="group-hover:underline">{shop.name}</span>
                             {shop.verified ? (
                               <span title="Verified Store">
                                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -364,7 +382,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                                 Pending
                               </span>
                             )}
-                          </div>
+                          </button>
                           <div className="text-xs text-slate-400 truncate max-w-[200px]" title={shop.address}>
                             {shop.address || 'No physical address provided'}
                           </div>
