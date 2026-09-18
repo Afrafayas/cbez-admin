@@ -89,15 +89,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
 
         {/* Filter Controls & Create Shop Button */}
         <div className="flex flex-wrap items-center gap-2.5">
-          {onOpenCreateShop && (
-            <button
-              onClick={onOpenCreateShop}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold shadow-md cursor-pointer transition-all shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-              Register New Store
-            </button>
-          )}
+          
 
           <div className="flex p-1 rounded-xl bg-slate-950/80 border border-white/10 text-xs font-semibold overflow-x-auto max-w-full">
             <button
@@ -131,6 +123,16 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
               Pending ({shops.filter((s) => !s.verified).length})
             </button>
           </div>
+
+          {onOpenCreateShop && (
+            <button
+              onClick={onOpenCreateShop}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold shadow-md cursor-pointer transition-all shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              Register New Store
+            </button>
+          )}
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <select
@@ -166,6 +168,8 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
               ))}
             </select>
           </div>
+
+          
         </div>
       </div>
 

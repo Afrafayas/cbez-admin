@@ -295,3 +295,32 @@ export async function createShopByAdmin(shopData: any): Promise<Shop> {
   if (!res.ok) throw new Error(result.message || 'Failed to create dealer shop');
   return result.data?.user?.shop ?? result.data?.user ?? result;
 }
+
+
+export async function createProductByAdmin(productData: any): Promise<Product> {
+  const res = await fetch(`${API_BASE_URL}/products`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(productData),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to create product for shop');
+  return result.data?.product ?? result;
+}
+
+export async function updateProductByAdmin(id: string, productData: any): Promise<Product> {
+  const res = await fetch(`${API_BASE_URL}/products/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(productData),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to update product');
+  return result.data?.product ?? result;
+}

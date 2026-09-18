@@ -16,6 +16,7 @@ import { ShopDetailDrawer } from './components/ShopDetailDrawer';
 import { DeleteShopModal } from './components/DeleteShopModal';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { DeleteProductModal } from './components/DeleteProductModal';
+import { AddEditProductModal } from './components/AddEditProductModal';
 import { AdminLogin } from './components/AdminLogin';
 import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan } from './types';
 import {
@@ -38,6 +39,8 @@ import {
   deleteSubscriptionPlan,
   assignSubscriptionToShop,
   createShopByAdmin,
+  createProductByAdmin,
+  updateProductByAdmin,
 } from './services/adminApi';
 import { CheckCircle2, AlertCircle, RefreshCw, AlertTriangle, Loader2, ArrowLeft } from 'lucide-react';
 
@@ -71,6 +74,8 @@ export const App: React.FC = () => {
   const [selectedShopForDelete, setSelectedShopForDelete] = useState<Shop | null>(null);
 
   // Product Modals state
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const [selectedProductForEdit, setSelectedProductForEdit] = useState<Product | null>(null);
   const [selectedProductForDetails, setSelectedProductForDetails] = useState<Product | null>(null);
   const [selectedProductForDelete, setSelectedProductForDelete] = useState<Product | null>(null);
 
@@ -244,6 +249,27 @@ export const App: React.FC = () => {
     return <AdminLogin onLoginSuccess={() => setIsAuthenticated(true)} />;
   }
 
+  // Handler: Admin Create / Edit Product
+  const handleSaveProduct = async (productData: any) => {
+    setIsActionLoading(true);
+    try {
+      if (selectedProductForEdit) {
+        await updateProductByAdmin(selectedProductForEdit.id, productData);
+        showToast('Product updated successfully!');
+      } else {
+        await createProductByAdmin(productData);
+        showToast('New product created successfully for dealer!');
+      }
+      setIsAddProductOpen(false);
+      setSelectedProductForEdit(null);
+      loadData();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to save product', 'error');
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0F1117] text-slate-100 flex flex-col md:flex-row font-['Poppins',sans-serif]">
       {/* Sidebar Navigation */}
@@ -316,6 +342,8 @@ export const App: React.FC = () => {
             <ProductsTable
               products={products}
               onViewDetails={(product) => setSelectedProductForDetails(product)}
+              onEditProduct={(product) => setSelectedProductForEdit(product)}
+              onOpenCreateProduct={() => setIsAddProductOpen(true)}
               onDelete={(product) => setSelectedProductForDelete(product)}
               searchTerm={searchTerm}
             />
@@ -428,6 +456,19 @@ export const App: React.FC = () => {
       />
 
       {/* Product Modals */}
+      <AddEditProductModal
+        isOpen={isAddProductOpen || Boolean(selectedProductForEdit)}
+        onClose={() => {
+          setIsAddProductOpen(false);
+          setSelectedProductForEdit(null);
+        }}
+        onSave={handleSaveProduct}
+        productToEdit={selectedProductForEdit}
+        shops={shops}
+        subscriptionPlans={subscriptionPlans}
+        isLoading={isActionLoading}
+      />
+
       <ProductDetailModal
         product={selectedProductForDetails}
         isOpen={Boolean(selectedProductForDetails)}
