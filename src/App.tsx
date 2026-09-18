@@ -19,6 +19,13 @@ import { ProductDetailModal } from './components/ProductDetailModal';
 import { DeleteProductModal } from './components/DeleteProductModal';
 import { AddEditProductModal } from './components/AddEditProductModal';
 import { AdminLogin } from './components/AdminLogin';
+import { SingleShopView } from './components/SingleShopView';
+import { SingleProductView } from './components/SingleProductView';
+import { SingleUserView } from './components/SingleUserView';
+import { SingleCategoryView } from './components/SingleCategoryView';
+import { SingleBrandView } from './components/SingleBrandView';
+import { EditCategoryModal } from './components/EditCategoryModal';
+import { EditBrandModal } from './components/EditBrandModal';
 import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan, Category, Brand } from './types';
 import {
   fetchStats,
@@ -39,10 +46,12 @@ import {
   toggleSubscriptionPlanStatus,
   deleteSubscriptionPlan,
   fetchCategories,
+  fetchCategoryById,
   createCategory,
   updateCategory,
   deleteCategory,
   fetchBrands,
+  fetchBrandById,
   createBrand,
   updateBrand,
   deleteBrand,
@@ -100,6 +109,24 @@ export const App: React.FC = () => {
     userId: string;
     userName: string;
   } | null>(null);
+
+  // Category Modals state
+  const [selectedCategoryForEdit, setSelectedCategoryForEdit] = useState<Category | null>(null);
+  const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
+
+  // Brand Modals state
+  const [selectedBrandForEdit, setSelectedBrandForEdit] = useState<Brand | null>(null);
+  const [isCreateBrandOpen, setIsCreateBrandOpen] = useState(false);
+
+  // Dedicated Single Page Views state
+  const [activeSingleView, setActiveSingleView] = useState<
+    | { type: 'shop'; shop: Shop }
+    | { type: 'product'; product: Product }
+    | { type: 'user'; user: UserAccount }
+    | { type: 'category'; category: Category }
+    | { type: 'brand'; brand: Brand }
+    | null
+  >(null);
 
   const [isActionLoading, setIsActionLoading] = useState<boolean>(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
@@ -195,24 +222,29 @@ export const App: React.FC = () => {
   };
 
   // Handlers for Categories
-  const handleCreateCategory = async (data: { name: string; slug?: string; image?: string }) => {
+  const handleCreateCategory = async (data: { name: string; slug?: string; image?: string; specConfig?: any[] }) => {
     try {
       const cat = await createCategory(data);
       showToast(`Category "${cat.name}" created successfully!`);
       const cats = await fetchCategories();
       setCategories(cats);
+      setIsCreateCategoryOpen(false);
     } catch (err: any) {
       showToast(err.message || 'Failed to create category', 'error');
       throw err;
     }
   };
 
-  const handleUpdateCategory = async (id: string, data: { name?: string; slug?: string; image?: string }) => {
+  const handleUpdateCategory = async (id: string, data: { name?: string; slug?: string; image?: string; specConfig?: any[] }) => {
     try {
       const cat = await updateCategory(id, data);
       showToast(`Category "${cat.name}" updated successfully!`);
       const cats = await fetchCategories();
       setCategories(cats);
+      if (activeSingleView?.type === 'category' && activeSingleView.category.id === id) {
+        setActiveSingleView({ type: 'category', category: cat });
+      }
+      setSelectedCategoryForEdit(null);
     } catch (err: any) {
       showToast(err.message || 'Failed to update category', 'error');
       throw err;
@@ -223,6 +255,9 @@ export const App: React.FC = () => {
     try {
       await deleteCategory(id);
       showToast('Category deleted successfully!');
+      if (activeSingleView?.type === 'category' && activeSingleView.category.id === id) {
+        setActiveSingleView(null);
+      }
       const cats = await fetchCategories();
       setCategories(cats);
     } catch (err: any) {
@@ -238,6 +273,7 @@ export const App: React.FC = () => {
       showToast(`Brand "${b.name}" created successfully!`);
       const bList = await fetchBrands();
       setBrands(bList);
+      setIsCreateBrandOpen(false);
     } catch (err: any) {
       showToast(err.message || 'Failed to create brand', 'error');
       throw err;
@@ -250,6 +286,10 @@ export const App: React.FC = () => {
       showToast(`Brand "${b.name}" updated successfully!`);
       const bList = await fetchBrands();
       setBrands(bList);
+      if (activeSingleView?.type === 'brand' && activeSingleView.brand.id === id) {
+        setActiveSingleView({ type: 'brand', brand: b });
+      }
+      setSelectedBrandForEdit(null);
     } catch (err: any) {
       showToast(err.message || 'Failed to update brand', 'error');
       throw err;
@@ -260,11 +300,36 @@ export const App: React.FC = () => {
     try {
       await deleteBrand(id);
       showToast('Brand deleted successfully!');
+      if (activeSingleView?.type === 'brand' && activeSingleView.brand.id === id) {
+        setActiveSingleView(null);
+      }
       const bList = await fetchBrands();
       setBrands(bList);
     } catch (err: any) {
       showToast(err.message || 'Failed to delete brand', 'error');
       throw err;
+    }
+  };
+
+  // Handler: Open Single Category View
+  const handleOpenSingleCategory = async (category: Category) => {
+    try {
+      const fullCat = await fetchCategoryById(category.id);
+      setActiveSingleView({ type: 'category', category: fullCat });
+    } catch (err) {
+      const localCat = categories.find((c) => c.id === category.id) || category;
+      setActiveSingleView({ type: 'category', category: localCat });
+    }
+  };
+
+  // Handler: Open Single Brand View
+  const handleOpenSingleBrand = async (brand: Brand) => {
+    try {
+      const fullBrand = await fetchBrandById(brand.id);
+      setActiveSingleView({ type: 'brand', brand: fullBrand });
+    } catch (err) {
+      const localBrand = brands.find((b) => b.id === brand.id) || brand;
+      setActiveSingleView({ type: 'brand', brand: localBrand });
     }
   };
 
@@ -293,6 +358,12 @@ export const App: React.FC = () => {
       if (selectedShopForDrawer && selectedShopForDrawer.id === id) {
         setSelectedShopForDrawer((prev) => (prev ? { ...prev, verified: !currentStatus } : null));
       }
+      if (activeSingleView?.type === 'shop' && activeSingleView.shop.id === id) {
+        setActiveSingleView({
+          type: 'shop',
+          shop: { ...activeSingleView.shop, verified: !currentStatus },
+        });
+      }
       const statsData = await fetchStats();
       setStats(statsData);
     } catch (err: any) {
@@ -300,14 +371,56 @@ export const App: React.FC = () => {
     }
   };
 
-  // Handler: Open View Details Drawer
-  const handleOpenDetails = async (shop: Shop) => {
+  // Handler: Open Single Shop View
+  const handleOpenSingleShop = async (shop: Shop | { id: string; name: string }) => {
     try {
       const fullShop = await fetchShopById(shop.id);
-      setSelectedShopForDrawer(fullShop);
+      setActiveSingleView({ type: 'shop', shop: fullShop });
     } catch (err) {
-      setSelectedShopForDrawer(shop);
+      const localShop = shops.find((s) => s.id === shop.id) || (shop as Shop);
+      setActiveSingleView({ type: 'shop', shop: localShop });
     }
+  };
+
+  // Handler: Open Single Product View
+  const handleOpenSingleProduct = (product: Product) => {
+    let resolvedProduct = product;
+    if (!resolvedProduct.shop && resolvedProduct.shopId) {
+      const foundShop = shops.find((s) => s.id === resolvedProduct.shopId);
+      if (foundShop) {
+        resolvedProduct = { ...resolvedProduct, shop: foundShop };
+      }
+    }
+    setActiveSingleView({ type: 'product', product: resolvedProduct });
+  };
+
+  // Handler: Open Single User View
+  const handleOpenSingleUser = (user: UserAccount) => {
+    setActiveSingleView({ type: 'user', user });
+  };
+
+  // Handler: Open Single User by ID & Name (from Activity Logs)
+  const handleOpenSingleUserById = (userId: string, userName?: string) => {
+    const foundUser = users.find((u) => u.id === userId);
+    if (foundUser) {
+      setActiveSingleView({ type: 'user', user: foundUser });
+    } else {
+      setActiveSingleView({
+        type: 'user',
+        user: {
+          id: userId,
+          name: userName || 'User',
+          email: null,
+          phone: null,
+          role: 'customer',
+          createdAt: new Date().toISOString(),
+        },
+      });
+    }
+  };
+
+  const handleBackFromSingleView = () => {
+    setActiveSingleView(null);
   };
 
   // Handler: Save Shop Edit
@@ -319,6 +432,12 @@ export const App: React.FC = () => {
       const updated = await updateShop(selectedShopForEdit.id, shopDetails);
       if (subscriptionPlanId) {
         await assignSubscriptionToShop(selectedShopForEdit.id, subscriptionPlanId);
+      }
+      if (activeSingleView?.type === 'shop' && activeSingleView.shop.id === selectedShopForEdit.id) {
+        setActiveSingleView({
+          type: 'shop',
+          shop: { ...activeSingleView.shop, ...updated },
+        });
       }
       showToast(`Store "${updated.name}" updated successfully!`);
       setSelectedShopForEdit(null);
@@ -336,6 +455,9 @@ export const App: React.FC = () => {
     setIsActionLoading(true);
     try {
       await deleteShop(selectedShopForDelete.id);
+      if (activeSingleView?.type === 'shop' && activeSingleView.shop.id === selectedShopForDelete.id) {
+        setActiveSingleView(null);
+      }
       showToast(`Store "${selectedShopForDelete.name}" deleted successfully!`);
       setSelectedShopForDelete(null);
       loadData();
@@ -352,6 +474,9 @@ export const App: React.FC = () => {
     setIsActionLoading(true);
     try {
       await deleteProduct(selectedProductForDelete.id);
+      if (activeSingleView?.type === 'product' && activeSingleView.product.id === selectedProductForDelete.id) {
+        setActiveSingleView(null);
+      }
       showToast(`Product "${selectedProductForDelete.name}" deleted successfully!`);
       setSelectedProductForDelete(null);
       loadData();
@@ -368,6 +493,12 @@ export const App: React.FC = () => {
     setIsActionLoading(true);
     try {
       const updated = await updateUser(selectedUserForEdit.id, updatedData);
+      if (activeSingleView?.type === 'user' && activeSingleView.user.id === selectedUserForEdit.id) {
+        setActiveSingleView({
+          type: 'user',
+          user: { ...activeSingleView.user, ...updated },
+        });
+      }
       showToast(`User account "${updated.name}" updated successfully!`);
       setSelectedUserForEdit(null);
       loadData();
@@ -384,6 +515,9 @@ export const App: React.FC = () => {
     setIsActionLoading(true);
     try {
       await deleteUser(selectedUserForDelete.id);
+      if (activeSingleView?.type === 'user' && activeSingleView.user.id === selectedUserForDelete.id) {
+        setActiveSingleView(null);
+      }
       showToast(`User account "${selectedUserForDelete.name}" deleted successfully!`);
       setSelectedUserForDelete(null);
       loadData();
@@ -401,6 +535,7 @@ export const App: React.FC = () => {
   };
 
   const handleNavigateToPendingShops = () => {
+    setActiveSingleView(null);
     setActiveTab('shops');
     setFilterStatus('pending');
     setTimeout(() => {
@@ -440,8 +575,11 @@ export const App: React.FC = () => {
     <div className="min-h-screen bg-[#0F1117] text-slate-100 flex flex-col md:flex-row font-['Poppins',sans-serif]">
       {/* Sidebar Navigation */}
       <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        activeTab={activeSingleView ? 'single-view' : activeTab}
+        setActiveTab={(tab) => {
+          setActiveSingleView(null);
+          setActiveTab(tab);
+        }}
         pendingCount={stats.pendingShops}
         onLogout={handleLogout}
         isOpenMobile={isMobileMenuOpen}
@@ -457,8 +595,14 @@ export const App: React.FC = () => {
           onRefresh={loadData}
           isLoading={isLoading}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
-          activeTab={activeTab}
-          onBackToShops={() => setActiveTab('shops')}
+          activeTab={activeSingleView ? 'single-view' : activeTab}
+          onBackToShops={() => {
+            if (activeSingleView) {
+              handleBackFromSingleView();
+            } else {
+              setActiveTab('shops');
+            }
+          }}
         />
 
         {/* Toast Notification Banner */}
@@ -495,130 +639,175 @@ export const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Priority Hero Alert Banner for Pending Shops */}
-          {stats.pendingShops > 0 && (
-            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/10 border border-amber-500/40 shadow-xl shadow-amber-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
-              <div className="flex items-center gap-3.5">
-                <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
-                  <ShieldAlert className="w-5 h-5 animate-bounce" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-bold text-amber-300">
-                    {stats.pendingShops} {stats.pendingShops === 1 ? 'Shop' : 'Shops'} Pending Verification
-                  </h2>
-                </div>
-              </div>
-              <button
-                onClick={handleNavigateToPendingShops}
-                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
-              >
-                <span>Review Pending Shops ({stats.pendingShops})</span>
-              </button>
-            </div>
-          )}
-
-          {/* Stats KPI Overview (Dashboard / Shops) */}
-          {(activeTab === 'dashboard' || activeTab === 'shops') && (
-            <StatsOverview
-              stats={stats}
-              onFilterStatus={setFilterStatus}
-              selectedStatus={filterStatus}
-            />
-          )}
-
-
-          {/* Active Tab View Rendering */}
-          {activeTab === 'subscriptions' ? (
-            <SubscriptionsTable
-              plans={subscriptionPlans}
-              onCreatePlan={handleCreatePlan}
-              onUpdatePlan={handleUpdatePlan}
-              onToggleStatus={handleTogglePlanStatus}
-              onDeletePlan={handleDeletePlan}
-              isLoading={isLoading}
-            />
-          ) : activeTab === 'categories-brands' ? (
-            <CategoriesBrandsView
-              categories={categories}
-              brands={brands}
-              onCreateCategory={handleCreateCategory}
-              onUpdateCategory={handleUpdateCategory}
-              onDeleteCategory={handleDeleteCategory}
-              onCreateBrand={handleCreateBrand}
-              onUpdateBrand={handleUpdateBrand}
-              onDeleteBrand={handleDeleteBrand}
-              isLoading={isLoading}
-              searchTerm={searchTerm}
-            />
-          ) : activeTab === 'products' ? (
-            <ProductsTable
-              products={products}
-              onViewDetails={(product) => setSelectedProductForDetails(product)}
-              onEditProduct={(product) => setSelectedProductForEdit(product)}
-              onOpenCreateProduct={() => setIsAddProductOpen(true)}
-              onDelete={(product) => setSelectedProductForDelete(product)}
-              searchTerm={searchTerm}
-            />
-          ) : activeTab === 'users' ? (
-            <UsersTable
-              users={users}
-              onEdit={(user) => setSelectedUserForEdit(user)}
-              onDelete={(user) => setSelectedUserForDelete(user)}
-              onViewLogs={(userId, userName) => setSelectedUserForActivityModal({ userId, userName })}
-              searchTerm={searchTerm}
-            />
-          ) : activeTab === 'activity' ? (
-            <ActivityLogsTable
-              logs={activityLogs}
-              searchTerm={searchTerm}
-              onSelectUserLogs={(userId, userName) =>
-                setSelectedUserForActivityModal({ userId, userName })
-              }
-            />
-          ) : activeTab === 'subscriptions' ? (
-            <SubscriptionsTable
-              plans={subscriptionPlans}
-              shops={shops}
-              onCreatePlan={async (dto) => {
-                await createSubscriptionPlan(dto);
-                showToast('Subscription plan created successfully');
-                loadData();
-              }}
-              onUpdatePlan={async (id, dto) => {
-                await updateSubscriptionPlan(id, dto);
-                showToast('Subscription plan updated successfully');
-                loadData();
-              }}
-              onToggleStatus={async (id) => {
-                await toggleSubscriptionPlanStatus(id);
-                showToast('Subscription plan status updated');
-                loadData();
-              }}
-              onDeletePlan={async (id) => {
-                await deleteSubscriptionPlan(id);
-                showToast('Subscription plan deleted successfully');
-                loadData();
-              }}
-              onAssignPlanToShop={async (shopId, planId) => {
-                await assignSubscriptionToShop(shopId, planId);
-                showToast('Subscription plan assigned to shop successfully');
-                loadData();
-              }}
-            />
-          ) : activeTab === 'settings' ? (
-            <SettingsView onShowToast={showToast} onBackToShops={() => setActiveTab('shops')} />
+          {/* Active Single View or Tab Views */}
+          {activeSingleView ? (
+            activeSingleView.type === 'shop' ? (
+              <SingleShopView
+                shop={activeSingleView.shop}
+                onBack={handleBackFromSingleView}
+                onToggleVerify={handleToggleVerify}
+                onEdit={(shop) => setSelectedShopForEdit(shop)}
+                onDelete={(shop) => setSelectedShopForDelete(shop)}
+                onViewProduct={handleOpenSingleProduct}
+                onAddProduct={() => setIsAddProductOpen(true)}
+              />
+            ) : activeSingleView.type === 'product' ? (
+              <SingleProductView
+                product={activeSingleView.product}
+                onBack={handleBackFromSingleView}
+                onEdit={(product) => setSelectedProductForEdit(product)}
+                onDelete={(product) => setSelectedProductForDelete(product)}
+                onViewShop={handleOpenSingleShop}
+              />
+            ) : activeSingleView.type === 'user' ? (
+              <SingleUserView
+                user={activeSingleView.user}
+                onBack={handleBackFromSingleView}
+                onEdit={(user) => setSelectedUserForEdit(user)}
+                onDelete={(user) => setSelectedUserForDelete(user)}
+                onViewShop={handleOpenSingleShop}
+              />
+            ) : activeSingleView.type === 'category' ? (
+              <SingleCategoryView
+                category={activeSingleView.category}
+                products={products}
+                onBack={handleBackFromSingleView}
+                onEdit={(cat) => setSelectedCategoryForEdit(cat)}
+                onDelete={async (cat) => {
+                  if (window.confirm(`Are you sure you want to delete category "${cat.name}"?`)) {
+                    await handleDeleteCategory(cat.id);
+                  }
+                }}
+                onViewProduct={handleOpenSingleProduct}
+                onAddProduct={() => setIsAddProductOpen(true)}
+              />
+            ) : (
+              <SingleBrandView
+                brand={activeSingleView.brand}
+                products={products}
+                onBack={handleBackFromSingleView}
+                onEdit={(brand) => setSelectedBrandForEdit(brand)}
+                onDelete={async (brand) => {
+                  if (window.confirm(`Are you sure you want to delete brand "${brand.name}"?`)) {
+                    await handleDeleteBrand(brand.id);
+                  }
+                }}
+                onViewProduct={handleOpenSingleProduct}
+                onAddProduct={() => setIsAddProductOpen(true)}
+              />
+            )
           ) : (
-            <ShopsTable
-              shops={shops}
-              onToggleVerify={handleToggleVerify}
-              onEdit={(shop) => setSelectedShopForEdit(shop)}
-              onDelete={(shop) => setSelectedShopForDelete(shop)}
-              onViewDetails={handleOpenDetails}
-              onOpenCreateShop={() => setIsCreateShopOpen(true)}
-              filterStatus={filterStatus}
-              setFilterStatus={setFilterStatus}
-              searchTerm={searchTerm}
-            />
+            <>
+              {/* Priority Hero Alert Banner for Pending Shops */}
+              {stats.pendingShops > 0 && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/10 border border-amber-500/40 shadow-xl shadow-amber-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
+                  <div className="flex items-center gap-3.5">
+                    <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+                      <ShieldAlert className="w-5 h-5 animate-bounce" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-bold text-amber-300">
+                        {stats.pendingShops} {stats.pendingShops === 1 ? 'Shop' : 'Shops'} Pending Verification
+                      </h2>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleNavigateToPendingShops}
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
+                  >
+                    <span>Review Pending Shops ({stats.pendingShops})</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Stats KPI Overview (Dashboard / Shops) */}
+              {(activeTab === 'dashboard' || activeTab === 'shops') && (
+                <StatsOverview
+                  stats={stats}
+                  onFilterStatus={setFilterStatus}
+                  selectedStatus={filterStatus}
+                />
+              )}
+
+              {/* Active Tab View Rendering */}
+              {activeTab === 'subscriptions' ? (
+                <SubscriptionsTable
+                  plans={subscriptionPlans}
+                  shops={shops}
+                  onCreatePlan={handleCreatePlan}
+                  onUpdatePlan={handleUpdatePlan}
+                  onToggleStatus={handleTogglePlanStatus}
+                  onDeletePlan={handleDeletePlan}
+                  onAssignPlanToShop={async (shopId, planId) => {
+                    await assignSubscriptionToShop(shopId, planId);
+                    showToast('Subscription plan assigned to shop successfully');
+                    loadData();
+                  }}
+                  onViewShop={handleOpenSingleShop}
+                  isLoading={isLoading}
+                />
+              ) : activeTab === 'categories-brands' ? (
+                <CategoriesBrandsView
+                  categories={categories}
+                  brands={brands}
+                  products={products}
+                  onCreateCategory={handleCreateCategory}
+                  onUpdateCategory={handleUpdateCategory}
+                  onDeleteCategory={handleDeleteCategory}
+                  onCreateBrand={handleCreateBrand}
+                  onUpdateBrand={handleUpdateBrand}
+                  onDeleteBrand={handleDeleteBrand}
+                  onViewCategory={handleOpenSingleCategory}
+                  onViewBrand={handleOpenSingleBrand}
+                  isLoading={isLoading}
+                  searchTerm={searchTerm}
+                />
+              ) : activeTab === 'products' ? (
+                <ProductsTable
+                  products={products}
+                  onViewDetails={handleOpenSingleProduct}
+                  onEditProduct={(product) => setSelectedProductForEdit(product)}
+                  onOpenCreateProduct={() => setIsAddProductOpen(true)}
+                  onDelete={(product) => setSelectedProductForDelete(product)}
+                  onViewShop={handleOpenSingleShop}
+                  searchTerm={searchTerm}
+                />
+              ) : activeTab === 'users' ? (
+                <UsersTable
+                  users={users}
+                  onEdit={(user) => setSelectedUserForEdit(user)}
+                  onDelete={(user) => setSelectedUserForDelete(user)}
+                  onViewLogs={(userId, userName) => setSelectedUserForActivityModal({ userId, userName })}
+                  onViewUser={handleOpenSingleUser}
+                  onViewShop={handleOpenSingleShop}
+                  searchTerm={searchTerm}
+                />
+              ) : activeTab === 'activity' ? (
+                <ActivityLogsTable
+                  logs={activityLogs}
+                  searchTerm={searchTerm}
+                  onSelectUserLogs={(userId, userName) =>
+                    setSelectedUserForActivityModal({ userId, userName })
+                  }
+                  onViewUser={handleOpenSingleUserById}
+                  onRefresh={loadData}
+                />
+              ) : activeTab === 'settings' ? (
+                <SettingsView onShowToast={showToast} onBackToShops={() => setActiveTab('shops')} />
+              ) : (
+                <ShopsTable
+                  shops={shops}
+                  onToggleVerify={handleToggleVerify}
+                  onEdit={(shop) => setSelectedShopForEdit(shop)}
+                  onDelete={(shop) => setSelectedShopForDelete(shop)}
+                  onViewDetails={handleOpenSingleShop}
+                  onOpenCreateShop={() => setIsCreateShopOpen(true)}
+                  filterStatus={filterStatus}
+                  setFilterStatus={setFilterStatus}
+                  searchTerm={searchTerm}
+                />
+              )}
+            </>
           )}
 
         </main>
@@ -680,6 +869,8 @@ export const App: React.FC = () => {
         productToEdit={selectedProductForEdit}
         shops={shops}
         subscriptionPlans={subscriptionPlans}
+        categories={categories}
+        brands={brands}
         isLoading={isActionLoading}
       />
 
@@ -755,6 +946,42 @@ export const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Category Modals */}
+      <EditCategoryModal
+        isOpen={Boolean(selectedCategoryForEdit) || isCreateCategoryOpen}
+        onClose={() => {
+          setSelectedCategoryForEdit(null);
+          setIsCreateCategoryOpen(false);
+        }}
+        onSave={async (categoryData) => {
+          if (selectedCategoryForEdit) {
+            await handleUpdateCategory(selectedCategoryForEdit.id, categoryData);
+          } else {
+            await handleCreateCategory(categoryData);
+          }
+        }}
+        categoryToEdit={selectedCategoryForEdit}
+        isLoading={isActionLoading}
+      />
+
+      {/* Brand Modals */}
+      <EditBrandModal
+        isOpen={Boolean(selectedBrandForEdit) || isCreateBrandOpen}
+        onClose={() => {
+          setSelectedBrandForEdit(null);
+          setIsCreateBrandOpen(false);
+        }}
+        onSave={async (brandData) => {
+          if (selectedBrandForEdit) {
+            await handleUpdateBrand(selectedBrandForEdit.id, brandData);
+          } else {
+            await handleCreateBrand(brandData);
+          }
+        }}
+        brandToEdit={selectedBrandForEdit}
+        isLoading={isActionLoading}
+      />
     </div>
   );
 };

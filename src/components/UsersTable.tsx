@@ -8,6 +8,8 @@ interface UsersTableProps {
   onEdit: (user: UserAccount) => void;
   onDelete: (user: UserAccount) => void;
   onViewLogs?: (userId: string, userName: string) => void;
+  onViewUser?: (user: UserAccount) => void;
+  onViewShop?: (shop: any) => void;
   searchTerm: string;
 }
 
@@ -16,6 +18,8 @@ export const UsersTable: React.FC<UsersTableProps> = ({
   onEdit,
   onDelete,
   onViewLogs,
+  onViewUser,
+  onViewShop,
   searchTerm,
 }) => {
   const [filterRole, setFilterRole] = useState<'all' | 'customer' | 'seller' | 'admin'>('all');
@@ -149,11 +153,22 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                 {/* Header */}
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-base shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => (onViewUser ? onViewUser(user) : onEdit(user))}
+                      className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-base shrink-0 hover:scale-105 hover:bg-orange-500/25 transition-all cursor-pointer"
+                      title="View User Details"
+                    >
                       {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                    </div>
+                    </button>
                     <div>
-                      <div className="font-bold text-white text-sm">{user.name}</div>
+                      <button
+                        type="button"
+                        onClick={() => (onViewUser ? onViewUser(user) : onEdit(user))}
+                        className="font-bold text-white hover:text-orange-400 text-sm text-left cursor-pointer transition-colors block group"
+                      >
+                        <span className="group-hover:underline">{user.name}</span>
+                      </button>
                       <div className="text-[10px] text-slate-400 font-mono">ID: {user.id}</div>
                     </div>
                   </div>
@@ -174,7 +189,17 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                   {user.shop && (
                     <div className="flex items-center gap-1.5 text-orange-300 font-medium">
                       <Store className="w-3.5 h-3.5 text-orange-400 shrink-0" />
-                      <span className="truncate">{user.shop.name} ({user.shop.city})</span>
+                      {onViewShop ? (
+                        <button
+                          type="button"
+                          onClick={() => onViewShop(user.shop)}
+                          className="hover:underline hover:text-orange-400 transition-colors text-left cursor-pointer truncate"
+                        >
+                          {user.shop.name} ({user.shop.city})
+                        </button>
+                      ) : (
+                        <span className="truncate">{user.shop.name} ({user.shop.city})</span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -257,13 +282,22 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                     {/* User Name & Initial */}
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-lg shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => (onViewUser ? onViewUser(user) : onEdit(user))}
+                          className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-lg shrink-0 hover:scale-105 hover:bg-orange-500/25 transition-all cursor-pointer"
+                          title="View User Details"
+                        >
                           {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                        </div>
+                        </button>
                         <div>
-                          <div className="font-bold text-white group-hover:text-orange-400 transition-colors">
-                            {user.name}
-                          </div>
+                          <button
+                            type="button"
+                            onClick={() => (onViewUser ? onViewUser(user) : onEdit(user))}
+                            className="font-bold text-white hover:text-orange-400 transition-colors text-left cursor-pointer block group"
+                          >
+                            <span className="group-hover:underline">{user.name}</span>
+                          </button>
                           <div className="text-xs text-slate-400 font-mono text-[11px] truncate max-w-[150px]">
                             ID: {user.id}
                           </div>
@@ -294,7 +328,17 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                         <div>
                           <div className="font-semibold text-xs text-orange-300 flex items-center gap-1.5">
                             <Store className="w-3.5 h-3.5 text-orange-400 shrink-0" />
-                            {user.shop.name}
+                            {onViewShop ? (
+                              <button
+                                type="button"
+                                onClick={() => onViewShop(user.shop)}
+                                className="hover:underline hover:text-orange-400 transition-colors cursor-pointer text-left font-semibold"
+                              >
+                                {user.shop.name}
+                              </button>
+                            ) : (
+                              <span>{user.shop.name}</span>
+                            )}
                           </div>
                           <div className="text-[11px] text-slate-400">
                             {user.shop.city} • {user.shop.category}

@@ -1,16 +1,19 @@
 import React, { useState, useRef } from 'react';
-import { Category, Brand } from '../types';
-import { Plus, Edit2, Trash2, Tags, Bookmark, Search, Image as ImageIcon, AlertTriangle, ArrowLeft, Loader2, Layers, Upload, X } from 'lucide-react';
+import { Category, Brand, Product } from '../types';
+import { Plus, Edit2, Trash2, Tags, Bookmark, Search, Image as ImageIcon, AlertTriangle, ArrowLeft, Loader2, Layers, Upload, X, Eye, AlertCircle, ShoppingBag } from 'lucide-react';
 
 interface CategoriesBrandsViewProps {
   categories: Category[];
   brands: Brand[];
-  onCreateCategory: (data: { name: string; slug?: string; image?: string }) => Promise<void>;
-  onUpdateCategory: (id: string, data: { name?: string; slug?: string; image?: string }) => Promise<void>;
+  products?: Product[];
+  onCreateCategory: (data: { name: string; slug?: string; image?: string; specConfig?: any[] }) => Promise<void>;
+  onUpdateCategory: (id: string, data: { name?: string; slug?: string; image?: string; specConfig?: any[] }) => Promise<void>;
   onDeleteCategory: (id: string) => Promise<void>;
   onCreateBrand: (data: { name: string; logo?: string }) => Promise<void>;
   onUpdateBrand: (id: string, data: { name?: string; logo?: string }) => Promise<void>;
   onDeleteBrand: (id: string) => Promise<void>;
+  onViewCategory?: (category: Category) => void;
+  onViewBrand?: (brand: Brand) => void;
   isLoading: boolean;
   searchTerm?: string;
 }
@@ -153,17 +156,21 @@ const ImageUploadPreview: React.FC<ImageUploadPreviewProps> = ({ label, imageVal
 export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
   categories,
   brands,
+  products = [],
   onCreateCategory,
   onUpdateCategory,
   onDeleteCategory,
   onCreateBrand,
   onUpdateBrand,
   onDeleteBrand,
+  onViewCategory,
+  onViewBrand,
   isLoading,
   searchTerm = '',
 }) => {
   const [activeTab, setActiveTab] = useState<'categories' | 'brands'>('categories');
   const [localSearch, setLocalSearch] = useState('');
+  const [modalError, setModalError] = useState<string | null>(null);
 
   // Modals state for Category
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -187,22 +194,44 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
 
   const filteredBrands = brands.filter((b) => b.name.toLowerCase().includes(effectiveSearch));
 
+  // Dynamic count calculators matching live products
+  const getCategoryProductCount = (cat: Category) => {
+    if (products && products.length > 0) {
+      return products.filter(
+        (p) =>
+          p.category?.toLowerCase() === cat.name.toLowerCase() ||
+          (cat.slug && p.category?.toLowerCase() === cat.slug.toLowerCase())
+      ).length;
+    }
+    return cat._count?.products ?? 0;
+  };
+
+  const getBrandProductCount = (b: Brand) => {
+    if (products && products.length > 0) {
+      return products.filter((p) => p.brand?.toLowerCase() === b.name.toLowerCase()).length;
+    }
+    return b._count?.products ?? 0;
+  };
+
   // Category Handlers
   const handleOpenCreateCategory = () => {
     setEditingCategory(null);
     setCategoryForm({ name: '', slug: '', image: '' });
+    setModalError(null);
     setShowCategoryModal(true);
   };
 
   const handleOpenEditCategory = (cat: Category) => {
     setEditingCategory(cat);
     setCategoryForm({ name: cat.name, slug: cat.slug || '', image: cat.image || '' });
+    setModalError(null);
     setShowCategoryModal(true);
   };
 
   const handleCategorySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setModalError(null);
     try {
       if (editingCategory) {
         await onUpdateCategory(editingCategory.id, categoryForm);
@@ -210,6 +239,8 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
         await onCreateCategory(categoryForm);
       }
       setShowCategoryModal(false);
+    } catch (err: any) {
+      setModalError(err.message || 'Failed to save category');
     } finally {
       setIsSubmitting(false);
     }
@@ -221,6 +252,8 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
     try {
       await onDeleteCategory(deletingCategory.id);
       setDeletingCategory(null);
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete category');
     } finally {
       setIsSubmitting(false);
     }
@@ -230,18 +263,21 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
   const handleOpenCreateBrand = () => {
     setEditingBrand(null);
     setBrandForm({ name: '', logo: '' });
+    setModalError(null);
     setShowBrandModal(true);
   };
 
   const handleOpenEditBrand = (b: Brand) => {
     setEditingBrand(b);
     setBrandForm({ name: b.name, logo: b.logo || '' });
+    setModalError(null);
     setShowBrandModal(true);
   };
 
   const handleBrandSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setModalError(null);
     try {
       if (editingBrand) {
         await onUpdateBrand(editingBrand.id, brandForm);
@@ -249,6 +285,8 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
         await onCreateBrand(brandForm);
       }
       setShowBrandModal(false);
+    } catch (err: any) {
+      setModalError(err.message || 'Failed to save brand');
     } finally {
       setIsSubmitting(false);
     }
@@ -260,6 +298,8 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
     try {
       await onDeleteBrand(deletingBrand.id);
       setDeletingBrand(null);
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete brand');
     } finally {
       setIsSubmitting(false);
     }
@@ -362,10 +402,13 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
                   </tr>
                 ) : (
                   filteredCategories.map((cat) => (
-                    <tr key={cat.id} className="hover:bg-white/5 transition-colors">
+                    <tr key={cat.id} className="hover:bg-white/5 transition-colors group">
                       <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                        <div
+                          onClick={() => onViewCategory && onViewCategory(cat)}
+                          className="flex items-center gap-3 cursor-pointer"
+                        >
+                          <div className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 group-hover:border-orange-500/40 transition-colors">
                             {cat.image ? (
                               <img
                                 src={cat.image}
@@ -381,7 +424,9 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
                           </div>
 
                           <div>
-                            <div className="font-bold text-white text-sm">{cat.name}</div>
+                            <div className="font-bold text-white text-sm group-hover:text-orange-400 transition-colors flex items-center gap-1.5">
+                              <span>{cat.name}</span>
+                            </div>
                             <div className="text-[10px] text-slate-500">ID: {cat.id}</div>
                           </div>
                         </div>
@@ -392,10 +437,21 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
                         </span>
                       </td>
                       <td className="p-4 text-slate-300 font-semibold">
-                        {cat._count?.products ?? 0} Products
+                        <span className="px-2.5 py-1 rounded-lg bg-slate-900/80 border border-white/5 text-slate-200 text-xs">
+                          {getCategoryProductCount(cat)} Products
+                        </span>
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {onViewCategory && (
+                            <button
+                              onClick={() => onViewCategory(cat)}
+                              title="View Category Details"
+                              className="p-2 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/20 transition-colors cursor-pointer"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                           <button
                             onClick={() => handleOpenEditCategory(cat)}
                             title="Edit Category"
@@ -437,10 +493,13 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
                   </tr>
                 ) : (
                   filteredBrands.map((b) => (
-                    <tr key={b.id} className="hover:bg-white/5 transition-colors">
+                    <tr key={b.id} className="hover:bg-white/5 transition-colors group">
                       <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                        <div
+                          onClick={() => onViewBrand && onViewBrand(b)}
+                          className="flex items-center gap-3 cursor-pointer"
+                        >
+                          <div className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 group-hover:border-orange-500/40 transition-colors">
                             {b.logo ? (
                               <img
                                 src={b.logo}
@@ -456,16 +515,29 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
                           </div>
 
                           <div>
-                            <div className="font-bold text-white text-sm">{b.name}</div>
+                            <div className="font-bold text-white text-sm group-hover:text-orange-400 transition-colors flex items-center gap-1.5">
+                              <span>{b.name}</span>
+                            </div>
                             <div className="text-[10px] text-slate-500">ID: {b.id}</div>
                           </div>
                         </div>
                       </td>
                       <td className="p-4 text-slate-300 font-semibold">
-                        {b._count?.products ?? 0} Products
+                        <span className="px-2.5 py-1 rounded-lg bg-slate-900/80 border border-white/5 text-slate-200 text-xs">
+                          {getBrandProductCount(b)} Products
+                        </span>
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {onViewBrand && (
+                            <button
+                              onClick={() => onViewBrand(b)}
+                              title="View Brand Details"
+                              className="p-2 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/20 transition-colors cursor-pointer"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                           <button
                             onClick={() => handleOpenEditBrand(b)}
                             title="Edit Brand"
@@ -498,6 +570,14 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
             <h3 className="text-lg font-bold text-white mb-4">
               {editingCategory ? 'Edit Category' : 'Add New Category'}
             </h3>
+
+            {modalError && (
+              <div className="mb-4 p-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                <span>{modalError}</span>
+              </div>
+            )}
+
             <form onSubmit={handleCategorySubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">Category Name *</label>
@@ -557,6 +637,14 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
             <h3 className="text-lg font-bold text-white mb-4">
               {editingBrand ? 'Edit Brand' : 'Add New Brand'}
             </h3>
+
+            {modalError && (
+              <div className="mb-4 p-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                <span>{modalError}</span>
+              </div>
+            )}
+
             <form onSubmit={handleBrandSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">Brand Name *</label>

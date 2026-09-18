@@ -10,6 +10,7 @@ interface SubscriptionsTableProps {
   onToggleStatus: (id: string) => Promise<void>;
   onDeletePlan: (id: string) => Promise<void>;
   onAssignPlanToShop?: (shopId: string, planId: string) => Promise<void>;
+  onViewShop?: (shop: Shop) => void;
   isLoading?: boolean;
 }
 
@@ -21,6 +22,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
   onToggleStatus,
   onDeletePlan,
   onAssignPlanToShop,
+  onViewShop,
   isLoading = false,
 }) => {
   const [activeTab, setActiveTab] = useState<'dealers' | 'plans'>('dealers');
@@ -274,14 +276,29 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
                     return (
                       <tr key={shop.id} className="hover:bg-white/[0.03] transition-colors">
                         <td className="p-4">
-                          <div className="font-bold text-white text-sm flex items-center gap-2">
-                            {shop.name}
-                            {shop.verified && (
-                              <span title="Verified Store">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                              </span>
-                            )}
-                          </div>
+                          {onViewShop ? (
+                            <button
+                              type="button"
+                              onClick={() => onViewShop(shop)}
+                              className="font-bold text-white hover:text-orange-400 text-sm flex items-center gap-2 text-left cursor-pointer group transition-colors"
+                            >
+                              <span className="group-hover:underline">{shop.name}</span>
+                              {shop.verified && (
+                                <span title="Verified Store">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                </span>
+                              )}
+                            </button>
+                          ) : (
+                            <div className="font-bold text-white text-sm flex items-center gap-2">
+                              {shop.name}
+                              {shop.verified && (
+                                <span title="Verified Store">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                </span>
+                              )}
+                            </div>
+                          )}
                           <div className="text-slate-400 text-[11px] truncate max-w-[200px]">{shop.address}</div>
                         </td>
 
