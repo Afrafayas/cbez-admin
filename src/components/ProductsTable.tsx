@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Product, Shop } from '../types';
-import { ShoppingBag, Eye, Trash2, Tag, Layers, Store, CheckCircle2, AlertTriangle, Search, Filter, Box } from 'lucide-react';
+import { ShoppingBag, Eye, Trash2, Tag, Layers, Store, CheckCircle2, AlertTriangle, Search, Filter, Box, Plus, Edit } from 'lucide-react';
 import { Pagination } from './Pagination';
 
 interface ProductsTableProps {
   products: Product[];
   onViewDetails: (product: Product) => void;
   onDelete: (product: Product) => void;
+  onEditProduct?: (product: Product) => void;
+  onOpenCreateProduct?: () => void;
   onViewShop?: (shop: Shop) => void;
   searchTerm: string;
 }
@@ -15,6 +17,8 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
   products,
   onViewDetails,
   onDelete,
+  onEditProduct,
+  onOpenCreateProduct,
   onViewShop,
   searchTerm,
 }) => {
@@ -77,6 +81,8 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
 
         {/* Filters & Dropdowns */}
         <div className="flex flex-wrap items-center gap-2.5">
+          
+
           {/* Stock Status Buttons */}
           <div className="flex p-1 rounded-xl bg-slate-950/80 border border-white/10 text-xs font-semibold overflow-x-auto max-w-full">
             <button
@@ -111,6 +117,16 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
             </button>
           </div>
 
+          {onOpenCreateProduct && (
+            <button
+              onClick={onOpenCreateProduct}
+              className="px-3.5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md shadow-orange-500/20 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              Add Product for Dealer
+            </button>
+          )}
+
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <select
               value={selectedCategory}
@@ -134,6 +150,8 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
               ))}
             </select>
           </div>
+
+          
         </div>
       </div>
 
@@ -150,10 +168,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
             const thumbnail = product.images?.[0] || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800';
 
             return (
-              <div
-                key={product.id}
-                className="p-4 rounded-2xl glass-panel border border-white/10 bg-slate-900/60 space-y-3 hover:border-orange-500/30 transition-all"
-              >
+              <div key={product.id} className="p-4 rounded-xl bg-slate-900/60 border border-white/10 space-y-3">
                 <div className="flex items-start gap-3">
                   <div className="w-14 h-14 rounded-xl bg-slate-950 border border-white/10 overflow-hidden shrink-0">
                     <img
@@ -165,52 +180,65 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                       }}
                     />
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="font-bold text-white text-sm line-clamp-1">{product.name}</div>
-                    <div className="text-xs text-orange-400 font-semibold mt-0.5 flex items-center gap-2">
-                      <span>{product.brand}</span>
-                      <span className="text-slate-600">•</span>
-                      <span className="text-slate-400 font-normal">{product.category}</span>
-                    </div>
-                    <div className="text-sm font-black text-white mt-1">
-                      ₹{product.price?.toLocaleString('en-IN')}
+                    <div className="text-xs text-slate-400 mt-0.5 line-clamp-1">{product.description || 'No description'}</div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="font-bold text-orange-400 text-xs">{product.brand}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-slate-300 border border-white/10">{product.category}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-white/5">
-                  <div className="flex items-center gap-1.5 text-slate-300">
-                    <Store className="w-3.5 h-3.5 text-orange-400 shrink-0" />
-                    <span className="truncate">{product.shop?.name || 'Store N/A'}</span>
+                <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
+                  <div>
+                    <span className="text-slate-400 block text-[10px]">Seller Store</span>
+                    <span className="font-semibold text-slate-200">{product.shop?.name || 'Unknown Store'}</span>
                   </div>
-                  <div className="flex items-center justify-end">
-                    {product.stock > 0 ? (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                        {product.stock} in stock
-                      </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/20 text-red-300 border border-red-500/30">
-                        Out of stock
-                      </span>
+                  <div className="text-right">
+                    <span className="text-slate-400 block text-[10px]">Price</span>
+                    <span className="font-black text-white text-sm">₹{product.price?.toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                  {product.stock > 0 ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                      <CheckCircle2 className="w-3 h-3" />
+                      {product.stock} in stock
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-500/15 text-red-300 border border-red-500/30">
+                      <AlertTriangle className="w-3 h-3" />
+                      Out of Stock
+                    </span>
+                  )}
+
+                  <div className="flex items-center gap-1.5">
+                    {onEditProduct && (
+                      <button
+                        onClick={() => onEditProduct(product)}
+                        className="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 flex items-center gap-1 transition-colors cursor-pointer"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                        Edit
+                      </button>
                     )}
+                    <button
+                      onClick={() => onViewDetails(product)}
+                      className="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-orange-300 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      View
+                    </button>
+                    <button
+                      onClick={() => onDelete(product)}
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-white/5 transition-colors cursor-pointer"
+                      title="Delete Product"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                </div>
-
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/5">
-                  <button
-                    onClick={() => onViewDetails(product)}
-                    className="px-3 py-1.5 rounded-xl text-xs font-semibold text-orange-300 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 flex items-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                    View Details
-                  </button>
-                  <button
-                    onClick={() => onDelete(product)}
-                    className="p-1.5 rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-white/5 transition-colors cursor-pointer"
-                    title="Delete Product"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
             );
@@ -320,10 +348,19 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                     {/* Actions */}
                     <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        {onEditProduct && (
+                          <button
+                            onClick={() => onEditProduct(product)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-300 hover:bg-blue-500/10 transition-colors cursor-pointer"
+                            title="Edit Product Details"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => onViewDetails(product)}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-orange-300 hover:bg-orange-500/10 transition-colors cursor-pointer"
-                          title="View Product Specs & Images"
+                          title="View Product Details"
                         >
                           <Eye className="w-4 h-4" />
                         </button>

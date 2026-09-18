@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Shop } from '../types';
-import { ShieldCheck, ShieldAlert, Edit2, Trash2, Eye, Phone, MessageSquare, MapPin, Tag, Star } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Edit2, Trash2, Eye, Phone, MessageSquare, MapPin, Tag, Star, CreditCard, Plus } from 'lucide-react';
 import { Pagination } from './Pagination';
 
 interface ShopsTableProps {
+  onOpenCreateShop?: () => void;
   shops: Shop[];
   onToggleVerify: (id: string, currentStatus: boolean) => void;
   onEdit: (shop: Shop) => void;
@@ -15,6 +16,7 @@ interface ShopsTableProps {
 }
 
 export const ShopsTable: React.FC<ShopsTableProps> = ({
+  onOpenCreateShop,
   shops,
   onToggleVerify,
   onEdit,
@@ -26,17 +28,25 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
 }) => {
   const [selectedCity, setSelectedCity] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedSubscriptionPlan, setSelectedSubscriptionPlan] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 
   const cities = Array.from(new Set(shops.map((s) => s.city).filter(Boolean)));
   const categories = Array.from(new Set(shops.map((s) => s.category).filter(Boolean)));
+  const subscriptionPlans = Array.from(
+    new Set(shops.map((s) => s.subscription?.plan?.name || 'Free Starter Plan').filter(Boolean))
+  );
 
   const filteredShops = shops.filter((shop) => {
     if (filterStatus === 'verified' && !shop.verified) return false;
     if (filterStatus === 'pending' && shop.verified) return false;
     if (selectedCity !== 'all' && shop.city !== selectedCity) return false;
     if (selectedCategory !== 'all' && shop.category !== selectedCategory) return false;
+    if (selectedSubscriptionPlan !== 'all') {
+      const planName = shop.subscription?.plan?.name || 'Free Starter Plan';
+      if (planName !== selectedSubscriptionPlan) return false;
+    }
 
     if (searchTerm.trim() !== '') {
       const term = searchTerm.toLowerCase();
@@ -53,7 +63,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterStatus, selectedCity, selectedCategory, searchTerm]);
+  }, [filterStatus, selectedCity, selectedCategory, selectedSubscriptionPlan, searchTerm]);
 
   const totalPages = Math.ceil(filteredShops.length / itemsPerPage);
   const paginatedShops = filteredShops.slice(
@@ -77,8 +87,10 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
           </p>
         </div>
 
-        {/* Filter Controls */}
+        {/* Filter Controls & Create Shop Button */}
         <div className="flex flex-wrap items-center gap-2.5">
+          
+
           <div className="flex p-1 rounded-xl bg-slate-950/80 border border-white/10 text-xs font-semibold overflow-x-auto max-w-full">
             <button
               onClick={() => setFilterStatus('all')}
@@ -112,6 +124,16 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
             </button>
           </div>
 
+          {onOpenCreateShop && (
+            <button
+              onClick={onOpenCreateShop}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold shadow-md cursor-pointer transition-all shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              Register New Store
+            </button>
+          )}
+
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <select
               value={selectedCity}
@@ -134,7 +156,20 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                 <option key={cat} value={cat} className="bg-slate-900">{cat}</option>
               ))}
             </select>
+
+            <select
+              value={selectedSubscriptionPlan}
+              onChange={(e) => setSelectedSubscriptionPlan(e.target.value)}
+              className="flex-1 sm:flex-none px-3 py-1.5 text-xs rounded-xl glass-input text-slate-300"
+            >
+              <option value="all" className="bg-slate-900">All Subscription Plans</option>
+              {subscriptionPlans.map((plan) => (
+                <option key={plan} value={plan} className="bg-slate-900">{plan}</option>
+              ))}
+            </select>
           </div>
+
+          
         </div>
       </div>
 
@@ -149,6 +184,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
         ) : (
           paginatedShops.map((shop) => {
             const productCount = shop.products?.length ?? shop._count?.products ?? 0;
+            const planName = shop.subscription?.plan?.name || 'Free Starter Plan';
 
             return (
               <div
@@ -212,8 +248,8 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                     <span className="truncate">{shop.phone}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-emerald-400">
-                    <MessageSquare className="w-3.5 h-3.5 shrink-0" />
-                    <span className="truncate">{shop.whatsapp || 'N/A'}</span>
+                    <CreditCard className="w-3.5 h-3.5 shrink-0 text-orange-400" />
+                    <span className="truncate">{planName}</span>
                   </div>
                 </div>
 
@@ -267,6 +303,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
               <th className="px-5 py-3.5">Store Details</th>
               <th className="px-5 py-3.5">Owner & Contact</th>
               <th className="px-5 py-3.5">Location & Category</th>
+              <th className="px-5 py-3.5">Subscription Plan</th>
               <th className="px-5 py-3.5">Products</th>
               <th className="px-5 py-3.5 text-center">Verified Status</th>
               <th className="px-5 py-3.5 text-center">Rating</th>
@@ -276,7 +313,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
           <tbody className="divide-y divide-white/5">
             {paginatedShops.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-12 text-slate-400">
+                <td colSpan={8} className="text-center py-12 text-slate-400">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <ShieldAlert className="w-8 h-8 text-slate-500 opacity-60" />
                     <p className="font-semibold text-slate-300">No shops found</p>
@@ -287,6 +324,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
             ) : (
               paginatedShops.map((shop) => {
                 const productCount = shop.products?.length ?? shop._count?.products ?? 0;
+                const planName = shop.subscription?.plan?.name || 'Free Starter Plan';
 
                 return (
                   <tr key={shop.id} className="hover:bg-white/[0.03] transition-colors group">
@@ -336,6 +374,13 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                         <Tag className="w-3.5 h-3.5 text-amber-400" />
                         {shop.category}
                       </div>
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/15 border border-orange-500/30 text-orange-300 font-semibold text-xs">
+                        <CreditCard className="w-3.5 h-3.5 text-orange-400" />
+                        {planName}
+                      </span>
                     </td>
 
                     <td className="px-5 py-4">
