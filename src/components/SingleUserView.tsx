@@ -14,6 +14,10 @@ import {
   Trash2,
   History,
   LogIn,
+  MousePointerClick,
+  Heart,
+  MessageSquare,
+  PhoneCall,
   UserPlus,
   ShoppingBag,
   ExternalLink,
@@ -93,6 +97,42 @@ export const SingleUserView: React.FC<SingleUserViewProps> = ({
           <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1">
             <UserPlus className="w-3 h-3" />
             REGISTER
+          </span>
+        );
+      case 'PRODUCT_CLICK':
+        return (
+          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1">
+            <MousePointerClick className="w-3 h-3 text-indigo-400" />
+            PRODUCT CLICK
+          </span>
+        );
+      case 'SHOP_CLICK':
+        return (
+          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+            <Store className="w-3 h-3 text-amber-400" />
+            SHOP CLICK
+          </span>
+        );
+      case 'WISHLIST':
+      case 'WISHLIST_ADD':
+        return (
+          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1">
+            <Heart className="w-3 h-3 text-rose-400" />
+            WISHLIST ADD
+          </span>
+        );
+      case 'WHATSAPP_CLICK':
+        return (
+          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+            <MessageSquare className="w-3 h-3 text-emerald-400" />
+            WHATSAPP
+          </span>
+        );
+      case 'CALL_CLICK':
+        return (
+          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1">
+            <PhoneCall className="w-3 h-3 text-sky-400" />
+            CALL
           </span>
         );
       case 'CREATE_PRODUCT':

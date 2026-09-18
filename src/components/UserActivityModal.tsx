@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityLogItem } from '../types';
 import { fetchUserActivityLogs } from '../services/adminApi';
-import { X, History, Loader2, Calendar, UserCheck, LogIn, UserPlus, Store, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { X, History, Loader2, Calendar, UserCheck, LogIn, UserPlus, Store, ShoppingBag, ArrowLeft, MousePointerClick, Heart, MessageSquare, PhoneCall } from 'lucide-react';
 
 interface UserActivityModalProps {
   userId: string | null;
@@ -93,9 +93,14 @@ export const UserActivityModal: React.FC<UserActivityModalProps> = ({
                       <span className="font-bold text-xs text-orange-400 uppercase tracking-wider flex items-center gap-1.5">
                         {log.action === 'LOGIN' && <LogIn className="w-3.5 h-3.5 text-emerald-400" />}
                         {log.action === 'REGISTER' && <UserPlus className="w-3.5 h-3.5 text-blue-400" />}
-                        {log.action.includes('SHOP') && <Store className="w-3.5 h-3.5 text-amber-400" />}
-                        {log.action.includes('PRODUCT') && <ShoppingBag className="w-3.5 h-3.5 text-purple-400" />}
-                        {log.action}
+                        {log.action === 'PRODUCT_CLICK' && <MousePointerClick className="w-3.5 h-3.5 text-indigo-400" />}
+                        {log.action === 'SHOP_CLICK' && <Store className="w-3.5 h-3.5 text-amber-400" />}
+                        {log.action.includes('WISHLIST') && <Heart className="w-3.5 h-3.5 text-rose-400" />}
+                        {log.action === 'WHATSAPP_CLICK' && <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />}
+                        {log.action === 'CALL_CLICK' && <PhoneCall className="w-3.5 h-3.5 text-sky-400" />}
+                        {!['PRODUCT_CLICK', 'SHOP_CLICK', 'WHATSAPP_CLICK', 'CALL_CLICK'].includes(log.action) && log.action.includes('SHOP') && <Store className="w-3.5 h-3.5 text-amber-400" />}
+                        {!['PRODUCT_CLICK', 'SHOP_CLICK', 'WHATSAPP_CLICK', 'CALL_CLICK'].includes(log.action) && log.action.includes('PRODUCT') && <ShoppingBag className="w-3.5 h-3.5 text-purple-400" />}
+                        {log.action.replace('_', ' ')}
                       </span>
                       <span className="text-[11px] text-slate-400 flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-slate-500" />

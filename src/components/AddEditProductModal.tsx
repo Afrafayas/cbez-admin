@@ -1,6 +1,6 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { X, Store, Loader2, Image as ImageIcon, Sparkles } from 'lucide-react';
-import { Product, Shop, SubscriptionPlan } from '../types';
+import { Product, Shop, SubscriptionPlan, Category, Brand } from '../types';
 
 interface AddEditProductModalProps {
   isOpen: boolean;
@@ -9,6 +9,8 @@ interface AddEditProductModalProps {
   productToEdit?: Product | null;
   shops: Shop[];
   subscriptionPlans?: SubscriptionPlan[];
+  categories?: Category[];
+  brands?: Brand[];
   isLoading?: boolean;
 }
 
@@ -19,6 +21,8 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
   productToEdit,
   shops,
   subscriptionPlans = [],
+  categories = [],
+  brands = [],
   isLoading = false,
 }) => {
   const approvedShops = shops.filter(s => s.verified);
@@ -511,11 +515,21 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
               className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white font-medium text-xs outline-none focus:border-orange-500"
             >
-              <option value="Mobiles">Mobiles</option>
-              <option value="Laptops">Laptops</option>
-              <option value="Tablets">Tablets</option>
-              <option value="Accessories">Accessories</option>
-              <option value="Smart Watches">Smart Watches</option>
+              {categories.length > 0 ? (
+                categories.map((c) => (
+                  <option key={c.id} value={c.name}>
+                    {c.name}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="Mobiles">Mobiles</option>
+                  <option value="Laptops">Laptops</option>
+                  <option value="Tablets">Tablets</option>
+                  <option value="Accessories">Accessories</option>
+                  <option value="Smart Watches">Smart Watches</option>
+                </>
+              )}
             </select>
           </div>
 
@@ -524,11 +538,19 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
             <input
               type="text"
               required
+              list="registered-brands-list"
               placeholder="e.g. Apple, Samsung, Dell, HP"
               value={productForm.brand}
               onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
               className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white font-medium text-xs outline-none focus:border-orange-500"
             />
+            {brands.length > 0 && (
+              <datalist id="registered-brands-list">
+                {brands.map((b) => (
+                  <option key={b.id} value={b.name} />
+                ))}
+              </datalist>
+            )}
           </div>
 
           <div className="col-span-2 space-y-1.5">

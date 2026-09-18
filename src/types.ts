@@ -85,7 +85,7 @@ export interface UserAccount {
 
 export interface ActivityLogItem {
   id: string;
-  userId: string;
+  userId?: string | null;
   action: string;
   details?: string | null;
   ipAddress?: string | null;
@@ -95,8 +95,9 @@ export interface ActivityLogItem {
     id: string;
     name: string;
     email: string | null;
+    phone?: string | null;
     role: string;
-  };
+  } | null;
 }
 
 
@@ -115,11 +116,23 @@ export interface SubscriptionPlan {
   };
 }
 
+export interface SpecificationRule {
+  key: string;
+  label: string;
+  type: 'text' | 'select' | 'number' | string;
+  required?: boolean;
+  options?: string;
+  placeholder?: string;
+  filterable?: boolean;
+  unit?: string;
+}
+
 export interface Category {
   id: string;
   name: string;
-  slug: string;
+  slug?: string;
   image?: string | null;
+  specConfig?: SpecificationRule[];
   createdAt?: string;
   updatedAt?: string;
   _count?: {

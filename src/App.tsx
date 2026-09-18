@@ -22,6 +22,10 @@ import { AdminLogin } from './components/AdminLogin';
 import { SingleShopView } from './components/SingleShopView';
 import { SingleProductView } from './components/SingleProductView';
 import { SingleUserView } from './components/SingleUserView';
+import { SingleCategoryView } from './components/SingleCategoryView';
+import { SingleBrandView } from './components/SingleBrandView';
+import { EditCategoryModal } from './components/EditCategoryModal';
+import { EditBrandModal } from './components/EditBrandModal';
 import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan, Category, Brand } from './types';
 import {
   fetchStats,
@@ -41,14 +45,16 @@ import {
   updateSubscriptionPlan,
   toggleSubscriptionPlanStatus,
   deleteSubscriptionPlan,
-  // fetchCategories,
-  // createCategory,
-  // updateCategory,
-  // deleteCategory,
-  // fetchBrands,
-  // createBrand,
-  // updateBrand,
-  // deleteBrand,
+  fetchCategories,
+  fetchCategoryById,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  fetchBrands,
+  fetchBrandById,
+  createBrand,
+  updateBrand,
+  deleteBrand,
   assignSubscriptionToShop,
   createShopByAdmin,
   createProductByAdmin,
@@ -104,11 +110,21 @@ export const App: React.FC = () => {
     userName: string;
   } | null>(null);
 
+  // Category Modals state
+  const [selectedCategoryForEdit, setSelectedCategoryForEdit] = useState<Category | null>(null);
+  const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
+
+  // Brand Modals state
+  const [selectedBrandForEdit, setSelectedBrandForEdit] = useState<Brand | null>(null);
+  const [isCreateBrandOpen, setIsCreateBrandOpen] = useState(false);
+
   // Dedicated Single Page Views state
   const [activeSingleView, setActiveSingleView] = useState<
     | { type: 'shop'; shop: Shop }
     | { type: 'product'; product: Product }
     | { type: 'user'; user: UserAccount }
+    | { type: 'category'; category: Category }
+    | { type: 'brand'; brand: Brand }
     | null
   >(null);
 
@@ -134,10 +150,8 @@ export const App: React.FC = () => {
         fetchAllActivityLogs().catch(() => []),
         fetchProducts().catch(() => []),
         fetchSubscriptionPlans().catch(() => []),
-        // fetchCategories().catch(() => []),
-        // fetchBrands().catch(() => []),
-        Promise.resolve([]),
-        Promise.resolve([]),
+        fetchCategories().catch(() => []),
+        fetchBrands().catch(() => []),
       ]);
       setStats(statsData);
       setShops(shopsData);
@@ -208,36 +222,44 @@ export const App: React.FC = () => {
   };
 
   // Handlers for Categories
-  const handleCreateCategory = async (_data: { name: string; slug?: string; image?: string }) => {
+  const handleCreateCategory = async (data: { name: string; slug?: string; image?: string; specConfig?: any[] }) => {
     try {
-      // const cat = await createCategory(data);
-      // showToast(`Category "${cat.name}" created successfully!`);
-      // const cats = await fetchCategories();
-      // setCategories(cats);
+      const cat = await createCategory(data);
+      showToast(`Category "${cat.name}" created successfully!`);
+      const cats = await fetchCategories();
+      setCategories(cats);
+      setIsCreateCategoryOpen(false);
     } catch (err: any) {
       showToast(err.message || 'Failed to create category', 'error');
       throw err;
     }
   };
 
-  const handleUpdateCategory = async (_id: string, _data: { name?: string; slug?: string; image?: string }) => {
+  const handleUpdateCategory = async (id: string, data: { name?: string; slug?: string; image?: string; specConfig?: any[] }) => {
     try {
-      // const cat = await updateCategory(id, data);
-      // showToast(`Category "${cat.name}" updated successfully!`);
-      // const cats = await fetchCategories();
-      // setCategories(cats);
+      const cat = await updateCategory(id, data);
+      showToast(`Category "${cat.name}" updated successfully!`);
+      const cats = await fetchCategories();
+      setCategories(cats);
+      if (activeSingleView?.type === 'category' && activeSingleView.category.id === id) {
+        setActiveSingleView({ type: 'category', category: cat });
+      }
+      setSelectedCategoryForEdit(null);
     } catch (err: any) {
       showToast(err.message || 'Failed to update category', 'error');
       throw err;
     }
   };
 
-  const handleDeleteCategory = async (_id: string) => {
+  const handleDeleteCategory = async (id: string) => {
     try {
-      // await deleteCategory(id);
-      // showToast('Category deleted successfully!');
-      // const cats = await fetchCategories();
-      // setCategories(cats);
+      await deleteCategory(id);
+      showToast('Category deleted successfully!');
+      if (activeSingleView?.type === 'category' && activeSingleView.category.id === id) {
+        setActiveSingleView(null);
+      }
+      const cats = await fetchCategories();
+      setCategories(cats);
     } catch (err: any) {
       showToast(err.message || 'Failed to delete category', 'error');
       throw err;
@@ -245,39 +267,69 @@ export const App: React.FC = () => {
   };
 
   // Handlers for Brands
-  const handleCreateBrand = async (_data: { name: string; logo?: string }) => {
+  const handleCreateBrand = async (data: { name: string; logo?: string }) => {
     try {
-      // const b = await createBrand(data);
-      // showToast(`Brand "${b.name}" created successfully!`);
-      // const bList = await fetchBrands();
-      // setBrands(bList);
+      const b = await createBrand(data);
+      showToast(`Brand "${b.name}" created successfully!`);
+      const bList = await fetchBrands();
+      setBrands(bList);
+      setIsCreateBrandOpen(false);
     } catch (err: any) {
       showToast(err.message || 'Failed to create brand', 'error');
       throw err;
     }
   };
 
-  const handleUpdateBrand = async (_id: string, _data: { name?: string; logo?: string }) => {
+  const handleUpdateBrand = async (id: string, data: { name?: string; logo?: string }) => {
     try {
-      // const b = await updateBrand(id, data);
-      // showToast(`Brand "${b.name}" updated successfully!`);
-      // const bList = await fetchBrands();
-      // setBrands(bList);
+      const b = await updateBrand(id, data);
+      showToast(`Brand "${b.name}" updated successfully!`);
+      const bList = await fetchBrands();
+      setBrands(bList);
+      if (activeSingleView?.type === 'brand' && activeSingleView.brand.id === id) {
+        setActiveSingleView({ type: 'brand', brand: b });
+      }
+      setSelectedBrandForEdit(null);
     } catch (err: any) {
       showToast(err.message || 'Failed to update brand', 'error');
       throw err;
     }
   };
 
-  const handleDeleteBrand = async (_id: string) => {
+  const handleDeleteBrand = async (id: string) => {
     try {
-      // await deleteBrand(id);
-      // showToast('Brand deleted successfully!');
-      // const bList = await fetchBrands();
-      // setBrands(bList);
+      await deleteBrand(id);
+      showToast('Brand deleted successfully!');
+      if (activeSingleView?.type === 'brand' && activeSingleView.brand.id === id) {
+        setActiveSingleView(null);
+      }
+      const bList = await fetchBrands();
+      setBrands(bList);
     } catch (err: any) {
       showToast(err.message || 'Failed to delete brand', 'error');
       throw err;
+    }
+  };
+
+  // Handler: Open Single Category View
+  const handleOpenSingleCategory = async (category: Category) => {
+    try {
+      const fullCat = await fetchCategoryById(category.id);
+      setActiveSingleView({ type: 'category', category: fullCat });
+    } catch (err) {
+      const localCat = categories.find((c) => c.id === category.id) || category;
+      setActiveSingleView({ type: 'category', category: localCat });
+    }
+  };
+
+  // Handler: Open Single Brand View
+  const handleOpenSingleBrand = async (brand: Brand) => {
+    try {
+      const fullBrand = await fetchBrandById(brand.id);
+      setActiveSingleView({ type: 'brand', brand: fullBrand });
+    } catch (err) {
+      const localBrand = brands.find((b) => b.id === brand.id) || brand;
+      setActiveSingleView({ type: 'brand', brand: localBrand });
     }
   };
 
@@ -607,13 +659,41 @@ export const App: React.FC = () => {
                 onDelete={(product) => setSelectedProductForDelete(product)}
                 onViewShop={handleOpenSingleShop}
               />
-            ) : (
+            ) : activeSingleView.type === 'user' ? (
               <SingleUserView
                 user={activeSingleView.user}
                 onBack={handleBackFromSingleView}
                 onEdit={(user) => setSelectedUserForEdit(user)}
                 onDelete={(user) => setSelectedUserForDelete(user)}
                 onViewShop={handleOpenSingleShop}
+              />
+            ) : activeSingleView.type === 'category' ? (
+              <SingleCategoryView
+                category={activeSingleView.category}
+                products={products}
+                onBack={handleBackFromSingleView}
+                onEdit={(cat) => setSelectedCategoryForEdit(cat)}
+                onDelete={async (cat) => {
+                  if (window.confirm(`Are you sure you want to delete category "${cat.name}"?`)) {
+                    await handleDeleteCategory(cat.id);
+                  }
+                }}
+                onViewProduct={handleOpenSingleProduct}
+                onAddProduct={() => setIsAddProductOpen(true)}
+              />
+            ) : (
+              <SingleBrandView
+                brand={activeSingleView.brand}
+                products={products}
+                onBack={handleBackFromSingleView}
+                onEdit={(brand) => setSelectedBrandForEdit(brand)}
+                onDelete={async (brand) => {
+                  if (window.confirm(`Are you sure you want to delete brand "${brand.name}"?`)) {
+                    await handleDeleteBrand(brand.id);
+                  }
+                }}
+                onViewProduct={handleOpenSingleProduct}
+                onAddProduct={() => setIsAddProductOpen(true)}
               />
             )
           ) : (
@@ -670,12 +750,15 @@ export const App: React.FC = () => {
                 <CategoriesBrandsView
                   categories={categories}
                   brands={brands}
+                  products={products}
                   onCreateCategory={handleCreateCategory}
                   onUpdateCategory={handleUpdateCategory}
                   onDeleteCategory={handleDeleteCategory}
                   onCreateBrand={handleCreateBrand}
                   onUpdateBrand={handleUpdateBrand}
                   onDeleteBrand={handleDeleteBrand}
+                  onViewCategory={handleOpenSingleCategory}
+                  onViewBrand={handleOpenSingleBrand}
                   isLoading={isLoading}
                   searchTerm={searchTerm}
                 />
@@ -707,6 +790,7 @@ export const App: React.FC = () => {
                     setSelectedUserForActivityModal({ userId, userName })
                   }
                   onViewUser={handleOpenSingleUserById}
+                  onRefresh={loadData}
                 />
               ) : activeTab === 'settings' ? (
                 <SettingsView onShowToast={showToast} onBackToShops={() => setActiveTab('shops')} />
@@ -785,6 +869,8 @@ export const App: React.FC = () => {
         productToEdit={selectedProductForEdit}
         shops={shops}
         subscriptionPlans={subscriptionPlans}
+        categories={categories}
+        brands={brands}
         isLoading={isActionLoading}
       />
 
@@ -860,6 +946,42 @@ export const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Category Modals */}
+      <EditCategoryModal
+        isOpen={Boolean(selectedCategoryForEdit) || isCreateCategoryOpen}
+        onClose={() => {
+          setSelectedCategoryForEdit(null);
+          setIsCreateCategoryOpen(false);
+        }}
+        onSave={async (categoryData) => {
+          if (selectedCategoryForEdit) {
+            await handleUpdateCategory(selectedCategoryForEdit.id, categoryData);
+          } else {
+            await handleCreateCategory(categoryData);
+          }
+        }}
+        categoryToEdit={selectedCategoryForEdit}
+        isLoading={isActionLoading}
+      />
+
+      {/* Brand Modals */}
+      <EditBrandModal
+        isOpen={Boolean(selectedBrandForEdit) || isCreateBrandOpen}
+        onClose={() => {
+          setSelectedBrandForEdit(null);
+          setIsCreateBrandOpen(false);
+        }}
+        onSave={async (brandData) => {
+          if (selectedBrandForEdit) {
+            await handleUpdateBrand(selectedBrandForEdit.id, brandData);
+          } else {
+            await handleCreateBrand(brandData);
+          }
+        }}
+        brandToEdit={selectedBrandForEdit}
+        isLoading={isActionLoading}
+      />
     </div>
   );
 };

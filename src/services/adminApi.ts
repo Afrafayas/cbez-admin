@@ -325,3 +325,141 @@ export async function updateProductByAdmin(id: string, productData: any): Promis
   if (!res.ok) throw new Error(result.message || 'Failed to update product');
   return result.data?.product ?? result;
 }
+
+// ==========================================
+// Category Management API Services
+// ==========================================
+
+export async function fetchCategories(): Promise<Category[]> {
+  const res = await fetch(`${API_BASE_URL}/categories`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch categories');
+  const result = await res.json();
+  return result.data?.categories ?? [];
+}
+
+export async function fetchCategoryById(id: string): Promise<Category> {
+  const res = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch category details');
+  const result = await res.json();
+  return result.data?.category ?? result;
+}
+
+export async function createCategory(categoryData: {
+  name: string;
+  slug?: string;
+  image?: string;
+  specConfig?: any[];
+}): Promise<Category> {
+  const res = await fetch(`${API_BASE_URL}/categories`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(categoryData),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to create category');
+  return result.data?.category ?? result;
+}
+
+export async function updateCategory(
+  id: string,
+  categoryData: Partial<Category>
+): Promise<Category> {
+  const res = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(categoryData),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to update category');
+  return result.data?.category ?? result;
+}
+
+export async function deleteCategory(
+  id: string
+): Promise<{ success: boolean; message: string; data?: { id: string } }> {
+  const res = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to delete category');
+  return result;
+}
+
+// ==========================================
+// Brand Management API Services
+// ==========================================
+
+export async function fetchBrands(): Promise<Brand[]> {
+  const res = await fetch(`${API_BASE_URL}/brands`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch brands');
+  const result = await res.json();
+  return result.data?.brands ?? [];
+}
+
+export async function fetchBrandById(id: string): Promise<Brand> {
+  const res = await fetch(`${API_BASE_URL}/brands/${id}`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch brand details');
+  const result = await res.json();
+  return result.data?.brand ?? result;
+}
+
+export async function createBrand(brandData: {
+  name: string;
+  logo?: string;
+}): Promise<Brand> {
+  const res = await fetch(`${API_BASE_URL}/brands`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(brandData),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to create brand');
+  return result.data?.brand ?? result;
+}
+
+export async function updateBrand(
+  id: string,
+  brandData: Partial<Brand>
+): Promise<Brand> {
+  const res = await fetch(`${API_BASE_URL}/brands/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(brandData),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to update brand');
+  return result.data?.brand ?? result;
+}
+
+export async function deleteBrand(
+  id: string
+): Promise<{ success: boolean; message: string; data?: { id: string } }> {
+  const res = await fetch(`${API_BASE_URL}/brands/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to delete brand');
+  return result;
+}
