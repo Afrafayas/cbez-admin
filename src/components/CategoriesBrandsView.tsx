@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Category, Brand } from '../types';
-import { Plus, Edit2, Trash2, Tags, Bookmark, Search, Image as ImageIcon, AlertTriangle, ArrowLeft, Loader2, Layers } from 'lucide-react';
+import { Plus, Edit2, Trash2, Tags, Bookmark, Search, Image as ImageIcon, AlertTriangle, ArrowLeft, Loader2, Layers, Upload, X } from 'lucide-react';
 
 interface CategoriesBrandsViewProps {
   categories: Category[];
@@ -14,6 +14,100 @@ interface CategoriesBrandsViewProps {
   isLoading: boolean;
   searchTerm?: string;
 }
+
+interface ImageUploadPreviewProps {
+  label: string;
+  imageValue: string;
+  onChange: (val: string) => void;
+}
+
+const ImageUploadPreview: React.FC<ImageUploadPreviewProps> = ({ label, imageValue, onChange }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const processFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file (PNG, JPG, WEBP).');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      if (result) {
+        onChange(result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
+  };
+
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-slate-300 mb-1.5">{label}</label>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/*"
+        className="hidden"
+      />
+      {imageValue ? (
+        <div className="relative group rounded-2xl bg-slate-900 border border-white/10 p-2 overflow-hidden flex items-center justify-center min-h-[130px]">
+          <img
+            src={imageValue}
+            alt="Preview"
+            className="max-h-32 w-full object-contain rounded-xl"
+          />
+          <div className="absolute inset-0 bg-slate-950/75 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-1.5 rounded-xl bg-orange-500 text-white text-xs font-bold shadow-md hover:bg-orange-600 transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <Upload className="w-3.5 h-3.5" /> Change
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange('')}
+              className="px-3 py-1.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold hover:bg-red-500/30 transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <X className="w-3.5 h-3.5" /> Remove
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={handleDrop}
+          className={`border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all ${
+            isDragging
+              ? 'border-orange-500 bg-orange-500/10'
+              : 'border-white/10 bg-slate-900/60 hover:border-orange-500/50 hover:bg-slate-900'
+          }`}
+        >
+          <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-400 border border-orange-500/20 flex items-center justify-center mx-auto mb-2">
+            <Upload className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-bold text-white mb-0.5">Click to upload image file</p>
+          <p className="text-[10px] text-slate-400">PNG, JPG, WEBP (Max 5MB)</p>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
   categories,
@@ -371,16 +465,12 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Image URL (Optional)</label>
-                <input
-                  type="url"
-                  value={categoryForm.image}
-                  onChange={(e) => setCategoryForm({ ...categoryForm, image: e.target.value })}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-orange-500"
-                />
-              </div>
+              {/* Image File Upload with Preview */}
+              <ImageUploadPreview
+                label="Category Image File"
+                imageValue={categoryForm.image}
+                onChange={(val) => setCategoryForm({ ...categoryForm, image: val })}
+              />
 
               <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
                 <button
@@ -423,16 +513,12 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Logo Image URL (Optional)</label>
-                <input
-                  type="url"
-                  value={brandForm.logo}
-                  onChange={(e) => setBrandForm({ ...brandForm, logo: e.target.value })}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-orange-500"
-                />
-              </div>
+              {/* Logo File Upload with Preview */}
+              <ImageUploadPreview
+                label="Brand Logo Image File"
+                imageValue={brandForm.logo}
+                onChange={(val) => setBrandForm({ ...brandForm, logo: val })}
+              />
 
               <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
                 <button
