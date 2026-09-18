@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Store, ShoppingBag, Users, Settings, ShieldCheck, LogOut, History, Server, CheckCircle2, X, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Store, ShoppingBag, Users, Settings, ShieldCheck, LogOut, History, Server, CheckCircle2, X, CreditCard, Tags } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -22,10 +22,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'shops', label: 'Manage Shops', icon: Store, badge: pendingCount > 0 ? pendingCount : null },
     { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard },
+    { id: 'categories-brands', label: 'Categories & Brands', icon: Tags },
     { id: 'products', label: 'Products Directory', icon: ShoppingBag },
     { id: 'users', label: 'User Accounts', icon: Users },
     { id: 'activity', label: 'Activity Logs', icon: History },
   ];
+
 
   const systemNavItems = [
     { id: 'settings', label: 'Platform Settings', icon: Settings },

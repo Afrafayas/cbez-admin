@@ -8,6 +8,7 @@ import { UsersTable } from './components/UsersTable';
 import { ActivityLogsTable } from './components/ActivityLogsTable';
 import { SettingsView } from './components/SettingsView';
 import { SubscriptionsTable } from './components/SubscriptionsTable';
+import { CategoriesBrandsView } from './components/CategoriesBrandsView';
 import { UserActivityModal } from './components/UserActivityModal';
 import { EditShopModal } from './components/EditShopModal';
 import { EditUserModal } from './components/EditUserModal';
@@ -16,7 +17,7 @@ import { DeleteShopModal } from './components/DeleteShopModal';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { DeleteProductModal } from './components/DeleteProductModal';
 import { AdminLogin } from './components/AdminLogin';
-import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan } from './types';
+import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan, Category, Brand } from './types';
 import {
   fetchStats,
   fetchShops,
@@ -35,7 +36,16 @@ import {
   updateSubscriptionPlan,
   toggleSubscriptionPlanStatus,
   deleteSubscriptionPlan,
+  fetchCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  fetchBrands,
+  createBrand,
+  updateBrand,
+  deleteBrand,
 } from './services/adminApi';
+
 import { CheckCircle2, AlertCircle, RefreshCw, AlertTriangle, Loader2, ArrowLeft, ShieldAlert } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -56,6 +66,8 @@ export const App: React.FC = () => {
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLogItem[]>([]);
   const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
 
   const [filterStatus, setFilterStatus] = useState<'all' | 'verified' | 'pending'>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -91,17 +103,19 @@ export const App: React.FC = () => {
     setTimeout(() => setToast(null), 4000);
   };
 
-  // Load stats, shops, products, users, and activity logs from backend
+  // Load stats, shops, products, users, activity logs, plans, categories, and brands from backend
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [statsData, shopsData, usersData, logsData, productsData, plansData] = await Promise.all([
+      const [statsData, shopsData, usersData, logsData, productsData, plansData, catsData, brandsData] = await Promise.all([
         fetchStats(),
         fetchShops(),
         fetchUsers().catch(() => []),
         fetchAllActivityLogs().catch(() => []),
         fetchProducts().catch(() => []),
         fetchSubscriptionPlans().catch(() => []),
+        fetchCategories().catch(() => []),
+        fetchBrands().catch(() => []),
       ]);
       setStats(statsData);
       setShops(shopsData);
@@ -109,6 +123,8 @@ export const App: React.FC = () => {
       setActivityLogs(logsData);
       setProducts(productsData);
       if (Array.isArray(plansData)) setSubscriptionPlans(plansData);
+      if (Array.isArray(catsData)) setCategories(catsData);
+      if (Array.isArray(brandsData)) setBrands(brandsData);
 
       // Priority Emphasis: If pending shops exist on load, set default filter to 'pending'
       if (statsData.pendingShops > 0) {
@@ -121,6 +137,128 @@ export const App: React.FC = () => {
       setIsLoading(false);
     }
   }, []);
+
+  // Handlers for Subscription Plans
+  const handleCreatePlan = async (dto: any) => {
+    try {
+      const newPlan = await createSubscriptionPlan(dto);
+      showToast(`Subscription Plan "${newPlan.name}" created successfully!`);
+      const plans = await fetchSubscriptionPlans();
+      setSubscriptionPlans(plans);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to create subscription plan', 'error');
+      throw err;
+    }
+  };
+
+  const handleUpdatePlan = async (id: string, dto: any) => {
+    try {
+      const updatedPlan = await updateSubscriptionPlan(id, dto);
+      showToast(`Subscription Plan "${updatedPlan.name}" updated successfully!`);
+      const plans = await fetchSubscriptionPlans();
+      setSubscriptionPlans(plans);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update subscription plan', 'error');
+      throw err;
+    }
+  };
+
+  const handleTogglePlanStatus = async (id: string) => {
+    try {
+      const updated = await toggleSubscriptionPlanStatus(id);
+      showToast(`Subscription Plan status updated to ${updated.status}!`);
+      const plans = await fetchSubscriptionPlans();
+      setSubscriptionPlans(plans);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to toggle plan status', 'error');
+    }
+  };
+
+  const handleDeletePlan = async (id: string) => {
+    try {
+      await deleteSubscriptionPlan(id);
+      showToast('Subscription Plan deleted successfully!');
+      const plans = await fetchSubscriptionPlans();
+      setSubscriptionPlans(plans);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete subscription plan', 'error');
+    }
+  };
+
+  // Handlers for Categories
+  const handleCreateCategory = async (data: { name: string; slug?: string; image?: string }) => {
+    try {
+      const cat = await createCategory(data);
+      showToast(`Category "${cat.name}" created successfully!`);
+      const cats = await fetchCategories();
+      setCategories(cats);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to create category', 'error');
+      throw err;
+    }
+  };
+
+  const handleUpdateCategory = async (id: string, data: { name?: string; slug?: string; image?: string }) => {
+    try {
+      const cat = await updateCategory(id, data);
+      showToast(`Category "${cat.name}" updated successfully!`);
+      const cats = await fetchCategories();
+      setCategories(cats);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update category', 'error');
+      throw err;
+    }
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    try {
+      await deleteCategory(id);
+      showToast('Category deleted successfully!');
+      const cats = await fetchCategories();
+      setCategories(cats);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete category', 'error');
+      throw err;
+    }
+  };
+
+  // Handlers for Brands
+  const handleCreateBrand = async (data: { name: string; logo?: string }) => {
+    try {
+      const b = await createBrand(data);
+      showToast(`Brand "${b.name}" created successfully!`);
+      const bList = await fetchBrands();
+      setBrands(bList);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to create brand', 'error');
+      throw err;
+    }
+  };
+
+  const handleUpdateBrand = async (id: string, data: { name?: string; logo?: string }) => {
+    try {
+      const b = await updateBrand(id, data);
+      showToast(`Brand "${b.name}" updated successfully!`);
+      const bList = await fetchBrands();
+      setBrands(bList);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update brand', 'error');
+      throw err;
+    }
+  };
+
+  const handleDeleteBrand = async (id: string) => {
+    try {
+      await deleteBrand(id);
+      showToast('Brand deleted successfully!');
+      const bList = await fetchBrands();
+      setBrands(bList);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete brand', 'error');
+      throw err;
+    }
+  };
+
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -345,7 +483,29 @@ export const App: React.FC = () => {
           />
 
           {/* Active Tab View Rendering */}
-          {activeTab === 'products' ? (
+          {activeTab === 'subscriptions' ? (
+            <SubscriptionsTable
+              plans={subscriptionPlans}
+              onCreatePlan={handleCreatePlan}
+              onUpdatePlan={handleUpdatePlan}
+              onToggleStatus={handleTogglePlanStatus}
+              onDeletePlan={handleDeletePlan}
+              isLoading={isLoading}
+            />
+          ) : activeTab === 'categories-brands' ? (
+            <CategoriesBrandsView
+              categories={categories}
+              brands={brands}
+              onCreateCategory={handleCreateCategory}
+              onUpdateCategory={handleUpdateCategory}
+              onDeleteCategory={handleDeleteCategory}
+              onCreateBrand={handleCreateBrand}
+              onUpdateBrand={handleUpdateBrand}
+              onDeleteBrand={handleDeleteBrand}
+              isLoading={isLoading}
+              searchTerm={searchTerm}
+            />
+          ) : activeTab === 'products' ? (
             <ProductsTable
               products={products}
               onViewDetails={(product) => setSelectedProductForDetails(product)}
@@ -382,6 +542,7 @@ export const App: React.FC = () => {
               searchTerm={searchTerm}
             />
           )}
+
         </main>
       </div>
 

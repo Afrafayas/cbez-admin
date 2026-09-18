@@ -1,4 +1,5 @@
-import { Shop, AdminStats, UserAccount, Product, SubscriptionPlan } from '../types';
+import { Shop, AdminStats, UserAccount, Product, SubscriptionPlan, Category, Brand } from '../types';
+
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cbez-web-backend.onrender.com/api';
 
@@ -261,3 +262,106 @@ export async function deleteSubscriptionPlan(
   if (!res.ok) throw new Error(result.message || 'Failed to delete subscription plan');
   return result;
 }
+
+// Category API Services
+export async function fetchCategories(): Promise<Category[]> {
+  const res = await fetch(`${API_BASE_URL}/categories`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch categories');
+  const result = await res.json();
+  return result.data?.categories ?? (Array.isArray(result) ? result : []);
+}
+
+export async function createCategory(data: { name: string; slug?: string; image?: string }): Promise<Category> {
+  const res = await fetch(`${API_BASE_URL}/categories`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(data),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to create category');
+  return result.data?.category ?? result;
+}
+
+export async function updateCategory(
+  id: string,
+  data: { name?: string; slug?: string; image?: string }
+): Promise<Category> {
+  const res = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(data),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to update category');
+  return result.data?.category ?? result;
+}
+
+export async function deleteCategory(id: string): Promise<{ success: boolean; message: string }> {
+  const res = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to delete category');
+  return result;
+}
+
+// Brand API Services
+export async function fetchBrands(): Promise<Brand[]> {
+  const res = await fetch(`${API_BASE_URL}/brands`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch brands');
+  const result = await res.json();
+  return result.data?.brands ?? (Array.isArray(result) ? result : []);
+}
+
+export async function createBrand(data: { name: string; logo?: string }): Promise<Brand> {
+  const res = await fetch(`${API_BASE_URL}/brands`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(data),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to create brand');
+  return result.data?.brand ?? result;
+}
+
+export async function updateBrand(
+  id: string,
+  data: { name?: string; logo?: string }
+): Promise<Brand> {
+  const res = await fetch(`${API_BASE_URL}/brands/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(data),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to update brand');
+  return result.data?.brand ?? result;
+}
+
+export async function deleteBrand(id: string): Promise<{ success: boolean; message: string }> {
+  const res = await fetch(`${API_BASE_URL}/brands/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to delete brand');
+  return result;
+}
+
