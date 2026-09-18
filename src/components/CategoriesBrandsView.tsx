@@ -24,18 +24,57 @@ interface ImageUploadPreviewProps {
 const ImageUploadPreview: React.FC<ImageUploadPreviewProps> = ({ label, imageValue, onChange }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const processFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
       alert('Please select a valid image file (PNG, JPG, WEBP).');
       return;
     }
+
     const reader = new FileReader();
     reader.onload = (e) => {
-      const result = e.target?.result as string;
-      if (result) {
-        onChange(result);
-      }
+      const rawDataUrl = e.target?.result as string;
+      if (!rawDataUrl) return;
+
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 600;
+        const MAX_HEIGHT = 600;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round(height * (MAX_WIDTH / width));
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round(width * (MAX_HEIGHT / height));
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.75);
+          setImgError(false);
+          onChange(compressedBase64);
+        } else {
+          setImgError(false);
+          onChange(rawDataUrl);
+        }
+      };
+      img.onerror = () => {
+        setImgError(false);
+        onChange(rawDataUrl);
+      };
+      img.src = rawDataUrl;
     };
     reader.readAsDataURL(file);
   };
@@ -62,11 +101,12 @@ const ImageUploadPreview: React.FC<ImageUploadPreviewProps> = ({ label, imageVal
         accept="image/*"
         className="hidden"
       />
-      {imageValue ? (
+      {imageValue && !imgError ? (
         <div className="relative group rounded-2xl bg-slate-900 border border-white/10 p-2 overflow-hidden flex items-center justify-center min-h-[130px]">
           <img
             src={imageValue}
             alt="Preview"
+            onError={() => setImgError(true)}
             className="max-h-32 w-full object-contain rounded-xl"
           />
           <div className="absolute inset-0 bg-slate-950/75 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
@@ -102,12 +142,13 @@ const ImageUploadPreview: React.FC<ImageUploadPreviewProps> = ({ label, imageVal
             <Upload className="w-4 h-4" />
           </div>
           <p className="text-xs font-bold text-white mb-0.5">Click to upload image file</p>
-          <p className="text-[10px] text-slate-400">PNG, JPG, WEBP (Max 5MB)</p>
+          <p className="text-[10px] text-slate-400">PNG, JPG, WEBP (Auto-optimized)</p>
         </div>
       )}
     </div>
   );
 };
+
 
 export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
   categories,
@@ -326,11 +367,19 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
                             {cat.image ? (
-                              <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                              <img
+                                src={cat.image}
+                                alt={cat.name}
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                                className="w-full h-full object-cover"
+                              />
                             ) : (
                               <ImageIcon className="w-4 h-4 text-slate-500" />
                             )}
                           </div>
+
                           <div>
                             <div className="font-bold text-white text-sm">{cat.name}</div>
                             <div className="text-[10px] text-slate-500">ID: {cat.id}</div>
@@ -393,11 +442,19 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
                             {b.logo ? (
-                              <img src={b.logo} alt={b.name} className="w-full h-full object-contain p-1" />
+                              <img
+                                src={b.logo}
+                                alt={b.name}
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                                className="w-full h-full object-contain p-1"
+                              />
                             ) : (
                               <Bookmark className="w-4 h-4 text-orange-400" />
                             )}
                           </div>
+
                           <div>
                             <div className="font-bold text-white text-sm">{b.name}</div>
                             <div className="text-[10px] text-slate-500">ID: {b.id}</div>
