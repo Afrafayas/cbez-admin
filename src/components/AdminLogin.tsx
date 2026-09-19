@@ -31,11 +31,14 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         throw new Error(data.message || 'Login failed. Please check credentials.');
       }
 
-      if (data.token && data.user) {
+      const token = data.data?.token || data.token;
+      const user = data.data?.user || data.user;
+
+      if (token && user) {
         // Store in localStorage
-        localStorage.setItem('cbez_admin_token', data.token);
-        localStorage.setItem('cbez_admin_user', JSON.stringify(data.user));
-        onLoginSuccess(data.token, data.user);
+        localStorage.setItem('cbez_admin_token', token);
+        localStorage.setItem('cbez_admin_user', JSON.stringify(user));
+        onLoginSuccess(token, user);
       } else {
         throw new Error('Invalid response structure from server.');
       }
