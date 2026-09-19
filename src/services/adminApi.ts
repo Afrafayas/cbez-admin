@@ -114,7 +114,7 @@ export async function updateUser(id: string, userData: Partial<UserAccount>): Pr
   });
   const result = await res.json();
   if (!res.ok) throw new Error(result.message || 'Failed to update user account');
-  return result.data?.user ?? result;
+  return result.data?.user ?? result.user ?? result;
 }
 
 export async function deleteUser(id: string): Promise<{ success: boolean; message: string }> {
@@ -294,7 +294,7 @@ export async function createShopByAdmin(shopData: any): Promise<Shop> {
   });
   const result = await res.json();
   if (!res.ok) throw new Error(result.message || 'Failed to create dealer shop');
-  return result.data?.user?.shop ?? result.data?.user ?? result;
+  return result.data?.user?.shop ?? result.data?.user ?? result.user?.shop ?? result;
 }
 
 
