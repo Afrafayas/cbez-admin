@@ -8,6 +8,17 @@ function getAuthHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+function checkAuthResponse(res: Response) {
+  if (res.status === 401) {
+    localStorage.removeItem('cbez_admin_token');
+    localStorage.removeItem('cbez_admin_user');
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+    throw new Error('Your admin session has expired or is invalid. Please log in again.');
+  }
+}
+
 export async function fetchStats(): Promise<AdminStats> {
   const res = await fetch(`${API_BASE_URL}/shops/stats`, {
     headers: getAuthHeaders(),
@@ -315,6 +326,7 @@ export async function createProductByAdmin(productData: any): Promise<Product> {
     },
     body: JSON.stringify(productData),
   });
+  checkAuthResponse(res);
   const result = await res.json();
   if (!res.ok) throw new Error(result.message || 'Failed to create product for shop');
   return result.data?.product ?? result;
@@ -329,6 +341,7 @@ export async function updateProductByAdmin(id: string, productData: any): Promis
     },
     body: JSON.stringify(productData),
   });
+  checkAuthResponse(res);
   const result = await res.json();
   if (!res.ok) throw new Error(result.message || 'Failed to update product');
   return result.data?.product ?? result;
