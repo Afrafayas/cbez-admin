@@ -24,6 +24,7 @@ import {
 
 interface SingleShopViewProps {
   shop: Shop;
+  catalogProducts?: Product[];
   onBack: () => void;
   onToggleVerify?: (id: string, currentStatus: boolean) => Promise<void> | void;
   onEdit?: (shop: Shop) => void;
@@ -34,6 +35,7 @@ interface SingleShopViewProps {
 
 export const SingleShopView: React.FC<SingleShopViewProps> = ({
   shop,
+  catalogProducts,
   onBack,
   onToggleVerify,
   onEdit,
@@ -44,8 +46,26 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
   const [productSearch, setProductSearch] = useState<string>('');
 
-  const products = shop.products || [];
-  const productCount = getShopProductCount(shop);
+  const shopProducts = shop.products || [];
+  const catalogMatchingProducts = (catalogProducts || []).filter(
+    (p) =>
+      p.shopId === shop.id ||
+      p.shop?.id === shop.id ||
+      (p.shop?.name && shop.name && p.shop.name.trim().toLowerCase() === shop.name.trim().toLowerCase())
+  );
+
+  const productMap = new Map<string, Product>();
+  shopProducts.forEach((p) => {
+    if (p && p.id) productMap.set(p.id, p);
+  });
+  catalogMatchingProducts.forEach((p) => {
+    if (p && p.id && !productMap.has(p.id)) {
+      productMap.set(p.id, p);
+    }
+  });
+
+  const products = Array.from(productMap.values());
+  const productCount = getShopProductCount(shop, catalogProducts);
   const plan = shop.subscription?.plan;
   const planName = plan?.name || shop.subscriptionUsage?.planName || 'Free Starter Plan';
   const productLimit = plan?.productLimit || shop.subscriptionUsage?.productLimit || 10;

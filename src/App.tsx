@@ -474,7 +474,15 @@ export const App: React.FC = () => {
       }
       showToast(`Product "${selectedProductForDelete.name}" deleted successfully!`);
       setSelectedProductForDelete(null);
-      loadData();
+      await loadData();
+      if (activeSingleView?.type === 'shop') {
+        try {
+          const freshShop = await fetchShopById(activeSingleView.shop.id);
+          setActiveSingleView({ type: 'shop', shop: freshShop });
+        } catch (e) {
+          console.error('Failed to refresh shop view after product delete', e);
+        }
+      }
     } catch (err: any) {
       showToast(err.message || 'Failed to delete product', 'error');
     } finally {
@@ -558,7 +566,15 @@ export const App: React.FC = () => {
       }
       setIsAddProductOpen(false);
       setSelectedProductForEdit(null);
-      loadData();
+      await loadData();
+      if (activeSingleView?.type === 'shop') {
+        try {
+          const freshShop = await fetchShopById(activeSingleView.shop.id);
+          setActiveSingleView({ type: 'shop', shop: freshShop });
+        } catch (e) {
+          console.error('Failed to refresh shop view after product save', e);
+        }
+      }
     } catch (err: any) {
       showToast(err.message || 'Failed to save product', 'error');
     } finally {
@@ -641,6 +657,7 @@ export const App: React.FC = () => {
             activeSingleView.type === 'shop' ? (
               <SingleShopView
                 shop={activeSingleView.shop}
+                catalogProducts={products}
                 onBack={handleBackFromSingleView}
                 onToggleVerify={handleToggleVerify}
                 onEdit={(shop) => setSelectedShopForEdit(shop)}
