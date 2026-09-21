@@ -452,10 +452,37 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
                         }}
                       />
                       {product.stock <= 0 && (
-                        <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-bold bg-red-600 text-white shadow-md">
+                        <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-bold bg-red-600 text-white shadow-md z-10">
                           Out of Stock
                         </span>
                       )}
+
+                      {/* Top-Right Quick Action Icons */}
+                      <div
+                        className="absolute top-2 right-2 flex items-center gap-1.5 z-10"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {onEditProduct && (
+                          <button
+                            type="button"
+                            onClick={() => onEditProduct({ ...product, shop })}
+                            className="w-7 h-7 rounded-lg bg-black/60 hover:bg-slate-900/90 backdrop-blur-md border border-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-all shadow-md cursor-pointer"
+                            title="Edit Product"
+                          >
+                            <Edit2 className="w-3.5 h-3.5 text-amber-400" />
+                          </button>
+                        )}
+                        {onDeleteProduct && (
+                          <button
+                            type="button"
+                            onClick={() => onDeleteProduct({ ...product, shop })}
+                            className="w-7 h-7 rounded-lg bg-black/60 hover:bg-red-950/80 backdrop-blur-md border border-white/10 hover:border-red-500/40 text-red-400 hover:text-red-300 flex items-center justify-center transition-all shadow-md cursor-pointer"
+                            title="Delete Product"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <div>
@@ -475,37 +502,10 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
                     <span className="font-black text-white text-sm">
                       ₹{product.price?.toLocaleString('en-IN')}
                     </span>
-                    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        onClick={() => onViewProduct && onViewProduct({ ...product, shop })}
-                        className="px-2.5 py-1 rounded-lg bg-orange-500/15 hover:bg-orange-500/25 border border-orange-500/30 text-orange-400 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
-                        title="View Product"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>View</span>
-                      </button>
-                      {onEditProduct && (
-                        <button
-                          type="button"
-                          onClick={() => onEditProduct({ ...product, shop })}
-                          className="p-1.5 rounded-lg bg-slate-900 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                          title="Edit Product"
-                        >
-                          <Edit2 className="w-3.5 h-3.5 text-amber-400" />
-                        </button>
-                      )}
-                      {onDeleteProduct && (
-                        <button
-                          type="button"
-                          onClick={() => onDeleteProduct({ ...product, shop })}
-                          className="p-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 hover:text-red-300 transition-colors cursor-pointer"
-                          title="Delete Product"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
+                    <span className="text-xs text-orange-400 group-hover:translate-x-0.5 transition-transform flex items-center gap-1 font-semibold">
+                      <span>View</span>
+                      <Eye className="w-3.5 h-3.5" />
+                    </span>
                   </div>
                 </div>
               );
