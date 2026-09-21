@@ -7,6 +7,7 @@ interface AddEditProductModalProps {
   onClose: () => void;
   onSave: (productData: any, isEdit: boolean, productId?: string) => Promise<void>;
   productToEdit?: Product | null;
+  defaultShopId?: string;
   shops: Shop[];
   subscriptionPlans?: SubscriptionPlan[];
   categories?: Category[];
@@ -19,6 +20,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
   onClose,
   onSave,
   productToEdit,
+  defaultShopId,
   shops,
   subscriptionPlans = [],
   categories = [],
@@ -153,9 +155,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
           setFormImages(['', '', '', '']);
         }
       } else {
-        if (availableShops.length > 0) {
-          setSelectedShopId(availableShops[0].id);
-        }
+        setSelectedShopId(defaultShopId || (availableShops[0]?.id || shops[0]?.id || ''));
         setFormImages(['', '', '', '']);
         setProductForm({
           name: '',
@@ -199,7 +199,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
         });
       }
     }
-  }, [productToEdit, isOpen, shops]);
+  }, [productToEdit, isOpen, shops, defaultShopId]);
 
   if (!isOpen) return null;
 

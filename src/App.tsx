@@ -866,6 +866,7 @@ export const App: React.FC = () => {
         }}
         onSave={handleSaveProduct}
         productToEdit={selectedProductForEdit}
+        defaultShopId={activeSingleView?.type === 'shop' ? activeSingleView.shop.id : undefined}
         shops={shops}
         subscriptionPlans={subscriptionPlans}
         categories={categories}
