@@ -81,12 +81,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             {isMobileSearchOpen ? <X className="w-4 h-4 text-orange-400" /> : <Search className="w-4 h-4 text-slate-300" />}
           </button>
 
-          {/* Backend Connectivity Status Badge */}
-          <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium">
-            <Server className="w-3.5 h-3.5" />
-            <span>Backend Connected</span>
-          </div>
-
           {/* Refresh Data Button */}
           <button
             onClick={onRefresh}

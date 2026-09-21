@@ -230,10 +230,6 @@ export const SingleProductView: React.FC<SingleProductViewProps> = ({
             </div>
 
             <div className="pt-3 border-t border-white/5 flex flex-wrap items-center gap-4 text-xs text-slate-400">
-              <span>Product ID: <strong className="text-slate-300 font-mono">{product.id}</strong></span>
-              <span>•</span>
-              <span>Shop ID: <strong className="text-slate-300 font-mono">{product.shopId}</strong></span>
-              <span>•</span>
               <span>
                 Added on:{' '}
                 <strong className="text-slate-300">
