@@ -54,7 +54,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, selectedBrand, selectedStockStatus, searchTerm]);
+  }, [selectedCategory, selectedBrand, selectedStockStatus, searchTerm, products.length]);
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const paginatedProducts = filteredProducts.slice(
