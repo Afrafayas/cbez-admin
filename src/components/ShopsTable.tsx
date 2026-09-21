@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Shop } from '../types';
+import { Shop, Product, getShopProductCount } from '../types';
 import { ShieldCheck, ShieldAlert, Edit2, Trash2, Eye, Phone, MessageSquare, MapPin, Tag, Star, CreditCard, Plus } from 'lucide-react';
 import { Pagination } from './Pagination';
 
 interface ShopsTableProps {
   onOpenCreateShop?: () => void;
   shops: Shop[];
+  products?: Product[];
   onToggleVerify: (id: string, currentStatus: boolean) => void;
   onEdit: (shop: Shop) => void;
   onDelete: (shop: Shop) => void;
@@ -18,6 +19,7 @@ interface ShopsTableProps {
 export const ShopsTable: React.FC<ShopsTableProps> = ({
   onOpenCreateShop,
   shops,
+  products,
   onToggleVerify,
   onEdit,
   onDelete,
@@ -180,14 +182,14 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
           </div>
         ) : (
           paginatedShops.map((shop) => {
-            const productCount = shop.products?.length ?? shop._count?.products ?? 0;
+            const productCount = getShopProductCount(shop, products);
             const planName = shop.subscription?.plan?.name || 'Free Starter Plan';
 
             return (
               <div
                 key={shop.id}
                 className={`p-4 rounded-2xl glass-panel space-y-3 transition-all ${!shop.verified
-                    ? 'border border-amber-500/40 bg-slate-900/80 shadow-lg shadow-amber-500/5'
+                    ? 'border-l-4 border-l-amber-500 border-white/10 bg-amber-500/[0.03] shadow-lg'
                     : 'border border-white/10 bg-slate-900/60 hover:border-orange-500/30'
                   }`}
               >
@@ -259,16 +261,16 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                     <Phone className="w-3.5 h-3.5 text-orange-400 shrink-0" />
                     <span className="truncate">{shop.phone}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-emerald-400">
-                    <CreditCard className="w-3.5 h-3.5 shrink-0 text-orange-400" />
-                    <span className="truncate">{planName}</span>
+                  <div className="flex items-center gap-1.5 text-slate-300">
+                    <CreditCard className="w-3.5 h-3.5 shrink-0 text-indigo-400" />
+                    <span className="truncate text-indigo-300 font-medium">{planName}</span>
                   </div>
                 </div>
 
                 {/* Footer Controls: Products, Rating & Actions */}
                 <div className="flex items-center justify-between pt-2.5 border-t border-white/5 text-xs gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-800 border border-white/10 text-slate-200 whitespace-nowrap shrink-0">
+                    <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 border border-slate-700 text-slate-200 whitespace-nowrap shrink-0">
                       {productCount} {productCount === 1 ? 'Item' : 'Items'}
                     </span>
                     <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] font-bold">
@@ -281,7 +283,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                     {!shop.verified ? (
                       <button
                         onClick={() => onViewDetails(shop)}
-                        className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs border border-amber-500/40 flex items-center gap-1.5 cursor-pointer shadow-md shadow-amber-500/10 transition-all"
+                        className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow-md shadow-amber-500/20 flex items-center gap-1.5 cursor-pointer border border-amber-400/50 transition-all"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>Review & Verify</span>
@@ -345,14 +347,14 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
               </tr>
             ) : (
               paginatedShops.map((shop) => {
-                const productCount = shop.products?.length ?? shop._count?.products ?? 0;
+                const productCount = getShopProductCount(shop, products);
                 const planName = shop.subscription?.plan?.name || 'Free Starter Plan';
 
                 return (
                   <tr
                     key={shop.id}
                     className={`transition-colors ${!shop.verified
-                        ? 'bg-amber-500/5 hover:bg-amber-500/10'
+                        ? 'bg-amber-500/[0.04] hover:bg-amber-500/[0.08] border-l-2 border-l-amber-500/80'
                         : 'hover:bg-white/5'
                       }`}
                   >
@@ -418,14 +420,14 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                     </td>
 
                     <td className="px-5 py-4">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/15 border border-orange-500/30 text-orange-300 font-semibold text-xs">
-                        <CreditCard className="w-3.5 h-3.5 text-orange-400" />
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/90 border border-slate-700/80 text-slate-200 font-semibold text-xs">
+                        <CreditCard className="w-3.5 h-3.5 text-indigo-400" />
                         {planName}
                       </span>
                     </td>
 
                     <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-800 border border-white/10 text-slate-200 whitespace-nowrap shrink-0">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-200 whitespace-nowrap shrink-0">
                         {productCount} {productCount === 1 ? 'Item' : 'Items'}
                       </span>
                     </td>
@@ -464,7 +466,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                         {!shop.verified ? (
                           <button
                             onClick={() => onViewDetails(shop)}
-                            className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs border border-amber-500/40 flex items-center gap-1.5 cursor-pointer shadow-md shadow-amber-500/10 transition-all"
+                            className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow-md shadow-amber-500/20 flex items-center gap-1.5 cursor-pointer border border-amber-400/50 transition-all"
                             title="Review store details & verify"
                           >
                             <Eye className="w-3.5 h-3.5" />

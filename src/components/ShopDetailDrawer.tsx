@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shop } from '../types';
+import { Shop, getShopProductCount } from '../types';
 import { X, ShieldCheck, ShieldAlert, MapPin, Phone, MessageSquare, Tag, ShoppingBag, Star, Calendar, ArrowLeft, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
 
 interface ShopDetailDrawerProps {
@@ -15,6 +15,7 @@ export const ShopDetailDrawer: React.FC<ShopDetailDrawerProps> = ({ shop, isOpen
   if (!isOpen || !shop) return null;
 
   const products = shop.products || [];
+  const productCount = getShopProductCount(shop);
 
   const handleActionVerify = async () => {
     if (!onToggleVerify) return;
@@ -110,7 +111,7 @@ export const ShopDetailDrawer: React.FC<ShopDetailDrawerProps> = ({ shop, isOpen
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>Catalog: <strong>{products.length} Products</strong></span>
+                  <span>Catalog: <strong>{productCount} {productCount === 1 ? 'Product' : 'Products'}</strong></span>
                 </div>
               </div>
 

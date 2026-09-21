@@ -13,6 +13,7 @@ export interface Shop {
   updatedAt: string;
   ownerId?: string;
   products?: Product[];
+  productsCount?: number;
   subscription?: {
     id: string;
     planId: string;
@@ -28,6 +29,27 @@ export interface Shop {
   _count?: {
     products: number;
   };
+}
+
+export function getShopProductCount(shop?: Shop | null, catalogProducts?: Product[]): number {
+  if (!shop) return 0;
+  if (typeof shop.productsCount === 'number' && shop.productsCount > 0) return shop.productsCount;
+  if (typeof shop.subscriptionUsage?.currentProducts === 'number' && shop.subscriptionUsage.currentProducts > 0) return shop.subscriptionUsage.currentProducts;
+  if (Array.isArray(shop.products) && shop.products.length > 0) return shop.products.length;
+  if (typeof shop._count?.products === 'number' && shop._count.products > 0) return shop._count.products;
+  if (catalogProducts && Array.isArray(catalogProducts)) {
+    const matchCount = catalogProducts.filter((p) => {
+      if (p.shopId === shop.id || p.shop?.id === shop.id) return true;
+      if (p.shop?.name && shop.name && p.shop.name.trim().toLowerCase() === shop.name.trim().toLowerCase()) return true;
+      return false;
+    }).length;
+    if (matchCount > 0) return matchCount;
+  }
+  if (typeof shop.productsCount === 'number') return shop.productsCount;
+  if (typeof shop.subscriptionUsage?.currentProducts === 'number') return shop.subscriptionUsage.currentProducts;
+  if (typeof shop._count?.products === 'number') return shop._count.products;
+  if (Array.isArray(shop.products)) return shop.products.length;
+  return 0;
 }
 
 export interface Product {

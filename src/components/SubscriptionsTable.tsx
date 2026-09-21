@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { SubscriptionPlan, Shop } from '../types';
+import { SubscriptionPlan, Shop, Product, getShopProductCount } from '../types';
 import { Plus, Edit2, Trash2, Power, CheckCircle2, XCircle, CreditCard, UserCheck, X, Search, Store, Filter, RefreshCw } from 'lucide-react';
 
 interface SubscriptionsTableProps {
   plans: SubscriptionPlan[];
   shops?: Shop[];
+  products?: Product[];
   onCreatePlan: (dto: any) => Promise<void>;
   onUpdatePlan: (id: string, dto: any) => Promise<void>;
   onToggleStatus: (id: string) => Promise<void>;
@@ -17,6 +18,7 @@ interface SubscriptionsTableProps {
 export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
   plans,
   shops = [],
+  products = [],
   onCreatePlan,
   onUpdatePlan,
   onToggleStatus,
@@ -270,7 +272,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
                     const planName = subPlan?.name || 'Free Starter Plan';
                     const productLimit = subPlan?.productLimit ?? 5;
                     const price = subPlan?.price ?? 0;
-                    const productCount = shop.products?.length ?? shop._count?.products ?? 0;
+                    const productCount = getShopProductCount(shop, products);
                     const isLimitReached = productCount >= productLimit;
 
                     return (

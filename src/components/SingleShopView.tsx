@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shop, Product } from '../types';
+import { Shop, Product, getShopProductCount } from '../types';
 import {
   ArrowLeft,
   ShieldCheck,
@@ -45,7 +45,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
   const [productSearch, setProductSearch] = useState<string>('');
 
   const products = shop.products || [];
-  const productCount = products.length || shop._count?.products || 0;
+  const productCount = getShopProductCount(shop);
   const plan = shop.subscription?.plan;
   const planName = plan?.name || shop.subscriptionUsage?.planName || 'Free Starter Plan';
   const productLimit = plan?.productLimit || shop.subscriptionUsage?.productLimit || 10;

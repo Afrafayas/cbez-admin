@@ -161,11 +161,6 @@ export const App: React.FC = () => {
       if (Array.isArray(plansData)) setSubscriptionPlans(plansData);
       if (Array.isArray(catsData)) setCategories(catsData);
       if (Array.isArray(brandsData)) setBrands(brandsData);
-
-      // Priority Emphasis: If pending shops exist on load, set default filter to 'pending'
-      if (statsData.pendingShops > 0) {
-        setFilterStatus('pending');
-      }
     } catch (err: any) {
       console.error('Failed to fetch admin data:', err);
       showToast(err.message || 'Failed to connect to backend server', 'error');
@@ -736,6 +731,7 @@ export const App: React.FC = () => {
                 <SubscriptionsTable
                   plans={subscriptionPlans}
                   shops={shops}
+                  products={products}
                   onCreatePlan={handleCreatePlan}
                   onUpdatePlan={handleUpdatePlan}
                   onToggleStatus={handleTogglePlanStatus}
@@ -799,6 +795,7 @@ export const App: React.FC = () => {
               ) : (
                 <ShopsTable
                   shops={shops}
+                  products={products}
                   onToggleVerify={handleToggleVerify}
                   onEdit={(shop) => setSelectedShopForEdit(shop)}
                   onDelete={(shop) => setSelectedShopForDelete(shop)}
