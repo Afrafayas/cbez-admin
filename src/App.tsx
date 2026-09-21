@@ -467,21 +467,36 @@ export const App: React.FC = () => {
   const handleConfirmDeleteProduct = async () => {
     if (!selectedProductForDelete) return;
     setIsActionLoading(true);
+
+    const targetShopId =
+      selectedProductForDelete.shopId ||
+      selectedProductForDelete.shop?.id ||
+      (activeSingleView?.type === 'shop' ? activeSingleView.shop.id : null);
+    const wasViewingShop = activeSingleView?.type === 'shop';
+
     try {
       await deleteProduct(selectedProductForDelete.id);
-      if (activeSingleView?.type === 'product' && activeSingleView.product.id === selectedProductForDelete.id) {
-        setActiveSingleView(null);
-      }
       showToast(`Product "${selectedProductForDelete.name}" deleted successfully!`);
       setSelectedProductForDelete(null);
       await loadData();
-      if (activeSingleView?.type === 'shop') {
+
+      // If user deleted while inside a store view or deleted a product of a store, stay on the store page!
+      if (wasViewingShop && targetShopId) {
         try {
-          const freshShop = await fetchShopById(activeSingleView.shop.id);
+          const freshShop = await fetchShopById(targetShopId);
           setActiveSingleView({ type: 'shop', shop: freshShop });
         } catch (e) {
           console.error('Failed to refresh shop view after product delete', e);
         }
+      } else if (targetShopId) {
+        try {
+          const freshShop = await fetchShopById(targetShopId);
+          setActiveSingleView({ type: 'shop', shop: freshShop });
+        } catch (e) {
+          setActiveSingleView(null);
+        }
+      } else {
+        setActiveSingleView(null);
       }
     } catch (err: any) {
       showToast(err.message || 'Failed to delete product', 'error');
@@ -664,6 +679,8 @@ export const App: React.FC = () => {
                 onDelete={(shop) => setSelectedShopForDelete(shop)}
                 onViewProduct={handleOpenSingleProduct}
                 onAddProduct={() => setIsAddProductOpen(true)}
+                onEditProduct={(product) => setSelectedProductForEdit(product)}
+                onDeleteProduct={(product) => setSelectedProductForDelete(product)}
               />
             ) : activeSingleView.type === 'product' ? (
               <SingleProductView
