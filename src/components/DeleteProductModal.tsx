@@ -24,19 +24,19 @@ export const DeleteProductModal: React.FC<DeleteProductModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-md rounded-3xl border border-white/10 shadow-2xl overflow-hidden bg-[#11141D]/95 p-6 sm:p-7 space-y-5 text-slate-100">
-        {/* Soft Ambient Glows matching MLX Brand Palette */}
-        <div className="absolute -top-12 -right-12 w-40 h-40 bg-orange-500/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-10 -left-10 w-36 h-36 bg-red-500/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative w-full max-w-md rounded-3xl border border-orange-500/30 shadow-2xl overflow-hidden bg-[#11141D]/95 p-6 sm:p-7 space-y-5 text-slate-100">
+        {/* Soft Ambient Glows matching MLX Brand Palette (#FF6F00) */}
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-orange-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 w-44 h-44 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Header with Dual-tone Warning Icon */}
+        {/* Header with Website Theme Orange Warning Icon */}
         <div className="flex items-start gap-3.5 relative z-10">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-red-500/20 via-orange-500/15 to-amber-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400 shrink-0 shadow-lg shadow-orange-500/10">
-            <AlertTriangle className="w-6 h-6 text-red-400" />
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-500/25 via-amber-500/20 to-orange-600/15 border border-orange-500/40 flex items-center justify-center text-orange-400 shrink-0 shadow-lg shadow-orange-500/20">
+            <AlertTriangle className="w-6 h-6 text-orange-400" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] uppercase tracking-wider font-extrabold text-orange-400 px-2 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/20">
+              <span className="text-[10px] uppercase tracking-wider font-extrabold text-orange-400 px-2.5 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/30">
                 Product Catalog Action
               </span>
             </div>
@@ -60,7 +60,7 @@ export const DeleteProductModal: React.FC<DeleteProductModalProps> = ({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-[10px] font-bold text-orange-400 px-2 py-0.5 rounded-md bg-orange-500/10 border border-orange-500/20 flex items-center gap-1">
+              <span className="text-[10px] font-bold text-orange-400 px-2 py-0.5 rounded-md bg-orange-500/15 border border-orange-500/30 flex items-center gap-1">
                 <Tag className="w-2.5 h-2.5" />
                 {product.brand}
               </span>
@@ -70,7 +70,7 @@ export const DeleteProductModal: React.FC<DeleteProductModalProps> = ({
             </div>
             <h4 className="font-bold text-white text-sm truncate">{product.name}</h4>
             <div className="text-xs font-black text-white mt-0.5 flex items-center gap-2">
-              <span>₹{product.price ? product.price.toLocaleString('en-IN') : '0'}</span>
+              <span className="text-orange-400">₹{product.price ? product.price.toLocaleString('en-IN') : '0'}</span>
               {product.shop && (
                 <span className="text-[10px] text-slate-400 font-normal truncate flex items-center gap-1">
                   • <ShoppingBag className="w-2.5 h-2.5 text-orange-400 shrink-0" />
@@ -82,8 +82,8 @@ export const DeleteProductModal: React.FC<DeleteProductModalProps> = ({
         </div>
 
         {/* Notice Message */}
-        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-200 text-xs leading-relaxed relative z-10 flex items-start gap-2.5">
-          <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+        <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/25 text-orange-200 text-xs leading-relaxed relative z-10 flex items-start gap-2.5">
+          <AlertTriangle className="w-4 h-4 text-orange-400 shrink-0 mt-0.5" />
           <span>
             Are you sure you want to delete this listing? This action cannot be reversed and will remove the item from all search results and customer feeds.
           </span>
@@ -104,7 +104,7 @@ export const DeleteProductModal: React.FC<DeleteProductModalProps> = ({
             type="button"
             onClick={onConfirm}
             disabled={isLoading}
-            className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs font-extrabold shadow-lg shadow-red-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white text-xs font-extrabold shadow-lg shadow-orange-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             {isLoading ? (
               <>
