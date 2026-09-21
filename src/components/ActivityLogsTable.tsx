@@ -14,6 +14,7 @@ import {
   MessageSquare,
   PhoneCall,
   RefreshCw,
+  MapPin,
 } from 'lucide-react';
 import { Pagination } from './Pagination';
 
@@ -184,10 +185,19 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
           </span>
         );
       case 'CREATE_PRODUCT':
+      case 'UPDATE_PRODUCT':
         return (
           <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1.5 w-fit">
             <ShoppingBag className="w-3.5 h-3.5 text-purple-400" />
-            CREATE PRODUCT
+            {act.replace('_', ' ')}
+          </span>
+        );
+      case 'LOCATION_CLICK':
+      case 'DIRECTIONS_CLICK':
+        return (
+          <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 flex items-center gap-1.5 w-fit">
+            <MapPin className="w-3.5 h-3.5 text-teal-400" />
+            {act.replace('_', ' ')}
           </span>
         );
       case 'DELETE_PRODUCT':

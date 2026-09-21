@@ -147,12 +147,20 @@ export async function fetchUserActivityLogs(userId: string): Promise<any[]> {
 }
 
 export async function fetchAllActivityLogs(): Promise<any[]> {
-  const res = await fetch(`${API_BASE_URL}/activity-logs`, {
-    headers: getAuthHeaders(),
-  });
-  if (!res.ok) throw new Error('Failed to fetch platform activity logs');
-  const result = await res.json();
-  return result.data?.logs ?? [];
+  try {
+    const res = await fetch(`${API_BASE_URL}/activity-logs`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+      console.warn(`Activity logs endpoint returned HTTP ${res.status}`);
+      return [];
+    }
+    const result = await res.json();
+    return result.data?.logs ?? result.logs ?? (Array.isArray(result) ? result : []);
+  } catch (err) {
+    console.error('Failed to fetch platform activity logs:', err);
+    return [];
+  }
 }
 
 // Product Management API Services
