@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shop, Product, getShopProductCount } from '../types';
+import { Shop, Product, getShopProductCount, getProductImages } from '../types';
 import {
   ArrowLeft,
   ShieldCheck,
@@ -405,8 +405,9 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
         ) : (
           <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredProducts.map((product) => {
+              const productImages = getProductImages(product);
               const thumbnail =
-                product.images?.[0] ||
+                productImages[0] ||
                 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800';
 
               return (

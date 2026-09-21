@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Product, Shop } from '../types';
+import { Product, Shop, getProductImages } from '../types';
 import {
   ArrowLeft,
   ShoppingBag,
@@ -34,9 +34,10 @@ export const SingleProductView: React.FC<SingleProductViewProps> = ({
   onDelete,
   onViewShop,
 }) => {
+  const productImages = getProductImages(product);
   const images =
-    product.images && product.images.length > 0
-      ? product.images
+    productImages.length > 0
+      ? productImages
       : ['https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800'];
 
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);

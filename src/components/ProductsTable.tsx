@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Product, Shop } from '../types';
+import { Product, Shop, getProductImages } from '../types';
 import { ShoppingBag, Eye, Trash2, Tag, Layers, Store, CheckCircle2, AlertTriangle, Search, Filter, Box, Plus, Edit } from 'lucide-react';
 import { Pagination } from './Pagination';
 
@@ -165,7 +165,8 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
           </div>
         ) : (
           paginatedProducts.map((product) => {
-            const thumbnail = product.images?.[0] || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800';
+            const productImages = getProductImages(product);
+            const thumbnail = productImages[0] || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800';
 
             return (
               <div key={product.id} className="p-4 rounded-xl bg-slate-900/60 border border-white/10 space-y-3">
@@ -295,7 +296,8 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
               </tr>
             ) : (
               paginatedProducts.map((product) => {
-                const thumbnail = product.images?.[0] || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800';
+                const productImages = getProductImages(product);
+                const thumbnail = productImages[0] || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800';
 
                 return (
                   <tr key={product.id} className="hover:bg-white/[0.03] transition-colors group">

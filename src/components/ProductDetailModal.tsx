@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Product } from '../types';
+import { Product, getProductImages } from '../types';
 import { X, ShoppingBag, Store, MapPin, Phone, MessageSquare, Tag, ShieldCheck, CheckCircle2, AlertTriangle, Layers, ArrowLeft } from 'lucide-react';
 
 interface ProductDetailModalProps {
@@ -17,8 +17,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   if (!isOpen || !product) return null;
 
-  const images = product.images && product.images.length > 0
-    ? product.images
+  const productImages = getProductImages(product);
+  const images = productImages.length > 0
+    ? productImages
     : ['https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800'];
 
   const specsList = product.specs ? Object.entries(product.specs) : [];

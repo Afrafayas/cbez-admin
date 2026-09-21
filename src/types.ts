@@ -52,6 +52,26 @@ export function getShopProductCount(shop?: Shop | null, catalogProducts?: Produc
   return 0;
 }
 
+export function getProductImages(product?: Product | null): string[] {
+  if (!product) return [];
+  if (Array.isArray(product.images) && product.images.length > 0) {
+    return product.images;
+  }
+  if (typeof (product as any).images === 'string') {
+    try {
+      const parsed = JSON.parse((product as any).images);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch (e) {}
+  }
+  if ((product as any).imagesJson) {
+    try {
+      const parsed = JSON.parse((product as any).imagesJson);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch (e) {}
+  }
+  return [];
+}
+
 export interface Product {
   id: string;
   name: string;
