@@ -91,8 +91,14 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
       lower.includes('accessory') ||
       lower.includes('accessories') ||
       lower.includes('watch') ||
+      lower.includes('smartwatch') ||
       lower.includes('audio') ||
-      lower.includes('wearable')
+      lower.includes('wearable') ||
+      lower.includes('headphone') ||
+      lower.includes('earbud') ||
+      lower.includes('speaker') ||
+      lower.includes('charger') ||
+      lower.includes('gadget')
     ) {
       return 'accessory';
     }
@@ -1166,13 +1172,28 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Brand</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Apple, Sony, Bose, Anker"
-                    value={productForm.brand}
-                    onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
-                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
-                  />
+                  {brands.length > 0 ? (
+                    <select
+                      value={productForm.brand}
+                      onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
+                      className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                    >
+                      <option value="">-- Select Brand --</option>
+                      {brands.map((b) => (
+                        <option key={b.id} value={b.name}>
+                          {b.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      placeholder="e.g. Apple, Sony, Bose, Anker"
+                      value={productForm.brand}
+                      onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
+                      className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                    />
+                  )}
                 </div>
 
                 <div>
