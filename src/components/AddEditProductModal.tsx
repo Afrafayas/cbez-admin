@@ -36,47 +36,47 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
   const [productForm, setProductForm] = useState({
     name: '',
-    brand: 'Apple',
+    brand: '',
     category: 'Mobiles',
     description: '',
     price: '',
     stock: '1',
 
     // Mobile / Common specs
-    ram: '8GB',
-    storage: '256GB',
-    processor: 'Apple A17 Pro',
-    displaySize: '6.7 inches',
-    batteryHealth: '95%',
-    batteryPercentage: '100%',
-    simType: 'Dual SIM',
-    network: '5G',
-    camera: '48MP Triple Camera',
-    os: 'iOS 17',
+    ram: '',
+    storage: '',
+    processor: '',
+    displaySize: '',
+    batteryHealth: '',
+    batteryPercentage: '',
+    simType: '',
+    network: '',
+    camera: '',
+    os: '',
     imeiNumber: '',
-    color: 'Natural Titanium',
-    condition: 'Grade A (Like New)',
-    warranty: '3 Months Shop Warranty',
+    color: '',
+    condition: '',
+    warranty: '',
 
     // Laptop specs
-    storageType: 'NVMe SSD',
-    storageCapacity: '512GB',
-    graphics: 'Integrated Intel Iris Xe',
-    resolution: '1920x1080 (Full HD)',
-    batteryBackup: '6 Hours',
-    keyboardLayout: 'US English Backlit QWERTY',
+    storageType: '',
+    storageCapacity: '',
+    graphics: '',
+    resolution: '',
+    batteryBackup: '',
+    keyboardLayout: '',
     serialNumber: '',
 
     // Tablet specs
-    simWifi: 'Wi-Fi + Cellular (5G)',
+    simWifi: '',
     imeiSerial: '',
 
     // Accessories & Smart Watches specs
-    productType: 'Smartwatch',
-    model: 'Watch Ultra 2',
-    compatibility: 'iOS & Android Universal',
-    includedItems: 'Charging Cable, Extra Band, Original Box',
-    technicalSpecifications: 'Active Noise Cancellation, IP68 Water Resistant, Heart Rate & SpO2 Monitor'
+    productType: '',
+    model: '',
+    compatibility: '',
+    includedItems: '',
+    technicalSpecifications: ''
   });
 
   const getCategoryGroup = (catName: string): 'mobile' | 'laptop' | 'tablet' | 'accessory' => {
@@ -108,42 +108,42 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
         const sp = productToEdit.specs || {};
         setProductForm({
           name: productToEdit.name || '',
-          brand: productToEdit.brand || 'Apple',
+          brand: productToEdit.brand || '',
           category: productToEdit.category || 'Mobiles',
           description: productToEdit.description || '',
           price: productToEdit.price ? String(productToEdit.price) : '',
           stock: productToEdit.stock !== undefined ? String(productToEdit.stock) : '1',
 
-          ram: sp['RAM'] || '8GB',
-          storage: sp['Storage'] || '256GB',
-          processor: sp['Processor / Chipset'] || sp['Processor'] || 'Apple A17 Pro',
-          displaySize: sp['Display Size'] || sp['Display size'] || '6.7 inches',
-          batteryHealth: sp['Battery Health'] || '95%',
-          batteryPercentage: sp['Battery Percentage'] || sp['Battery percentage'] || '100%',
-          simType: sp['SIM Type'] || sp['SIM type'] || 'Dual SIM',
-          network: sp['Network (5G/4G)'] || sp['5G / 4G'] || '5G',
-          camera: sp['Camera'] || '48MP Triple Camera',
-          os: sp['Operating System'] || sp['OS'] || 'iOS 17',
+          ram: sp['RAM'] || '',
+          storage: sp['Storage'] || '',
+          processor: sp['Processor / Chipset'] || sp['Processor'] || '',
+          displaySize: sp['Display Size'] || sp['Display size'] || '',
+          batteryHealth: sp['Battery Health'] || '',
+          batteryPercentage: sp['Battery Percentage'] || sp['Battery percentage'] || '',
+          simType: sp['SIM Type'] || sp['SIM type'] || '',
+          network: sp['Network (5G/4G)'] || sp['5G / 4G'] || '',
+          camera: sp['Camera'] || '',
+          os: sp['Operating System'] || sp['OS'] || '',
           imeiNumber: sp['IMEI'] || '',
-          color: sp['Color'] || 'Natural Titanium',
-          condition: sp['Condition'] || 'Grade A (Like New)',
-          warranty: sp['Warranty'] || '3 Months Shop Warranty',
+          color: sp['Color'] || '',
+          condition: sp['Condition'] || '',
+          warranty: sp['Warranty'] || '',
 
-          storageType: sp['Storage Type'] || sp['Storage type – SSD/HDD'] || 'NVMe SSD',
-          storageCapacity: sp['Storage Capacity'] || '512GB',
-          graphics: sp['Graphics / GPU'] || sp['Graphics/GPU'] || 'Integrated Intel Iris Xe',
-          resolution: sp['Resolution'] || '1920x1080 (Full HD)',
-          batteryBackup: sp['Battery Backup'] || sp['Battery backup'] || '6 Hours',
-          keyboardLayout: sp['Keyboard Layout'] || sp['Keyboard layout'] || 'US English Backlit QWERTY',
+          storageType: sp['Storage Type'] || sp['Storage type – SSD/HDD'] || '',
+          storageCapacity: sp['Storage Capacity'] || '',
+          graphics: sp['Graphics / GPU'] || sp['Graphics/GPU'] || '',
+          resolution: sp['Resolution'] || '',
+          batteryBackup: sp['Battery Backup'] || sp['Battery backup'] || '',
+          keyboardLayout: sp['Keyboard Layout'] || sp['Keyboard layout'] || '',
           serialNumber: sp['Serial Number'] || sp['Serial number'] || '',
 
-          simWifi: sp['SIM / Wi-Fi'] || 'Wi-Fi + Cellular (5G)',
+          simWifi: sp['SIM / Wi-Fi'] || '',
           imeiSerial: sp['IMEI / Serial Number'] || '',
 
-          productType: sp['Product Type'] || sp['Product type'] || 'Smartwatch',
+          productType: sp['Product Type'] || sp['Product type'] || '',
           model: sp['Model'] || '',
-          compatibility: sp['Compatibility'] || 'iOS & Android Universal',
-          includedItems: sp['Included Items'] || sp['Included items'] || 'Charging Cable, Box',
+          compatibility: sp['Compatibility'] || '',
+          includedItems: sp['Included Items'] || sp['Included items'] || '',
           technicalSpecifications: sp['Technical Specifications'] || sp['Technical specifications'] || ''
         });
 
@@ -159,43 +159,43 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
         setFormImages(['', '', '', '']);
         setProductForm({
           name: '',
-          brand: 'Apple',
+          brand: '',
           category: 'Mobiles',
           description: '',
           price: '',
           stock: '1',
 
-          ram: '8GB',
-          storage: '256GB',
-          processor: 'Apple A17 Pro',
-          displaySize: '6.7 inches',
-          batteryHealth: '95%',
-          batteryPercentage: '100%',
-          simType: 'Dual SIM',
-          network: '5G',
-          camera: '48MP Triple Camera',
-          os: 'iOS 17',
+          ram: '',
+          storage: '',
+          processor: '',
+          displaySize: '',
+          batteryHealth: '',
+          batteryPercentage: '',
+          simType: '',
+          network: '',
+          camera: '',
+          os: '',
           imeiNumber: '',
-          color: 'Natural Titanium',
-          condition: 'Grade A (Like New)',
-          warranty: '3 Months Shop Warranty',
+          color: '',
+          condition: '',
+          warranty: '',
 
-          storageType: 'NVMe SSD',
-          storageCapacity: '512GB',
-          graphics: 'Integrated Intel Iris Xe',
-          resolution: '1920x1080 (Full HD)',
-          batteryBackup: '6 Hours',
-          keyboardLayout: 'US English Backlit QWERTY',
+          storageType: '',
+          storageCapacity: '',
+          graphics: '',
+          resolution: '',
+          batteryBackup: '',
+          keyboardLayout: '',
           serialNumber: '',
 
-          simWifi: 'Wi-Fi + Cellular (5G)',
+          simWifi: '',
           imeiSerial: '',
 
-          productType: 'Smartwatch',
-          model: 'Watch Ultra 2',
-          compatibility: 'iOS & Android Universal',
-          includedItems: 'Charging Cable, Extra Band, Original Box',
-          technicalSpecifications: 'Active Noise Cancellation, IP68 Water Resistant, Heart Rate & SpO2 Monitor'
+          productType: '',
+          model: '',
+          compatibility: '',
+          includedItems: '',
+          technicalSpecifications: ''
         });
       }
     }
@@ -613,59 +613,59 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">RAM</label>
-                  <input type="text" value={productForm.ram} onChange={(e) => setProductForm({ ...productForm, ram: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input type="text" placeholder="e.g. 8GB" value={productForm.ram} onChange={(e) => setProductForm({ ...productForm, ram: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
                 </div>
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Storage</label>
-                  <input type="text" value={productForm.storage} onChange={(e) => setProductForm({ ...productForm, storage: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input type="text" placeholder="e.g. 256GB" value={productForm.storage} onChange={(e) => setProductForm({ ...productForm, storage: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
                 </div>
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Processor / Chipset</label>
-                  <input type="text" value={productForm.processor} onChange={(e) => setProductForm({ ...productForm, processor: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input type="text" placeholder="e.g. Apple A17 Pro" value={productForm.processor} onChange={(e) => setProductForm({ ...productForm, processor: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
                 </div>
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Display Size</label>
-                  <input type="text" value={productForm.displaySize} onChange={(e) => setProductForm({ ...productForm, displaySize: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input type="text" placeholder="e.g. 6.7 inches" value={productForm.displaySize} onChange={(e) => setProductForm({ ...productForm, displaySize: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
                 </div>
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Battery Health</label>
-                  <input type="text" value={productForm.batteryHealth} onChange={(e) => setProductForm({ ...productForm, batteryHealth: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input type="text" placeholder="e.g. 95%" value={productForm.batteryHealth} onChange={(e) => setProductForm({ ...productForm, batteryHealth: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
                 </div>
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Battery Percentage</label>
-                  <input type="text" value={productForm.batteryPercentage} onChange={(e) => setProductForm({ ...productForm, batteryPercentage: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input type="text" placeholder="e.g. 100%" value={productForm.batteryPercentage} onChange={(e) => setProductForm({ ...productForm, batteryPercentage: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
                 </div>
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">SIM Type</label>
-                  <input type="text" value={productForm.simType} onChange={(e) => setProductForm({ ...productForm, simType: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input type="text" placeholder="e.g. Dual SIM / eSIM" value={productForm.simType} onChange={(e) => setProductForm({ ...productForm, simType: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
                 </div>
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Network (5G/4G)</label>
-                  <input type="text" value={productForm.network} onChange={(e) => setProductForm({ ...productForm, network: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input type="text" placeholder="e.g. 5G" value={productForm.network} onChange={(e) => setProductForm({ ...productForm, network: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
                 </div>
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Camera</label>
-                  <input type="text" value={productForm.camera} onChange={(e) => setProductForm({ ...productForm, camera: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input type="text" placeholder="e.g. 48MP Triple Camera" value={productForm.camera} onChange={(e) => setProductForm({ ...productForm, camera: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
                 </div>
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Operating System</label>
-                  <input type="text" value={productForm.os} onChange={(e) => setProductForm({ ...productForm, os: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input type="text" placeholder="e.g. iOS 17 / Android 14" value={productForm.os} onChange={(e) => setProductForm({ ...productForm, os: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
                 </div>
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">IMEI Number</label>
-                  <input type="text" placeholder="Optional IMEI" value={productForm.imeiNumber} onChange={(e) => setProductForm({ ...productForm, imeiNumber: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input type="text" placeholder="Optional IMEI" value={productForm.imeiNumber} onChange={(e) => setProductForm({ ...productForm, imeiNumber: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
                 </div>
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Color</label>
-                  <input type="text" value={productForm.color} onChange={(e) => setProductForm({ ...productForm, color: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input type="text" placeholder="e.g. Natural Titanium" value={productForm.color} onChange={(e) => setProductForm({ ...productForm, color: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
                 </div>
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Condition Grade</label>
-                  <input type="text" value={productForm.condition} onChange={(e) => setProductForm({ ...productForm, condition: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input type="text" placeholder="e.g. Grade A (Like New)" value={productForm.condition} onChange={(e) => setProductForm({ ...productForm, condition: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
                 </div>
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Warranty Details</label>
-                  <input type="text" value={productForm.warranty} onChange={(e) => setProductForm({ ...productForm, warranty: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input type="text" placeholder="e.g. 3 Months Shop Warranty" value={productForm.warranty} onChange={(e) => setProductForm({ ...productForm, warranty: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
                 </div>
               </div>
             )}
