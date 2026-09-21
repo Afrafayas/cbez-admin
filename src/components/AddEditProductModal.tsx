@@ -613,59 +613,198 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">RAM</label>
-                  <input type="text" placeholder="e.g. 8GB" value={productForm.ram} onChange={(e) => setProductForm({ ...productForm, ram: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
+                  <select
+                    value={productForm.ram}
+                    onChange={(e) => setProductForm({ ...productForm, ram: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select RAM --</option>
+                    <option value="2GB">2GB</option>
+                    <option value="3GB">3GB</option>
+                    <option value="4GB">4GB</option>
+                    <option value="6GB">6GB</option>
+                    <option value="8GB">8GB</option>
+                    <option value="12GB">12GB</option>
+                    <option value="16GB">16GB</option>
+                    <option value="24GB">24GB</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Storage</label>
-                  <input type="text" placeholder="e.g. 256GB" value={productForm.storage} onChange={(e) => setProductForm({ ...productForm, storage: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
+                  <select
+                    value={productForm.storage}
+                    onChange={(e) => setProductForm({ ...productForm, storage: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Storage --</option>
+                    <option value="32GB">32GB</option>
+                    <option value="64GB">64GB</option>
+                    <option value="128GB">128GB</option>
+                    <option value="256GB">256GB</option>
+                    <option value="512GB">512GB</option>
+                    <option value="1TB">1TB</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Processor / Chipset</label>
-                  <input type="text" placeholder="e.g. Apple A17 Pro" value={productForm.processor} onChange={(e) => setProductForm({ ...productForm, processor: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Apple A17 Pro / Snapdragon 8 Gen 3"
+                    value={productForm.processor}
+                    onChange={(e) => setProductForm({ ...productForm, processor: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Display Size</label>
-                  <input type="text" placeholder="e.g. 6.7 inches" value={productForm.displaySize} onChange={(e) => setProductForm({ ...productForm, displaySize: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
+                  <input
+                    type="text"
+                    placeholder="e.g. 6.7 inches Super Retina XDR"
+                    value={productForm.displaySize}
+                    onChange={(e) => setProductForm({ ...productForm, displaySize: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Battery Health</label>
-                  <input type="text" placeholder="e.g. 95%" value={productForm.batteryHealth} onChange={(e) => setProductForm({ ...productForm, batteryHealth: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
+                  <select
+                    value={productForm.batteryHealth}
+                    onChange={(e) => setProductForm({ ...productForm, batteryHealth: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Battery Health --</option>
+                    <option value="100%">100%</option>
+                    <option value="95% - 99%">95% - 99%</option>
+                    <option value="90% - 94%">90% - 94%</option>
+                    <option value="85% - 89%">85% - 89%</option>
+                    <option value="80% - 84%">80% - 84%</option>
+                    <option value="Below 80%">Below 80%</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Battery Percentage</label>
-                  <input type="text" placeholder="e.g. 100%" value={productForm.batteryPercentage} onChange={(e) => setProductForm({ ...productForm, batteryPercentage: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
+                  <input
+                    type="text"
+                    placeholder="e.g. 100% / 5000 mAh"
+                    value={productForm.batteryPercentage}
+                    onChange={(e) => setProductForm({ ...productForm, batteryPercentage: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">SIM Type</label>
-                  <input type="text" placeholder="e.g. Dual SIM / eSIM" value={productForm.simType} onChange={(e) => setProductForm({ ...productForm, simType: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
+                  <select
+                    value={productForm.simType}
+                    onChange={(e) => setProductForm({ ...productForm, simType: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select SIM Type --</option>
+                    <option value="Dual SIM (Nano-SIM)">Dual SIM (Nano-SIM)</option>
+                    <option value="Single SIM">Single SIM</option>
+                    <option value="eSIM + Physical SIM">eSIM + Physical SIM</option>
+                    <option value="Dual eSIM">Dual eSIM</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Network (5G/4G)</label>
-                  <input type="text" placeholder="e.g. 5G" value={productForm.network} onChange={(e) => setProductForm({ ...productForm, network: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
+                  <select
+                    value={productForm.network}
+                    onChange={(e) => setProductForm({ ...productForm, network: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Network --</option>
+                    <option value="5G">5G</option>
+                    <option value="4G LTE">4G LTE</option>
+                    <option value="3G / Wi-Fi">3G / Wi-Fi</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Camera</label>
-                  <input type="text" placeholder="e.g. 48MP Triple Camera" value={productForm.camera} onChange={(e) => setProductForm({ ...productForm, camera: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
+                  <input
+                    type="text"
+                    placeholder="e.g. 48MP Triple Camera"
+                    value={productForm.camera}
+                    onChange={(e) => setProductForm({ ...productForm, camera: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Operating System</label>
-                  <input type="text" placeholder="e.g. iOS 17 / Android 14" value={productForm.os} onChange={(e) => setProductForm({ ...productForm, os: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
+                  <select
+                    value={productForm.os}
+                    onChange={(e) => setProductForm({ ...productForm, os: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select OS --</option>
+                    <option value="iOS 17">iOS 17</option>
+                    <option value="iOS 16">iOS 16</option>
+                    <option value="Android 14">Android 14</option>
+                    <option value="Android 13">Android 13</option>
+                    <option value="Android 12">Android 12</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">IMEI Number</label>
-                  <input type="text" placeholder="Optional IMEI" value={productForm.imeiNumber} onChange={(e) => setProductForm({ ...productForm, imeiNumber: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
+                  <input
+                    type="text"
+                    placeholder="Optional IMEI"
+                    value={productForm.imeiNumber}
+                    onChange={(e) => setProductForm({ ...productForm, imeiNumber: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Color</label>
-                  <input type="text" placeholder="e.g. Natural Titanium" value={productForm.color} onChange={(e) => setProductForm({ ...productForm, color: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Natural Titanium, Space Black"
+                    value={productForm.color}
+                    onChange={(e) => setProductForm({ ...productForm, color: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Condition Grade</label>
-                  <input type="text" placeholder="e.g. Grade A (Like New)" value={productForm.condition} onChange={(e) => setProductForm({ ...productForm, condition: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
+                  <select
+                    value={productForm.condition}
+                    onChange={(e) => setProductForm({ ...productForm, condition: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Condition Grade --</option>
+                    <option value="Brand New (Sealed)">Brand New (Sealed)</option>
+                    <option value="Grade A+ (Like New)">Grade A+ (Like New)</option>
+                    <option value="Grade A (Excellent)">Grade A (Excellent)</option>
+                    <option value="Grade B (Good Used)">Grade B (Good Used)</option>
+                    <option value="Open Box / Refurbished">Open Box / Refurbished</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Warranty Details</label>
-                  <input type="text" placeholder="e.g. 3 Months Shop Warranty" value={productForm.warranty} onChange={(e) => setProductForm({ ...productForm, warranty: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600" />
+                  <select
+                    value={productForm.warranty}
+                    onChange={(e) => setProductForm({ ...productForm, warranty: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Warranty --</option>
+                    <option value="Official Brand Warranty">Official Brand Warranty</option>
+                    <option value="6 Months Shop Warranty">6 Months Shop Warranty</option>
+                    <option value="3 Months Shop Warranty">3 Months Shop Warranty</option>
+                    <option value="1 Month Testing Warranty">1 Month Testing Warranty</option>
+                    <option value="No Warranty">No Warranty</option>
+                  </select>
                 </div>
               </div>
             )}
@@ -674,59 +813,195 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Processor</label>
-                  <input type="text" value={productForm.processor} onChange={(e) => setProductForm({ ...productForm, processor: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Intel Core i7-13700H / Apple M3 Pro"
+                    value={productForm.processor}
+                    onChange={(e) => setProductForm({ ...productForm, processor: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">RAM</label>
-                  <input type="text" value={productForm.ram} onChange={(e) => setProductForm({ ...productForm, ram: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.ram}
+                    onChange={(e) => setProductForm({ ...productForm, ram: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select RAM --</option>
+                    <option value="8GB">8GB</option>
+                    <option value="16GB">16GB</option>
+                    <option value="24GB">24GB</option>
+                    <option value="32GB">32GB</option>
+                    <option value="64GB">64GB</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Storage Type (SSD/HDD)</label>
-                  <input type="text" value={productForm.storageType} onChange={(e) => setProductForm({ ...productForm, storageType: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.storageType}
+                    onChange={(e) => setProductForm({ ...productForm, storageType: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Storage Type --</option>
+                    <option value="NVMe PCIe SSD">NVMe PCIe SSD</option>
+                    <option value="SATA SSD">SATA SSD</option>
+                    <option value="HDD">HDD</option>
+                    <option value="SSD + HDD Dual">SSD + HDD Dual</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Storage Capacity</label>
-                  <input type="text" value={productForm.storageCapacity} onChange={(e) => setProductForm({ ...productForm, storageCapacity: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.storageCapacity}
+                    onChange={(e) => setProductForm({ ...productForm, storageCapacity: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Storage Capacity --</option>
+                    <option value="256GB">256GB</option>
+                    <option value="512GB">512GB</option>
+                    <option value="1TB">1TB</option>
+                    <option value="2TB">2TB</option>
+                    <option value="4TB">4TB</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Graphics / GPU</label>
-                  <input type="text" value={productForm.graphics} onChange={(e) => setProductForm({ ...productForm, graphics: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Integrated Intel Iris Xe / RTX 4060 / Apple M3 GPU"
+                    value={productForm.graphics}
+                    onChange={(e) => setProductForm({ ...productForm, graphics: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Display Size</label>
-                  <input type="text" value={productForm.displaySize} onChange={(e) => setProductForm({ ...productForm, displaySize: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input
+                    type="text"
+                    placeholder="e.g. 15.6 inches FHD / 14 inches Liquid Retina XDR"
+                    value={productForm.displaySize}
+                    onChange={(e) => setProductForm({ ...productForm, displaySize: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Resolution</label>
-                  <input type="text" value={productForm.resolution} onChange={(e) => setProductForm({ ...productForm, resolution: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.resolution}
+                    onChange={(e) => setProductForm({ ...productForm, resolution: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Resolution --</option>
+                    <option value="1920x1080 (Full HD)">1920x1080 (Full HD)</option>
+                    <option value="2560x1600 (QHD+)">2560x1600 (QHD+)</option>
+                    <option value="3024x1964 (MacBook Liquid Retina)">3024x1964 (MacBook Liquid Retina)</option>
+                    <option value="3840x2160 (4K UHD)">3840x2160 (4K UHD)</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Battery Health</label>
-                  <input type="text" value={productForm.batteryHealth} onChange={(e) => setProductForm({ ...productForm, batteryHealth: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.batteryHealth}
+                    onChange={(e) => setProductForm({ ...productForm, batteryHealth: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Battery Health --</option>
+                    <option value="100%">100%</option>
+                    <option value="95% - 99%">95% - 99%</option>
+                    <option value="90% - 94%">90% - 94%</option>
+                    <option value="85% - 89%">85% - 89%</option>
+                    <option value="80% - 84%">80% - 84%</option>
+                    <option value="Normal / Good Backup">Normal / Good Backup</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Battery Backup</label>
-                  <input type="text" value={productForm.batteryBackup} onChange={(e) => setProductForm({ ...productForm, batteryBackup: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input
+                    type="text"
+                    placeholder="e.g. 6-8 Hours Backup"
+                    value={productForm.batteryBackup}
+                    onChange={(e) => setProductForm({ ...productForm, batteryBackup: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Operating System</label>
-                  <input type="text" value={productForm.os} onChange={(e) => setProductForm({ ...productForm, os: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.os}
+                    onChange={(e) => setProductForm({ ...productForm, os: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select OS --</option>
+                    <option value="macOS Sonoma">macOS Sonoma</option>
+                    <option value="macOS Ventura">macOS Ventura</option>
+                    <option value="Windows 11 Home">Windows 11 Home</option>
+                    <option value="Windows 11 Pro">Windows 11 Pro</option>
+                    <option value="Windows 10">Windows 10</option>
+                    <option value="ChromeOS">ChromeOS</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Keyboard Layout</label>
-                  <input type="text" value={productForm.keyboardLayout} onChange={(e) => setProductForm({ ...productForm, keyboardLayout: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.keyboardLayout}
+                    onChange={(e) => setProductForm({ ...productForm, keyboardLayout: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Keyboard Layout --</option>
+                    <option value="US English Backlit QWERTY">US English Backlit QWERTY</option>
+                    <option value="US English QWERTY">US English QWERTY</option>
+                    <option value="UK English">UK English</option>
+                    <option value="Arabic / English Dual">Arabic / English Dual</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Serial Number</label>
-                  <input type="text" placeholder="Optional Serial Number" value={productForm.serialNumber} onChange={(e) => setProductForm({ ...productForm, serialNumber: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input
+                    type="text"
+                    placeholder="Optional Serial Number"
+                    value={productForm.serialNumber}
+                    onChange={(e) => setProductForm({ ...productForm, serialNumber: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Color</label>
-                  <input type="text" value={productForm.color} onChange={(e) => setProductForm({ ...productForm, color: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Space Gray, Silver, Midnight"
+                    value={productForm.color}
+                    onChange={(e) => setProductForm({ ...productForm, color: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Condition Grade</label>
-                  <input type="text" value={productForm.condition} onChange={(e) => setProductForm({ ...productForm, condition: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.condition}
+                    onChange={(e) => setProductForm({ ...productForm, condition: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Condition Grade --</option>
+                    <option value="Brand New (Sealed)">Brand New (Sealed)</option>
+                    <option value="Grade A+ (Like New)">Grade A+ (Like New)</option>
+                    <option value="Grade A (Excellent)">Grade A (Excellent)</option>
+                    <option value="Grade B (Good Used)">Grade B (Good Used)</option>
+                    <option value="Open Box / Refurbished">Open Box / Refurbished</option>
+                  </select>
                 </div>
               </div>
             )}
@@ -735,43 +1010,135 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">RAM</label>
-                  <input type="text" value={productForm.ram} onChange={(e) => setProductForm({ ...productForm, ram: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.ram}
+                    onChange={(e) => setProductForm({ ...productForm, ram: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select RAM --</option>
+                    <option value="3GB">3GB</option>
+                    <option value="4GB">4GB</option>
+                    <option value="6GB">6GB</option>
+                    <option value="8GB">8GB</option>
+                    <option value="16GB">16GB</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Storage</label>
-                  <input type="text" value={productForm.storage} onChange={(e) => setProductForm({ ...productForm, storage: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.storage}
+                    onChange={(e) => setProductForm({ ...productForm, storage: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Storage --</option>
+                    <option value="64GB">64GB</option>
+                    <option value="128GB">128GB</option>
+                    <option value="256GB">256GB</option>
+                    <option value="512GB">512GB</option>
+                    <option value="1TB">1TB</option>
+                    <option value="2TB">2TB</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Processor</label>
-                  <input type="text" value={productForm.processor} onChange={(e) => setProductForm({ ...productForm, processor: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Apple M2 / Apple A14 / Snapdragon 8 Gen 2"
+                    value={productForm.processor}
+                    onChange={(e) => setProductForm({ ...productForm, processor: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Display Size</label>
-                  <input type="text" value={productForm.displaySize} onChange={(e) => setProductForm({ ...productForm, displaySize: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input
+                    type="text"
+                    placeholder="e.g. 10.9 inches Liquid Retina"
+                    value={productForm.displaySize}
+                    onChange={(e) => setProductForm({ ...productForm, displaySize: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">SIM / Wi-Fi</label>
-                  <input type="text" value={productForm.simWifi} onChange={(e) => setProductForm({ ...productForm, simWifi: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.simWifi}
+                    onChange={(e) => setProductForm({ ...productForm, simWifi: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Connectivity --</option>
+                    <option value="Wi-Fi Only">Wi-Fi Only</option>
+                    <option value="Wi-Fi + Cellular (5G)">Wi-Fi + Cellular (5G)</option>
+                    <option value="Wi-Fi + Cellular (4G LTE)">Wi-Fi + Cellular (4G LTE)</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Battery Health</label>
-                  <input type="text" value={productForm.batteryHealth} onChange={(e) => setProductForm({ ...productForm, batteryHealth: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.batteryHealth}
+                    onChange={(e) => setProductForm({ ...productForm, batteryHealth: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Battery Health --</option>
+                    <option value="100%">100%</option>
+                    <option value="95% - 99%">95% - 99%</option>
+                    <option value="90% - 94%">90% - 94%</option>
+                    <option value="85% - 89%">85% - 89%</option>
+                    <option value="Normal / Good Backup">Normal / Good Backup</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Operating System</label>
-                  <input type="text" value={productForm.os} onChange={(e) => setProductForm({ ...productForm, os: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.os}
+                    onChange={(e) => setProductForm({ ...productForm, os: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select OS --</option>
+                    <option value="iPadOS 17">iPadOS 17</option>
+                    <option value="iPadOS 16">iPadOS 16</option>
+                    <option value="Android 14 Tablet OS">Android 14 Tablet OS</option>
+                    <option value="Android 13">Android 13</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Camera</label>
-                  <input type="text" value={productForm.camera} onChange={(e) => setProductForm({ ...productForm, camera: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input
+                    type="text"
+                    placeholder="e.g. 12MP Wide Rear / 12MP Ultra Wide Front"
+                    value={productForm.camera}
+                    onChange={(e) => setProductForm({ ...productForm, camera: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Color</label>
-                  <input type="text" value={productForm.color} onChange={(e) => setProductForm({ ...productForm, color: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Space Gray, Starlight, Silver, Pink"
+                    value={productForm.color}
+                    onChange={(e) => setProductForm({ ...productForm, color: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">IMEI / Serial Number</label>
-                  <input type="text" value={productForm.imeiSerial} onChange={(e) => setProductForm({ ...productForm, imeiSerial: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input
+                    type="text"
+                    placeholder="Optional IMEI or Serial Number"
+                    value={productForm.imeiSerial}
+                    onChange={(e) => setProductForm({ ...productForm, imeiSerial: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
               </div>
             )}
@@ -780,27 +1147,89 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Product Type</label>
-                  <input type="text" value={productForm.productType} onChange={(e) => setProductForm({ ...productForm, productType: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.productType}
+                    onChange={(e) => setProductForm({ ...productForm, productType: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Product Type --</option>
+                    <option value="Smartwatch">Smartwatch</option>
+                    <option value="Wireless Earbuds / TWS">Wireless Earbuds / TWS</option>
+                    <option value="Over-Ear Headphones">Over-Ear Headphones</option>
+                    <option value="Bluetooth Speaker">Bluetooth Speaker</option>
+                    <option value="Charger & Power Adapter">Charger & Power Adapter</option>
+                    <option value="Power Bank">Power Bank</option>
+                    <option value="Stylus / Apple Pencil">Stylus / Apple Pencil</option>
+                    <option value="Case & Protection">Case & Protection</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Brand</label>
-                  <input type="text" value={productForm.brand} onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Apple, Sony, Bose, Anker"
+                    value={productForm.brand}
+                    onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Model</label>
-                  <input type="text" value={productForm.model} onChange={(e) => setProductForm({ ...productForm, model: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Apple Watch Ultra 2 / AirPods Pro 2"
+                    value={productForm.model}
+                    onChange={(e) => setProductForm({ ...productForm, model: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Compatibility</label>
-                  <input type="text" value={productForm.compatibility} onChange={(e) => setProductForm({ ...productForm, compatibility: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.compatibility}
+                    onChange={(e) => setProductForm({ ...productForm, compatibility: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Compatibility --</option>
+                    <option value="Universal (iOS & Android)">Universal (iOS & Android)</option>
+                    <option value="Apple iOS / WatchOS Only">Apple iOS / WatchOS Only</option>
+                    <option value="Android Only">Android Only</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Condition Grade</label>
-                  <input type="text" value={productForm.condition} onChange={(e) => setProductForm({ ...productForm, condition: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.condition}
+                    onChange={(e) => setProductForm({ ...productForm, condition: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Condition Grade --</option>
+                    <option value="Brand New (Sealed)">Brand New (Sealed)</option>
+                    <option value="Open Box">Open Box</option>
+                    <option value="Grade A+ (Like New)">Grade A+ (Like New)</option>
+                    <option value="Grade A (Excellent)">Grade A (Excellent)</option>
+                    <option value="Grade B (Used)">Grade B (Used)</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Warranty Details</label>
-                  <input type="text" value={productForm.warranty} onChange={(e) => setProductForm({ ...productForm, warranty: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
+                  <select
+                    value={productForm.warranty}
+                    onChange={(e) => setProductForm({ ...productForm, warranty: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
+                  >
+                    <option value="">-- Select Warranty --</option>
+                    <option value="Official Brand Warranty">Official Brand Warranty</option>
+                    <option value="6 Months Shop Warranty">6 Months Shop Warranty</option>
+                    <option value="3 Months Shop Warranty">3 Months Shop Warranty</option>
+                    <option value="1 Month Testing Warranty">1 Month Testing Warranty</option>
+                    <option value="No Warranty">No Warranty</option>
+                  </select>
                 </div>
                 <div className="col-span-2">
                   <label className="block text-slate-400 font-semibold mb-1">Included Items</label>
