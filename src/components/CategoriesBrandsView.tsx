@@ -427,7 +427,6 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
                             <div className="font-bold text-white text-sm group-hover:text-orange-400 transition-colors flex items-center gap-1.5">
                               <span>{cat.name}</span>
                             </div>
-                            <div className="text-[10px] text-slate-500">ID: {cat.id}</div>
                           </div>
                         </div>
                       </td>
@@ -518,7 +517,6 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
                             <div className="font-bold text-white text-sm group-hover:text-orange-400 transition-colors flex items-center gap-1.5">
                               <span>{b.name}</span>
                             </div>
-                            <div className="text-[10px] text-slate-500">ID: {b.id}</div>
                           </div>
                         </div>
                       </td>

@@ -149,10 +149,6 @@ export const SingleCategoryView: React.FC<SingleCategoryViewProps> = ({
             </h1>
 
             <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-slate-400 pt-1 border-t border-white/5">
-              <div className="flex items-center gap-1.5">
-                <Hash className="w-3.5 h-3.5 text-slate-500" />
-                <span>ID: <span className="font-mono text-slate-300">{category.id}</span></span>
-              </div>
               {category.createdAt && (
                 <div className="flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-slate-500" />
@@ -305,7 +301,6 @@ export const SingleCategoryView: React.FC<SingleCategoryViewProps> = ({
                           />
                           <div>
                             <div className="font-bold text-white text-xs line-clamp-1">{p.name}</div>
-                            <div className="text-[10px] text-slate-500 font-mono">ID: {p.id}</div>
                           </div>
                         </div>
                       </td>
