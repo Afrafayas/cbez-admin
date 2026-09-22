@@ -257,7 +257,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                     </button>
                     <button
                       onClick={() => onDelete(product)}
-                      className="p-1.5 rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-white/5 transition-colors cursor-pointer"
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 border border-white/5 transition-colors cursor-pointer"
                       title="Delete Product"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -415,7 +415,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                         </button>
                         <button
                           onClick={() => onDelete(product)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 transition-colors cursor-pointer"
                           title="Delete Product Listing"
                         >
                           <Trash2 className="w-4 h-4" />

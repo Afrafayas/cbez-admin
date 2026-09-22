@@ -80,9 +80,9 @@ export const SingleProductView: React.FC<SingleProductViewProps> = ({
           {onDelete && (
             <button
               onClick={() => onDelete(product)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 text-xs font-semibold transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-orange-500/15 hover:bg-orange-500/25 border border-orange-500/30 text-orange-300 text-xs font-semibold transition-colors cursor-pointer"
             >
-              <Trash2 className="w-3.5 h-3.5 text-red-400" />
+              <Trash2 className="w-3.5 h-3.5 text-orange-400" />
               <span>Delete Product</span>
             </button>
           )}

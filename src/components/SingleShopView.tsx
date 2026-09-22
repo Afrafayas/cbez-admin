@@ -131,9 +131,9 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
           {onDelete && (
             <button
               onClick={() => onDelete(shop)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 text-xs font-semibold transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-orange-500/15 hover:bg-orange-500/25 border border-orange-500/30 text-orange-300 text-xs font-semibold transition-colors cursor-pointer"
             >
-              <Trash2 className="w-3.5 h-3.5 text-red-400" />
+              <Trash2 className="w-3.5 h-3.5 text-orange-400" />
               <span>Delete Store</span>
             </button>
           )}
@@ -438,7 +438,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
                 <div
                   key={product.id}
                   onClick={() => onViewProduct && onViewProduct({ ...product, shop })}
-                  className="p-4 rounded-2xl glass-panel border border-white/10 bg-slate-950/60 hover:border-orange-500/40 transition-all hover:shadow-xl hover:shadow-orange-500/5 cursor-pointer group flex flex-col justify-between"
+                  className="p-4 rounded-2xl glass-panel border border-white/10 bg-slate-950/60 hover:border-orange-500/40 transition-all hover:shadow-xl hover:shadow-orange-500/5 cursor-pointer group flex flex-col justify-between overflow-hidden"
                 >
                   <div className="space-y-3">
                     <div className="w-full h-36 rounded-xl bg-slate-900 border border-white/5 overflow-hidden flex items-center justify-center relative">
@@ -466,7 +466,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
                           <button
                             type="button"
                             onClick={() => onEditProduct({ ...product, shop })}
-                            className="w-7 h-7 rounded-lg bg-black/60 hover:bg-slate-900/90 backdrop-blur-md border border-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-all shadow-md cursor-pointer"
+                            className="w-7 h-7 rounded-lg bg-black/70 hover:bg-slate-900/90 backdrop-blur-md border border-white/15 text-slate-300 hover:text-white flex items-center justify-center transition-all shadow-md cursor-pointer"
                             title="Edit Product"
                           >
                             <Edit2 className="w-3.5 h-3.5 text-amber-400" />
@@ -476,7 +476,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
                           <button
                             type="button"
                             onClick={() => onDeleteProduct({ ...product, shop })}
-                            className="w-7 h-7 rounded-lg bg-black/60 hover:bg-red-950/80 backdrop-blur-md border border-white/10 hover:border-red-500/40 text-red-400 hover:text-red-300 flex items-center justify-center transition-all shadow-md cursor-pointer"
+                            className="w-7 h-7 rounded-lg bg-black/70 hover:bg-orange-950/90 backdrop-blur-md border border-white/15 hover:border-orange-500/40 text-orange-400 hover:text-orange-300 flex items-center justify-center transition-all shadow-md cursor-pointer"
                             title="Delete Product"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
