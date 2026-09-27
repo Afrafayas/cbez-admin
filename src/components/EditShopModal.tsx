@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Shop, SubscriptionPlan } from '../types';
-import { X, Store, Phone, MessageSquare, MapPin, Tag, Star, ShieldCheck, Save, CreditCard } from 'lucide-react';
+import { Shop, Category } from '../types';
+import { X, Store, Phone, MessageSquare, MapPin, Tag, Star, ShieldCheck, Save, Loader2 } from 'lucide-react';
 
 interface EditShopModalProps {
   shop: Shop | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (updatedShop: Partial<Shop> & { subscriptionPlanId?: string }) => Promise<void>;
-  subscriptionPlans?: SubscriptionPlan[];
+  onSave: (updatedShop: Partial<Shop>) => Promise<void>;
+  categories?: Category[];
   isLoading: boolean;
 }
 
@@ -16,7 +16,7 @@ export const EditShopModal: React.FC<EditShopModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  subscriptionPlans = [],
+  categories = [],
   isLoading,
 }) => {
   const [name, setName] = useState('');
@@ -28,7 +28,6 @@ export const EditShopModal: React.FC<EditShopModalProps> = ({
   const [category, setCategory] = useState('');
   const [verified, setVerified] = useState(false);
   const [rating, setRating] = useState(4.5);
-  const [subscriptionPlanId, setSubscriptionPlanId] = useState('');
 
   useEffect(() => {
     if (shop) {
@@ -41,8 +40,6 @@ export const EditShopModal: React.FC<EditShopModalProps> = ({
       setCategory(shop.category || '');
       setVerified(shop.verified ?? false);
       setRating(shop.rating ?? 4.5);
-      const currentPlanId = shop.subscription?.planId || shop.subscription?.plan?.id || '';
-      setSubscriptionPlanId(currentPlanId);
     }
   }, [shop]);
 
@@ -60,7 +57,6 @@ export const EditShopModal: React.FC<EditShopModalProps> = ({
       category,
       verified,
       rating,
-      subscriptionPlanId: subscriptionPlanId || undefined,
     });
   };
 
@@ -80,35 +76,13 @@ export const EditShopModal: React.FC<EditShopModalProps> = ({
               <Store className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-white">Edit Store & Assign Subscription</h3>
-              <p className="text-[11px] sm:text-xs text-slate-400">Update shop details, location, and assigned plan.</p>
+              <h3 className="text-sm sm:text-base font-bold text-white">Edit Store Profile</h3>
+              <p className="text-[11px] sm:text-xs text-slate-400">Update shop profile details, contacts, and verification status.</p>
             </div>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-          {/* Subscription Plan Selection Option */}
-          {subscriptionPlans.length > 0 && (
-            <div className="p-3.5 rounded-xl bg-orange-500/10 border border-orange-500/30 space-y-1.5">
-              <label className="block text-xs font-bold text-orange-300 flex items-center gap-1.5">
-                <CreditCard className="w-4 h-4 text-orange-400" />
-                Assign Subscription Plan *
-              </label>
-              <select
-                value={subscriptionPlanId}
-                onChange={(e) => setSubscriptionPlanId(e.target.value)}
-                className="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-900 border border-orange-500/40 text-white focus:outline-none focus:border-orange-400"
-              >
-                <option value="">-- Keep Current Plan --</option>
-                {subscriptionPlans.map((plan) => (
-                  <option key={plan.id} value={plan.id}>
-                    {plan.name} — Limit: {plan.productLimit} Products (Price: ₹{plan.price})
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
@@ -185,13 +159,34 @@ export const EditShopModal: React.FC<EditShopModalProps> = ({
                 <Tag className="w-3.5 h-3.5 text-amber-400" />
                 Primary Store Category *
               </label>
-              <input
-                type="text"
+              <select
                 required
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm rounded-xl glass-input"
-              />
+                className="w-full px-3.5 py-2 text-sm rounded-xl glass-input bg-slate-900 border border-white/10 text-white font-semibold outline-none focus:border-orange-500 cursor-pointer"
+              >
+                <option value="" disabled className="bg-slate-900 text-slate-400">-- Choose Store Category --</option>
+                {categories.length > 0 ? (
+                  categories.map((cat) => (
+                    <option key={cat.id} value={cat.name} className="bg-slate-900 text-white font-medium">
+                      {cat.name}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="Mobiles & Tablets" className="bg-slate-900 text-white font-medium">Mobiles & Tablets</option>
+                    <option value="Laptops & Computers" className="bg-slate-900 text-white font-medium">Laptops & Computers</option>
+                    <option value="Electronics & Accessories" className="bg-slate-900 text-white font-medium">Electronics & Accessories</option>
+                    <option value="Smart Watches" className="bg-slate-900 text-white font-medium">Smart Watches</option>
+                    <option value="Audio & Sound" className="bg-slate-900 text-white font-medium">Audio & Sound</option>
+                  </>
+                )}
+                {category && categories.length > 0 && !categories.some((c) => c.name === category) && (
+                  <option value={category} className="bg-slate-900 text-white font-medium">
+                    {category}
+                  </option>
+                )}
+              </select>
             </div>
           </div>
 

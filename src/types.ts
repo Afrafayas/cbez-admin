@@ -106,6 +106,7 @@ export interface AdminStats {
   totalProducts: number;
   totalLeads: number;
   totalUsers: number;
+  totalRevenue?: number;
 }
 
 export interface UserAccount {
@@ -192,4 +193,47 @@ export interface Brand {
     products: number;
   };
 }
+
+export interface Transaction {
+  id: string;
+  shopId: string;
+  shop?: {
+    id: string;
+    name: string;
+    ownerName?: string;
+    phone?: string;
+    category?: string;
+    profileImage?: string | null;
+    city?: string;
+  } | null;
+  planId?: string | null;
+  plan?: SubscriptionPlan | null;
+  planName?: string | null;
+  amount: number;
+  paymentStatus: 'COMPLETED' | 'PENDING' | 'FAILED' | string;
+  type: 'INITIAL_VERIFICATION' | 'PLAN_CHANGE' | 'RENEWAL' | 'MANUAL' | string;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface TransactionFilter {
+  shopId?: string;
+  type?: string;
+  paymentStatus?: string;
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface RevenueStats {
+  totalRevenue: number;
+  totalTransactions: number;
+  completedTransactions: number;
+  statusBreakdown?: { paymentStatus: string; _count: { id: number }; _sum: { amount: number } }[];
+  typeBreakdown?: { type: string; _count: { id: number }; _sum: { amount: number } }[];
+}
+
 

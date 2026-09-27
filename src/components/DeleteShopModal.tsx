@@ -1,6 +1,6 @@
 import React from 'react';
 import { Shop } from '../types';
-import { AlertTriangle, Trash2, ArrowLeft } from 'lucide-react';
+import { AlertTriangle, Trash2, ArrowLeft, Loader2 } from 'lucide-react';
 
 interface DeleteShopModalProps {
   shop: Shop | null;
@@ -51,8 +51,17 @@ export const DeleteShopModal: React.FC<DeleteShopModalProps> = ({
               disabled={isLoading}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded-xl bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-600/30 transition-all disabled:opacity-50"
             >
-              <Trash2 className="w-4 h-4" />
-              {isLoading ? 'Deleting...' : 'Delete Store'}
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Deleting Store...</span>
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4" />
+                  <span>Delete Store</span>
+                </>
+              )}
             </button>
           </div>
         </div>

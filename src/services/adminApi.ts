@@ -1,4 +1,4 @@
-import { Shop, AdminStats, UserAccount, Product, SubscriptionPlan, Category, Brand } from '../types';
+import { Shop, AdminStats, UserAccount, Product, SubscriptionPlan, Category, Brand, Transaction, TransactionFilter, RevenueStats } from '../types';
 
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cbez-web-backend.onrender.com/api';
@@ -18,6 +18,48 @@ function checkAuthResponse(res: Response) {
     throw new Error('Your admin session has expired or is invalid. Please log in again.');
   }
 }
+
+export async function uploadImageToS3(fileOrBase64: File | Blob | string, folder: string = 'general'): Promise<string> {
+  if (!fileOrBase64) return '';
+
+  if (typeof fileOrBase64 === 'string') {
+    if (fileOrBase64.startsWith('http://') || fileOrBase64.startsWith('https://')) {
+      return fileOrBase64;
+    }
+    if (fileOrBase64.startsWith('data:')) {
+      const res = await fetch(`${API_BASE_URL}/upload/base64`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ image: fileOrBase64, folder }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message || 'Failed to upload base64 image to S3');
+      return result.data?.url || result.url || fileOrBase64;
+    }
+    return fileOrBase64;
+  }
+
+  const formData = new FormData();
+  formData.append('file', fileOrBase64);
+  const res = await fetch(`${API_BASE_URL}/upload/single?folder=${encodeURIComponent(folder)}`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: formData,
+  });
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to upload file to S3');
+  return result.data?.url || result.url || '';
+}
+
+export async function uploadMultipleImagesToS3(filesOrBase64: (File | Blob | string)[], folder: string = 'products'): Promise<string[]> {
+  if (!filesOrBase64 || filesOrBase64.length === 0) return [];
+  const urls = await Promise.all(filesOrBase64.map((item) => uploadImageToS3(item, folder)));
+  return urls.filter(Boolean);
+}
+
 
 export async function fetchStats(): Promise<AdminStats> {
   const res = await fetch(`${API_BASE_URL}/shops/stats`, {
@@ -318,6 +360,9 @@ export async function createShopByAdmin(shopData: any): Promise<Shop> {
 
 
 export async function createProductByAdmin(productData: any): Promise<Product> {
+  if (productData?.images && Array.isArray(productData.images) && productData.images.length > 0) {
+    productData.images = await uploadMultipleImagesToS3(productData.images, 'products');
+  }
   const res = await fetch(`${API_BASE_URL}/products`, {
     method: 'POST',
     headers: {
@@ -333,6 +378,9 @@ export async function createProductByAdmin(productData: any): Promise<Product> {
 }
 
 export async function updateProductByAdmin(id: string, productData: any): Promise<Product> {
+  if (productData?.images && Array.isArray(productData.images) && productData.images.length > 0) {
+    productData.images = await uploadMultipleImagesToS3(productData.images, 'products');
+  }
   const res = await fetch(`${API_BASE_URL}/products/${id}`, {
     method: 'PUT',
     headers: {
@@ -375,6 +423,9 @@ export async function createCategory(categoryData: {
   image?: string;
   specConfig?: any[];
 }): Promise<Category> {
+  if (categoryData.image) {
+    categoryData.image = await uploadImageToS3(categoryData.image, 'categories');
+  }
   const res = await fetch(`${API_BASE_URL}/categories`, {
     method: 'POST',
     headers: {
@@ -392,7 +443,10 @@ export async function updateCategory(
   id: string,
   categoryData: Partial<Category>
 ): Promise<Category> {
-  const res = await fetch(`${API_BASE_URL}/categories/${id}`, {
+  if (categoryData.image) {
+    categoryData.image = await uploadImageToS3(categoryData.image, 'categories');
+  }
+  const res = await fetch(`${API_BASE_URL}/categories`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -443,6 +497,9 @@ export async function createBrand(brandData: {
   name: string;
   logo?: string;
 }): Promise<Brand> {
+  if (brandData.logo) {
+    brandData.logo = await uploadImageToS3(brandData.logo, 'brands');
+  }
   const res = await fetch(`${API_BASE_URL}/brands`, {
     method: 'POST',
     headers: {
@@ -460,6 +517,9 @@ export async function updateBrand(
   id: string,
   brandData: Partial<Brand>
 ): Promise<Brand> {
+  if (brandData.logo) {
+    brandData.logo = await uploadImageToS3(brandData.logo, 'brands');
+  }
   const res = await fetch(`${API_BASE_URL}/brands/${id}`, {
     method: 'PUT',
     headers: {
@@ -484,3 +544,84 @@ export async function deleteBrand(
   if (!res.ok) throw new Error(result.message || 'Failed to delete brand');
   return result;
 }
+
+// ==========================================
+// Transaction & Revenue API Services
+// ==========================================
+
+export async function fetchTransactions(filter?: TransactionFilter): Promise<{
+  transactions: Transaction[];
+  pagination: { total: number; page: number; limit: number; totalPages: number };
+  summary: { totalRevenue: number; totalCount: number };
+}> {
+  const query = new URLSearchParams();
+  if (filter?.shopId) query.append('shopId', filter.shopId);
+  if (filter?.type && filter.type !== 'all') query.append('type', filter.type);
+  if (filter?.paymentStatus && filter.paymentStatus !== 'all') query.append('paymentStatus', filter.paymentStatus);
+  if (filter?.search) query.append('search', filter.search);
+  if (filter?.startDate) query.append('startDate', filter.startDate);
+  if (filter?.endDate) query.append('endDate', filter.endDate);
+  if (filter?.page) query.append('page', String(filter.page));
+  if (filter?.limit) query.append('limit', String(filter.limit));
+
+  const res = await fetch(`${API_BASE_URL}/transactions?${query.toString()}`, {
+    headers: getAuthHeaders(),
+  });
+  checkAuthResponse(res);
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to fetch transactions');
+  return {
+    transactions: result.data?.transactions ?? [],
+    pagination: result.data?.pagination ?? { total: 0, page: 1, limit: 10, totalPages: 0 },
+    summary: result.data?.summary ?? { totalRevenue: 0, totalCount: 0 },
+  };
+}
+
+export async function fetchRevenueStats(): Promise<RevenueStats> {
+  const res = await fetch(`${API_BASE_URL}/transactions/revenue/stats`, {
+    headers: getAuthHeaders(),
+  });
+  checkAuthResponse(res);
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to fetch revenue statistics');
+  return result.data ?? {
+    totalRevenue: 0,
+    totalTransactions: 0,
+    completedTransactions: 0,
+  };
+}
+
+export async function createTransaction(data: {
+  shopId: string;
+  planId?: string;
+  planName?: string;
+  amount: number;
+  paymentStatus?: string;
+  type?: string;
+  notes?: string;
+}): Promise<Transaction> {
+  const res = await fetch(`${API_BASE_URL}/transactions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(data),
+  });
+  checkAuthResponse(res);
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to create transaction');
+  return result.data?.transaction ?? result;
+}
+
+export async function deleteTransaction(id: string): Promise<{ success: boolean; message: string }> {
+  const res = await fetch(`${API_BASE_URL}/transactions/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  checkAuthResponse(res);
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to delete transaction');
+  return result;
+}
+

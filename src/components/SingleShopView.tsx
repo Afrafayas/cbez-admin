@@ -28,6 +28,7 @@ interface SingleShopViewProps {
   onBack: () => void;
   onToggleVerify?: (id: string, currentStatus: boolean) => Promise<void> | void;
   onEdit?: (shop: Shop) => void;
+  onChangeSubscription?: (shop: Shop) => void;
   onDelete?: (shop: Shop) => void;
   onViewProduct?: (product: Product) => void;
   onAddProduct?: () => void;
@@ -41,6 +42,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
   onBack,
   onToggleVerify,
   onEdit,
+  onChangeSubscription,
   onDelete,
   onViewProduct,
   onAddProduct,
@@ -118,6 +120,16 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2.5">
+          {onChangeSubscription && (
+            <button
+              onClick={() => onChangeSubscription(shop)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/40 text-orange-300 text-xs font-bold transition-all shadow-md cursor-pointer"
+            >
+              <CreditCard className="w-3.5 h-3.5 text-orange-400" />
+              <span>Change Subscription</span>
+            </button>
+          )}
+
           {onEdit && (
             <button
               onClick={() => onEdit(shop)}
@@ -331,9 +343,20 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
                 <CreditCard className="w-4 h-4 text-orange-400" />
                 Subscription Quota & Listing Usage
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-500/15 border border-orange-500/30 text-orange-300">
-                {planName}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-500/15 border border-orange-500/30 text-orange-300">
+                  {planName}
+                </span>
+                {onChangeSubscription && (
+                  <button
+                    onClick={() => onChangeSubscription(shop)}
+                    className="px-3 py-1 rounded-xl bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 border border-orange-500/40 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  >
+                    <CreditCard className="w-3.5 h-3.5 text-orange-400" />
+                    <span>Change Plan</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="mt-4 space-y-2">

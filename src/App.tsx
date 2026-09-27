@@ -2,15 +2,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Navbar } from './components/Navbar';
 import { StatsOverview } from './components/StatsOverview';
+import { UserActivityChart } from './components/UserActivityChart';
 import { ShopsTable } from './components/ShopsTable';
 import { ProductsTable } from './components/ProductsTable';
 import { UsersTable } from './components/UsersTable';
 import { ActivityLogsTable } from './components/ActivityLogsTable';
 import { SettingsView } from './components/SettingsView';
 import { SubscriptionsTable } from './components/SubscriptionsTable';
+import { TransactionsTable } from './components/TransactionsTable';
 import { CategoriesBrandsView } from './components/CategoriesBrandsView';
 import { UserActivityModal } from './components/UserActivityModal';
 import { EditShopModal } from './components/EditShopModal';
+import { ChangeSubscriptionModal } from './components/ChangeSubscriptionModal';
 import { CreateShopModal } from './components/CreateShopModal';
 import { EditUserModal } from './components/EditUserModal';
 import { ShopDetailDrawer } from './components/ShopDetailDrawer';
@@ -26,7 +29,7 @@ import { SingleCategoryView } from './components/SingleCategoryView';
 import { SingleBrandView } from './components/SingleBrandView';
 import { EditCategoryModal } from './components/EditCategoryModal';
 import { EditBrandModal } from './components/EditBrandModal';
-import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan, Category, Brand } from './types';
+import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan, Category, Brand, Transaction, TransactionFilter } from './types';
 import {
   fetchStats,
   fetchShops,
@@ -59,6 +62,9 @@ import {
   createShopByAdmin,
   createProductByAdmin,
   updateProductByAdmin,
+  fetchTransactions,
+  fetchRevenueStats,
+  deleteTransaction,
 } from './services/adminApi';
 
 import { CheckCircle2, AlertCircle, RefreshCw, AlertTriangle, Loader2, ArrowLeft, ShieldAlert } from 'lucide-react';
@@ -84,12 +90,25 @@ export const App: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
 
+  // Transactions State
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [totalTransactions, setTotalTransactions] = useState<number>(0);
+  const [totalRevenue, setTotalRevenue] = useState<number>(0);
+  const [transactionPage, setTransactionPage] = useState<number>(1);
+  const [transactionTotalPages, setTransactionTotalPages] = useState<number>(1);
+  const [transactionFilter, setTransactionFilter] = useState<TransactionFilter>({
+    page: 1,
+    limit: 10,
+  });
+  const [isTransactionsLoading, setIsTransactionsLoading] = useState<boolean>(false);
+
   const [filterStatus, setFilterStatus] = useState<'all' | 'verified' | 'pending'>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Shop Modals state
   const [selectedShopForEdit, setSelectedShopForEdit] = useState<Shop | null>(null);
+  const [selectedShopForSubscription, setSelectedShopForSubscription] = useState<Shop | null>(null);
   const [isCreateShopOpen, setIsCreateShopOpen] = useState(false);
   const [selectedShopForDrawer, setSelectedShopForDrawer] = useState<Shop | null>(null);
   const [selectedShopForDelete, setSelectedShopForDelete] = useState<Shop | null>(null);
@@ -139,12 +158,29 @@ export const App: React.FC = () => {
     setTimeout(() => setToast(null), 4000);
   };
 
+  const loadTransactions = useCallback(async (customFilter?: TransactionFilter) => {
+    setIsTransactionsLoading(true);
+    try {
+      const activeFilter = customFilter || transactionFilter;
+      const res = await fetchTransactions(activeFilter);
+      setTransactions(res.transactions);
+      setTotalTransactions(res.pagination.total);
+      setTransactionTotalPages(res.pagination.totalPages);
+      setTotalRevenue(res.summary.totalRevenue);
+    } catch (err: any) {
+      console.error('Failed to fetch transactions:', err);
+    } finally {
+      setIsTransactionsLoading(false);
+    }
+  }, [transactionFilter]);
+
   // Load stats, shops, products, users, activity logs, plans, categories, and brands from backend
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [statsData, shopsData, usersData, logsData, productsData, plansData, catsData, brandsData] = await Promise.all([
+      const [statsData, revenueStatsData, shopsData, usersData, logsData, productsData, plansData, catsData, brandsData] = await Promise.all([
         fetchStats(),
+        fetchRevenueStats().catch(() => ({ totalRevenue: 0, totalTransactions: 0, completedTransactions: 0 })),
         fetchShops(),
         fetchUsers().catch(() => []),
         fetchAllActivityLogs().catch(() => []),
@@ -153,7 +189,9 @@ export const App: React.FC = () => {
         fetchCategories().catch(() => []),
         fetchBrands().catch(() => []),
       ]);
-      setStats(statsData);
+      const currentRevenue = statsData.totalRevenue ?? revenueStatsData?.totalRevenue ?? 0;
+      setStats({ ...statsData, totalRevenue: currentRevenue });
+      setTotalRevenue(currentRevenue);
       setShops(shopsData);
       setUsers(usersData);
       setActivityLogs(logsData);
@@ -168,6 +206,12 @@ export const App: React.FC = () => {
       setIsLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'transactions' && isAuthenticated) {
+      loadTransactions();
+    }
+  }, [activeTab, isAuthenticated, transactionFilter, loadTransactions]);
 
   // Handlers for Subscription Plans
   const handleCreatePlan = async (dto: any) => {
@@ -676,6 +720,7 @@ export const App: React.FC = () => {
                 onBack={handleBackFromSingleView}
                 onToggleVerify={handleToggleVerify}
                 onEdit={(shop) => setSelectedShopForEdit(shop)}
+                onChangeSubscription={(shop) => setSelectedShopForSubscription(shop)}
                 onDelete={(shop) => setSelectedShopForDelete(shop)}
                 onViewProduct={handleOpenSingleProduct}
                 onAddProduct={() => setIsAddProductOpen(true)}
@@ -751,17 +796,49 @@ export const App: React.FC = () => {
                 </div>
               )}
 
-              {/* Stats KPI Overview (Dashboard only) */}
+              {/* Stats KPI Overview & Activity Analytics Chart (Dashboard only) */}
               {activeTab === 'dashboard' && (
-                <StatsOverview
-                  stats={stats}
-                  onFilterStatus={setFilterStatus}
-                  selectedStatus={filterStatus}
-                />
+                <>
+                  <StatsOverview
+                    stats={stats}
+                    onFilterStatus={setFilterStatus}
+                    selectedStatus={filterStatus}
+                    onNavigateToTransactions={() => setActiveTab('transactions')}
+                  />
+                  <UserActivityChart
+                    logs={activityLogs}
+                    onNavigateToActivityLogs={() => setActiveTab('activity')}
+                  />
+                </>
               )}
 
               {/* Active Tab View Rendering */}
-              {activeTab === 'subscriptions' ? (
+              {activeTab === 'transactions' ? (
+                <TransactionsTable
+                  transactions={transactions}
+                  totalTransactions={totalTransactions}
+                  totalRevenue={totalRevenue}
+                  currentPage={transactionPage}
+                  totalPages={transactionTotalPages}
+                  pageSize={10}
+                  onPageChange={(page) => {
+                    setTransactionPage(page);
+                    setTransactionFilter((prev) => ({ ...prev, page }));
+                  }}
+                  onFilterChange={(filter) => {
+                    setTransactionPage(filter.page || 1);
+                    setTransactionFilter((prev) => ({ ...prev, ...filter }));
+                  }}
+                  onDeleteTransaction={async (id) => {
+                    await deleteTransaction(id);
+                    showToast('Transaction log deleted successfully');
+                    loadTransactions();
+                    loadData();
+                  }}
+                  onViewShop={handleOpenSingleShop}
+                  isLoading={isTransactionsLoading}
+                />
+              ) : activeTab === 'subscriptions' ? (
                 <SubscriptionsTable
                   plans={subscriptionPlans}
                   shops={shops}
@@ -815,15 +892,18 @@ export const App: React.FC = () => {
                   searchTerm={searchTerm}
                 />
               ) : activeTab === 'activity' ? (
-                <ActivityLogsTable
-                  logs={activityLogs}
-                  searchTerm={searchTerm}
-                  onSelectUserLogs={(userId, userName) =>
-                    setSelectedUserForActivityModal({ userId, userName })
-                  }
-                  onViewUser={handleOpenSingleUserById}
-                  onRefresh={loadData}
-                />
+                <div className="space-y-6">
+                  <UserActivityChart logs={activityLogs} />
+                  <ActivityLogsTable
+                    logs={activityLogs}
+                    searchTerm={searchTerm}
+                    onSelectUserLogs={(userId, userName) =>
+                      setSelectedUserForActivityModal({ userId, userName })
+                    }
+                    onViewUser={handleOpenSingleUserById}
+                    onRefresh={loadData}
+                  />
+                </div>
               ) : activeTab === 'settings' ? (
                 <SettingsView onShowToast={showToast} onBackToShops={() => setActiveTab('shops')} />
               ) : (
@@ -832,6 +912,7 @@ export const App: React.FC = () => {
                   products={products}
                   onToggleVerify={handleToggleVerify}
                   onEdit={(shop) => setSelectedShopForEdit(shop)}
+                  onChangeSubscription={(shop) => setSelectedShopForSubscription(shop)}
                   onDelete={(shop) => setSelectedShopForDelete(shop)}
                   onViewDetails={handleOpenSingleShop}
                   onOpenCreateShop={() => setIsCreateShopOpen(true)}
@@ -852,7 +933,38 @@ export const App: React.FC = () => {
         isOpen={Boolean(selectedShopForEdit)}
         onClose={() => setSelectedShopForEdit(null)}
         onSave={handleSaveEdit}
-        subscriptionPlans={subscriptionPlans}
+        categories={categories}
+        isLoading={isActionLoading}
+      />
+
+      <ChangeSubscriptionModal
+        shop={selectedShopForSubscription}
+        isOpen={Boolean(selectedShopForSubscription)}
+        onClose={() => setSelectedShopForSubscription(null)}
+        plans={subscriptionPlans}
+        onAssignPlan={async (shopId, planId) => {
+          setIsActionLoading(true);
+          try {
+            await assignSubscriptionToShop(shopId, planId);
+            showToast('Subscription plan updated & transaction recorded successfully!');
+            setSelectedShopForSubscription(null);
+            await loadData();
+            if (activeSingleView?.type === 'shop' && activeSingleView.shop.id === shopId) {
+              try {
+                const freshShop = await fetchShopById(shopId);
+                setActiveSingleView({ type: 'shop', shop: freshShop });
+              } catch (e) {}
+            }
+            if (activeTab === 'transactions') {
+              loadTransactions();
+            }
+          } catch (err: any) {
+            showToast(err.message || 'Failed to update subscription plan', 'error');
+            throw err;
+          } finally {
+            setIsActionLoading(false);
+          }
+        }}
         isLoading={isActionLoading}
       />
 
@@ -873,6 +985,7 @@ export const App: React.FC = () => {
           }
         }}
         subscriptionPlans={subscriptionPlans}
+        categories={categories}
         isLoading={isActionLoading}
       />
 

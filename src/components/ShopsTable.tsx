@@ -9,6 +9,7 @@ interface ShopsTableProps {
   products?: Product[];
   onToggleVerify: (id: string, currentStatus: boolean) => void;
   onEdit: (shop: Shop) => void;
+  onChangeSubscription?: (shop: Shop) => void;
   onDelete: (shop: Shop) => void;
   onViewDetails: (shop: Shop) => void;
   filterStatus: 'all' | 'verified' | 'pending';
@@ -22,6 +23,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
   products,
   onToggleVerify,
   onEdit,
+  onChangeSubscription,
   onDelete,
   onViewDetails,
   filterStatus,
@@ -479,6 +481,16 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                             title="View Store Products & Details"
                           >
                             <Eye className="w-4 h-4" />
+                          </button>
+                        )}
+
+                        {onChangeSubscription && (
+                          <button
+                            onClick={() => onChangeSubscription(shop)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 transition-colors cursor-pointer"
+                            title="Change Subscription Plan"
+                          >
+                            <CreditCard className="w-4 h-4 text-orange-400" />
                           </button>
                         )}
 

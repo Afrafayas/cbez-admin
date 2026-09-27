@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { SubscriptionPlan } from '../types';
-import { X, Store, CreditCard, Save } from 'lucide-react';
+import { SubscriptionPlan, Category } from '../types';
+import { X, Store, CreditCard, Save, Loader2 } from 'lucide-react';
 
 interface CreateShopModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (shopData: any) => Promise<void>;
   subscriptionPlans: SubscriptionPlan[];
+  categories?: Category[];
   isLoading: boolean;
 }
 
@@ -15,6 +16,7 @@ export const CreateShopModal: React.FC<CreateShopModalProps> = ({
   onClose,
   onSave,
   subscriptionPlans,
+  categories = [],
   isLoading,
 }) => {
   const [name, setName] = useState('');
@@ -195,14 +197,29 @@ export const CreateShopModal: React.FC<CreateShopModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1">Primary Category *</label>
-              <input
-                type="text"
+              <select
                 required
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3.5 py-2 text-xs rounded-xl glass-input"
-                placeholder="e.g. Mobiles & Tablets"
-              />
+                className="w-full px-3.5 py-2 text-xs rounded-xl glass-input bg-slate-900 border border-white/10 text-white font-semibold outline-none focus:border-orange-500 cursor-pointer"
+              >
+                <option value="" disabled className="bg-slate-900 text-slate-400">-- Choose Category --</option>
+                {categories.length > 0 ? (
+                  categories.map((cat) => (
+                    <option key={cat.id} value={cat.name} className="bg-slate-900 text-white font-medium">
+                      {cat.name}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="Mobiles & Tablets" className="bg-slate-900 text-white font-medium">Mobiles & Tablets</option>
+                    <option value="Laptops & Computers" className="bg-slate-900 text-white font-medium">Laptops & Computers</option>
+                    <option value="Electronics & Accessories" className="bg-slate-900 text-white font-medium">Electronics & Accessories</option>
+                    <option value="Smart Watches" className="bg-slate-900 text-white font-medium">Smart Watches</option>
+                    <option value="Audio & Sound" className="bg-slate-900 text-white font-medium">Audio & Sound</option>
+                  </>
+                )}
+              </select>
             </div>
           </div>
 

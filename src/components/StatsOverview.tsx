@@ -1,15 +1,40 @@
 import React from 'react';
-import { Store, ShieldCheck, Clock, ShoppingBag, MessageSquareText, Users } from 'lucide-react';
+import { Store, ShieldCheck, Clock, ShoppingBag, Users, DollarSign } from 'lucide-react';
 import { AdminStats } from '../types';
 
 interface StatsOverviewProps {
   stats: AdminStats;
   onFilterStatus: (status: 'all' | 'verified' | 'pending') => void;
   selectedStatus: 'all' | 'verified' | 'pending';
+  onNavigateToTransactions?: () => void;
 }
 
-export const StatsOverview: React.FC<StatsOverviewProps> = ({ stats, onFilterStatus, selectedStatus }) => {
+export const StatsOverview: React.FC<StatsOverviewProps> = ({
+  stats,
+  onFilterStatus,
+  selectedStatus,
+  onNavigateToTransactions,
+}) => {
+  const formatCurrency = (amount?: number) => {
+    if (amount === undefined || amount === null) return '₹0';
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   const cards = [
+    {
+      id: 'revenue',
+      title: 'Total Platform Revenue',
+      value: formatCurrency(stats.totalRevenue),
+      icon: DollarSign,
+      color: 'from-emerald-600/20 to-teal-600/20 border-emerald-500/30 text-emerald-400',
+      badge: 'Verified Billing',
+      filterKey: null,
+      onClick: onNavigateToTransactions,
+    },
     {
       id: 'all',
       title: 'Total Registered Shops',
@@ -47,15 +72,6 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ stats, onFilterSta
       filterKey: null,
     },
     {
-      id: 'leads',
-      title: 'Customer Leads',
-      value: stats.totalLeads,
-      icon: MessageSquareText,
-      color: 'from-cyan-600/20 to-sky-600/20 border-cyan-500/30 text-cyan-400',
-      badge: 'WhatsApp & Call Inquiries',
-      filterKey: null,
-    },
-    {
       id: 'users',
       title: 'Total Users Registered',
       value: stats.totalUsers,
@@ -70,14 +86,18 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ stats, onFilterSta
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
       {cards.map((card) => {
         const Icon = card.icon;
-        const isClickable = card.filterKey !== null;
-        const isSelected = isClickable && selectedStatus === card.filterKey;
+        const isFilterClickable = card.filterKey !== null;
+        const isCustomClickable = !!card.onClick;
+        const isClickable = isFilterClickable || isCustomClickable;
+        const isSelected = isFilterClickable && selectedStatus === card.filterKey;
 
         return (
           <div
             key={card.id}
             onClick={() => {
-              if (isClickable && card.filterKey) {
+              if (isCustomClickable && card.onClick) {
+                card.onClick();
+              } else if (isFilterClickable && card.filterKey) {
                 onFilterStatus(card.filterKey);
                 setTimeout(() => {
                   const section = document.getElementById('shops-table-section');
