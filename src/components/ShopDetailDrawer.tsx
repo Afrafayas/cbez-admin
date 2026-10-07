@@ -6,7 +6,7 @@ interface ShopDetailDrawerProps {
   shop: Shop | null;
   isOpen: boolean;
   onClose: () => void;
-  onToggleVerify?: (id: string, currentStatus: boolean) => Promise<void> | void;
+  onToggleVerify?: (id: string, currentStatus: boolean, shop?: Shop) => Promise<void> | void;
 }
 
 export const ShopDetailDrawer: React.FC<ShopDetailDrawerProps> = ({ shop, isOpen, onClose, onToggleVerify }) => {
@@ -21,7 +21,7 @@ export const ShopDetailDrawer: React.FC<ShopDetailDrawerProps> = ({ shop, isOpen
     if (!onToggleVerify) return;
     setIsVerifying(true);
     try {
-      await onToggleVerify(shop.id, shop.verified);
+      await onToggleVerify(shop.id, shop.verified, shop);
     } finally {
       setIsVerifying(false);
     }

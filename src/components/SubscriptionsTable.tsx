@@ -39,6 +39,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
     name: '',
     description: '',
     productLimit: 10,
+    durationDays: 30,
     price: 0,
     status: 'ACTIVE',
   });
@@ -68,7 +69,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
 
   const handleOpenCreatePlan = () => {
     setEditingPlan(null);
-    setPlanFormData({ name: '', description: '', productLimit: 10, price: 0, status: 'ACTIVE' });
+    setPlanFormData({ name: '', description: '', productLimit: 10, durationDays: 30, price: 0, status: 'ACTIVE' });
     setShowPlanModal(true);
   };
 
@@ -78,6 +79,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
       name: plan.name,
       description: plan.description || '',
       productLimit: plan.productLimit,
+      durationDays: plan.durationDays ?? 30,
       price: plan.price || 0,
       status: plan.status || 'ACTIVE',
     });
@@ -262,7 +264,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
               <tbody className="divide-y divide-white/5 text-xs">
                 {filteredDealers.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-slate-400">
+                    <td colSpan={7} className="p-8 text-center text-slate-400">
                       No dealers found matching the selected subscription filter.
                     </td>
                   </tr>
@@ -385,7 +387,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
               <tbody className="divide-y divide-white/5 text-xs">
                 {plans.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-slate-400">
+                    <td colSpan={7} className="p-8 text-center text-slate-400">
                       No subscription plans found. Click "Create New Plan" to add one.
                     </td>
                   </tr>
@@ -479,7 +481,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">Product Limit *</label>
                   <input
@@ -488,6 +490,20 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
                     min={1}
                     value={planFormData.productLimit}
                     onChange={(e) => setPlanFormData({ ...planFormData, productLimit: Number(e.target.value) })}
+                    placeholder="e.g. 50"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-orange-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Duration (Days) *</label>
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    value={planFormData.durationDays}
+                    onChange={(e) => setPlanFormData({ ...planFormData, durationDays: Number(e.target.value) })}
+                    placeholder="e.g. 30"
                     className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-orange-500"
                   />
                 </div>
@@ -500,6 +516,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
                     min={0}
                     value={planFormData.price}
                     onChange={(e) => setPlanFormData({ ...planFormData, price: Number(e.target.value) })}
+                    placeholder="e.g. 999"
                     className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-orange-500"
                   />
                 </div>
