@@ -1,4 +1,4 @@
-import { Shop, AdminStats, UserAccount, Product, SubscriptionPlan, Category, Brand, Transaction, TransactionFilter, RevenueStats } from '../types';
+import { Shop, AdminStats, UserAccount, Product, SubscriptionPlan, Category, Brand, Transaction, TransactionFilter, RevenueStats, MlxDetails } from '../types';
 
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cbez-web-backend.onrender.com/api';
@@ -625,3 +625,35 @@ export async function deleteTransaction(id: string): Promise<{ success: boolean;
   return result;
 }
 
+
+
+export async function fetchPlatformSettings(): Promise<MlxDetails> {
+  const res = await fetch(`${API_BASE_URL}/platform-settings`, {
+    headers: getAuthHeaders(),
+  });
+  checkAuthResponse(res);
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to fetch platform settings');
+  return result.data ?? result;
+}
+
+export async function updatePlatformSettings(data: {
+  platformName?: string;
+  website?: string;
+  supportPhone?: string;
+  supportEmail?: string;
+  address?: string;
+}): Promise<MlxDetails> {
+  const res = await fetch(`${API_BASE_URL}/platform-settings`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(data),
+  });
+  checkAuthResponse(res);
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to update platform settings');
+  return result.data ?? result;
+}

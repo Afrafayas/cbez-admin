@@ -237,3 +237,17 @@ export interface RevenueStats {
 }
 
 
+
+export interface MlxDetails {
+  id?: string;
+  platformName: string;
+  website: string;
+  websiteLink?: string;
+  supportPhone: string;
+  phone?: string;
+  supportEmail: string;
+  email?: string;
+  address: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
