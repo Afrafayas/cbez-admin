@@ -11,13 +11,12 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-
     try {
       const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
