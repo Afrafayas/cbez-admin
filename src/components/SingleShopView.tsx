@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Shop, Product, getShopProductCount, getProductImages } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Shop, Product, Transaction, getShopProductCount, getProductImages } from '../types';
+import { fetchTransactions } from '../services/adminApi';
 import {
   ArrowLeft,
   ShieldCheck,
@@ -20,13 +21,14 @@ import {
   ExternalLink,
   Plus,
   Eye,
+  Receipt,
 } from 'lucide-react';
 
 interface SingleShopViewProps {
   shop: Shop;
   catalogProducts?: Product[];
   onBack: () => void;
-  onToggleVerify?: (id: string, currentStatus: boolean) => Promise<void> | void;
+  onToggleVerify?: (id: string, currentStatus: boolean, shop?: Shop) => Promise<void> | void;
   onEdit?: (shop: Shop) => void;
   onChangeSubscription?: (shop: Shop) => void;
   onDelete?: (shop: Shop) => void;
@@ -51,6 +53,32 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
 }) => {
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
   const [productSearch, setProductSearch] = useState<string>('');
+  const [shopTransactions, setShopTransactions] = useState<Transaction[]>([]);
+  const [isLoadingTx, setIsLoadingTx] = useState<boolean>(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (shop?.id) {
+      setIsLoadingTx(true);
+      fetchTransactions({ shopId: shop.id })
+        .then((res) => {
+          if (isMounted) {
+            setShopTransactions(res.transactions || []);
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to load shop transactions:', err);
+        })
+        .finally(() => {
+          if (isMounted) {
+            setIsLoadingTx(false);
+          }
+        });
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [shop?.id]);
 
   const shopProducts = shop.products || [];
   const catalogMatchingProducts = (catalogProducts || []).filter(
@@ -91,7 +119,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
     if (!onToggleVerify) return;
     setIsVerifying(true);
     try {
-      await onToggleVerify(shop.id, shop.verified);
+      await onToggleVerify(shop.id, shop.verified, shop);
     } finally {
       setIsVerifying(false);
     }
@@ -401,6 +429,100 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
             <span>Plan Status: <strong className="text-emerald-400 font-bold">{plan?.status || 'ACTIVE'}</strong></span>
           </div>
         </div>
+      </div>
+
+      {/* Subscription Plan Transaction Logs */}
+      <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-xl bg-slate-900/60 p-5 sm:p-6 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-orange-500/15 text-orange-400 border border-orange-500/30">
+              <Receipt className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-white">Subscription & Payment Transaction Logs</h2>
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-white/10">
+                  {shopTransactions.length} {shopTransactions.length === 1 ? 'Record' : 'Records'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Complete audit history of subscription plans assigned, renewals, and payment transaction IDs.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {isLoadingTx ? (
+          <div className="py-8 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin text-orange-400" />
+            <span>Loading transaction logs...</span>
+          </div>
+        ) : shopTransactions.length === 0 ? (
+          <div className="p-6 rounded-xl bg-slate-950/40 border border-white/5 text-center text-xs text-slate-400">
+            No subscription transactions recorded for this store yet.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="bg-slate-950/70 text-slate-400 uppercase tracking-wider border-b border-white/10 text-[10px]">
+                <tr>
+                  <th className="px-3.5 py-2.5 font-semibold">Date</th>
+                  <th className="px-3.5 py-2.5 font-semibold">Plan Name</th>
+                  <th className="px-3.5 py-2.5 font-semibold">Amount</th>
+                  <th className="px-3.5 py-2.5 font-semibold">Payment Mode</th>
+                  <th className="px-3.5 py-2.5 font-semibold">Transaction ID / Ref</th>
+                  <th className="px-3.5 py-2.5 font-semibold">Type</th>
+                  <th className="px-3.5 py-2.5 font-semibold">Status</th>
+                  <th className="px-3.5 py-2.5 font-semibold">Notes</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5 bg-slate-950/30">
+                {shopTransactions.map((tx) => (
+                  <tr key={tx.id} className="hover:bg-white/[0.02]">
+                    <td className="px-3.5 py-3 whitespace-nowrap text-slate-300">
+                      {new Date(tx.createdAt).toLocaleDateString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </td>
+                    <td className="px-3.5 py-3 font-bold text-white">
+                      {tx.planName || tx.plan?.name || 'Subscription Plan'}
+                    </td>
+                    <td className="px-3.5 py-3 font-extrabold text-emerald-400 whitespace-nowrap">
+                      ?{tx.amount}
+                    </td>
+                    <td className="px-3.5 py-3 whitespace-nowrap">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-500/15 text-blue-300 border border-blue-500/30">
+                        {tx.transactionMode || 'UPI'}
+                      </span>
+                    </td>
+                    <td className="px-3.5 py-3 font-mono text-[11px] text-slate-200">
+                      {tx.transactionId ? (
+                        <span className="bg-slate-900 px-1.5 py-0.5 rounded border border-white/10">
+                          {tx.transactionId}
+                        </span>
+                      ) : (
+                        <span className="text-slate-500">N/A</span>
+                      )}
+                    </td>
+                    <td className="px-3.5 py-3 text-[10px] font-semibold text-orange-300">
+                      {tx.type}
+                    </td>
+                    <td className="px-3.5 py-3">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        {tx.paymentStatus}
+                      </span>
+                    </td>
+                    <td className="px-3.5 py-3 text-slate-400 max-w-[150px] truncate" title={tx.notes || ''}>
+                      {tx.notes || '-'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Store Products Catalog */}

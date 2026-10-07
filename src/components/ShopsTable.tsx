@@ -7,7 +7,7 @@ interface ShopsTableProps {
   onOpenCreateShop?: () => void;
   shops: Shop[];
   products?: Product[];
-  onToggleVerify: (id: string, currentStatus: boolean) => void;
+  onToggleVerify: (id: string, currentStatus: boolean, shop?: Shop) => void;
   onEdit: (shop: Shop) => void;
   onChangeSubscription?: (shop: Shop) => void;
   onDelete: (shop: Shop) => void;
@@ -230,7 +230,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                   {/* Verification Toggle */}
                   <div className="flex flex-col items-end gap-1">
                     <button
-                      onClick={() => onToggleVerify(shop.id, shop.verified)}
+                      onClick={() => onToggleVerify(shop.id, shop.verified, shop)}
                       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${shop.verified ? 'bg-emerald-500' : 'bg-slate-700'
                         }`}
                       title={shop.verified ? 'Click to Unverify Shop' : 'Click to Verify Shop'}
@@ -437,7 +437,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                     <td className="px-5 py-4 text-center">
                       <div className="flex flex-col items-center gap-1.5">
                         <button
-                          onClick={() => onToggleVerify(shop.id, shop.verified)}
+                          onClick={() => onToggleVerify(shop.id, shop.verified, shop)}
                           className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${shop.verified ? 'bg-emerald-500' : 'bg-slate-700'
                             }`}
                           title={shop.verified ? 'Click to Unverify Shop' : 'Click to Verify Shop'}

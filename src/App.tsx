@@ -29,6 +29,9 @@ import { SingleCategoryView } from './components/SingleCategoryView';
 import { SingleBrandView } from './components/SingleBrandView';
 import { EditCategoryModal } from './components/EditCategoryModal';
 import { EditBrandModal } from './components/EditBrandModal';
+import { ApproveAgentSubscriptionModal } from './components/ApproveAgentSubscriptionModal';
+import { NearlyExpiringSubscriptions } from './components/NearlyExpiringSubscriptions';
+import { triggerExpiryAlertsApi } from './services/adminApi';
 import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan, Category, Brand, Transaction, TransactionFilter } from './types';
 import {
   fetchStats,
@@ -109,6 +112,7 @@ export const App: React.FC = () => {
   // Shop Modals state
   const [selectedShopForEdit, setSelectedShopForEdit] = useState<Shop | null>(null);
   const [selectedShopForSubscription, setSelectedShopForSubscription] = useState<Shop | null>(null);
+  const [shopToApprove, setShopToApprove] = useState<Shop | null>(null);
   const [isCreateShopOpen, setIsCreateShopOpen] = useState(false);
   const [selectedShopForDrawer, setSelectedShopForDrawer] = useState<Shop | null>(null);
   const [selectedShopForDelete, setSelectedShopForDelete] = useState<Shop | null>(null);
@@ -388,19 +392,86 @@ export const App: React.FC = () => {
   }, [activeTab]);
 
 
-  // Handler: Toggle Verification Switch
-  const handleToggleVerify = async (id: string, currentStatus: boolean) => {
+    // Handler: Approve Agent Subscription Modal Submission
+  const handleConfirmApproveAgent = async (
+    shopId: string,
+    planId: string,
+    transactionMode: string,
+    transactionId: string,
+    amount: number,
+    notes: string
+  ) => {
+    setIsActionLoading(true);
     try {
-      const updatedShop = await toggleVerifyShop(id, !currentStatus);
-      showToast(`Store "${updatedShop.name}" ${!currentStatus ? 'Verified' : 'Unverified'} successfully!`);
-      setShops((prev) => prev.map((s) => (s.id === id ? { ...s, verified: !currentStatus } : s)));
+      const updatedShop = await toggleVerifyShop(shopId, true, {
+        planId,
+        transactionMode,
+        transactionId,
+        amount,
+        notes,
+      });
+
+      showToast(`Store "${updatedShop.name}" verified and subscription plan assigned successfully!`);
+      setShopToApprove(null);
+
+      // Update shop in state
+      setShops((prev) => prev.map((s) => (s.id === shopId ? updatedShop : s)));
+
+      // Update single view if active
+      if (activeSingleView?.type === 'shop' && activeSingleView.shop.id === shopId) {
+        setActiveSingleView({
+          type: 'shop',
+          shop: updatedShop,
+        });
+      }
+
+      // Update drawer if open
+      if (selectedShopForDrawer && selectedShopForDrawer.id === shopId) {
+        setSelectedShopForDrawer(updatedShop);
+      }
+
+      // Refresh platform statistics, transactions, and plans
+      const statsData = await fetchStats();
+      setStats(statsData);
+      loadTransactions();
+      const updatedPlans = await fetchSubscriptionPlans().catch(() => []);
+      if (Array.isArray(updatedPlans)) setSubscriptionPlans(updatedPlans);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to verify store and save transaction', 'error');
+      throw err;
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  // Handler: Toggle Verification Switch
+  const handleToggleVerify = async (id: string, currentStatus: boolean, shopObj?: Shop) => {
+    if (!currentStatus) {
+      // Find shop to approve with subscription and transaction modal
+      const targetShop =
+        shopObj ||
+        (activeSingleView?.type === 'shop' && activeSingleView.shop.id === id ? activeSingleView.shop : null) ||
+        shops.find((s) => s.id === id) ||
+        null;
+
+      if (targetShop) {
+        setShopToApprove(targetShop);
+        return;
+      }
+    }
+
+    // Revoking verification
+    try {
+      const updatedShop = await toggleVerifyShop(id, false);
+      showToast(`Store "${updatedShop.name}" verification revoked.`);
+      setShops((prev) => prev.map((s) => (s.id === id ? { ...s, verified: false } : s)));
       if (selectedShopForDrawer && selectedShopForDrawer.id === id) {
-        setSelectedShopForDrawer((prev) => (prev ? { ...prev, verified: !currentStatus } : null));
+        setSelectedShopForDrawer((prev) => (prev ? { ...prev, verified: false } : null));
       }
       if (activeSingleView?.type === 'shop' && activeSingleView.shop.id === id) {
         setActiveSingleView({
           type: 'shop',
-          shop: { ...activeSingleView.shop, verified: !currentStatus },
+          shop: { ...activeSingleView.shop, verified: false },
         });
       }
       const statsData = await fetchStats();
@@ -934,6 +1005,15 @@ export const App: React.FC = () => {
         onClose={() => setSelectedShopForEdit(null)}
         onSave={handleSaveEdit}
         categories={categories}
+        isLoading={isActionLoading}
+      />
+
+      <ApproveAgentSubscriptionModal
+        shop={shopToApprove}
+        isOpen={Boolean(shopToApprove)}
+        onClose={() => setShopToApprove(null)}
+        plans={subscriptionPlans}
+        onConfirm={handleConfirmApproveAgent}
         isLoading={isActionLoading}
       />
 

@@ -104,14 +104,27 @@ export async function fetchShopById(id: string): Promise<Shop> {
   return result.data?.shop ?? result;
 }
 
-export async function toggleVerifyShop(id: string, verified?: boolean): Promise<Shop> {
+export async function toggleVerifyShop(
+  id: string,
+  verified?: boolean,
+  approvalDetails?: {
+    planId?: string;
+    amount?: number;
+    transactionMode?: string;
+    transactionId?: string;
+    notes?: string;
+  }
+): Promise<Shop> {
   const res = await fetch(`${API_BASE_URL}/shops/${id}/verify`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
     },
-    body: JSON.stringify({ verified }),
+    body: JSON.stringify({
+      verified,
+      ...(approvalDetails || {}),
+    }),
   });
   const result = await res.json();
   if (!res.ok) throw new Error(result.message || 'Failed to toggle shop verification');
@@ -262,6 +275,7 @@ export async function createSubscriptionPlan(planData: {
   name: string;
   description?: string;
   productLimit: number;
+  durationDays?: number;
   price: number;
   status?: string;
 }): Promise<SubscriptionPlan> {
@@ -326,7 +340,14 @@ export async function deleteSubscriptionPlan(
 
 export async function assignSubscriptionToShop(
   shopId: string,
-  planId: string
+  planId: string,
+  extra?: {
+    transactionMode?: string;
+    transactionId?: string;
+    amount?: number;
+    notes?: string;
+    forceImmediate?: boolean;
+  }
 ): Promise<any> {
   const res = await fetch(`${API_BASE_URL}/subscriptions/assign`, {
     method: 'POST',
@@ -334,7 +355,11 @@ export async function assignSubscriptionToShop(
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
     },
-    body: JSON.stringify({ shopId, planId }),
+    body: JSON.stringify({
+      shopId,
+      planId,
+      ...(extra || {}),
+    }),
   });
   const result = await res.json();
   if (!res.ok) throw new Error(result.message || 'Failed to assign subscription plan');
@@ -656,4 +681,14 @@ export async function updatePlatformSettings(data: {
   const result = await res.json();
   if (!res.ok) throw new Error(result.message || 'Failed to update platform settings');
   return result.data ?? result;
+}
+
+export async function triggerExpiryAlertsApi(): Promise<any> {
+  const res = await fetch(`${API_BASE_URL}/subscriptions/trigger-expiry-alerts`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+  });
+  checkAuthResponse(res);
+  const result = await res.json();
+  return result;
 }

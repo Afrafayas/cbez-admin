@@ -17,14 +17,29 @@ export interface Shop {
   subscription?: {
     id: string;
     planId: string;
+    startDate?: string;
+    endDate?: string;
+    status?: string;
     plan?: SubscriptionPlan;
+    createdAt?: string;
   };
+  queuedSubscriptions?: any[];
+  isSubscriptionExpired?: boolean;
   subscriptionUsage?: {
     planName: string;
     productLimit: number;
     currentProducts: number;
     remaining: number;
     isLimitReached: boolean;
+    durationDays?: number;
+    startDate?: string;
+    endDate?: string;
+    isExpired?: boolean;
+    daysRemaining?: number;
+    isExpiringSoon?: boolean;
+    queuedPlan?: any;
+    canAddProduct?: boolean;
+    expirationMessage?: string | null;
   };
   _count?: {
     products: number;
@@ -150,6 +165,7 @@ export interface SubscriptionPlan {
   name: string;
   description?: string;
   productLimit: number;
+  durationDays?: number;
   status: 'ACTIVE' | 'INACTIVE' | string;
   price: number;
   createdAt?: string;
@@ -212,6 +228,8 @@ export interface Transaction {
   amount: number;
   paymentStatus: 'COMPLETED' | 'PENDING' | 'FAILED' | string;
   type: 'INITIAL_VERIFICATION' | 'PLAN_CHANGE' | 'RENEWAL' | 'MANUAL' | string;
+  transactionMode?: string | null;
+  transactionId?: string | null;
   notes?: string | null;
   createdAt: string;
   updatedAt?: string;
