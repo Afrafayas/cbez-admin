@@ -168,7 +168,27 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
   isLoading,
   searchTerm = '',
 }) => {
-  const [activeTab, setActiveTab] = useState<'categories' | 'brands'>('categories');
+  const [activeTab, setActiveTab] = useState<'categories' | 'brands'>(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const sub = params.get('subtab');
+      if (sub === 'categories' || sub === 'brands') return sub;
+      const stored = localStorage.getItem('cbez_admin_subtab_cat_brand');
+      if (stored === 'categories' || stored === 'brands') return stored;
+    } catch (e) {}
+    return 'categories';
+  });
+
+  const handleTabChange = (tab: 'categories' | 'brands') => {
+    setActiveTab(tab);
+    try {
+      localStorage.setItem('cbez_admin_subtab_cat_brand', tab);
+      const params = new URLSearchParams(window.location.search);
+      params.set('subtab', tab);
+      const newUrl = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
+      window.history.replaceState(null, '', newUrl);
+    } catch (e) {}
+  };
   const [localSearch, setLocalSearch] = useState('');
   const [modalError, setModalError] = useState<string | null>(null);
 
@@ -344,7 +364,7 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
       <div className="glass-panel p-4 rounded-2xl border border-white/10 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2 bg-slate-900/80 p-1 rounded-xl border border-white/5">
           <button
-            onClick={() => setActiveTab('categories')}
+            onClick={() => handleTabChange('categories')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'categories'
                 ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30'
@@ -355,7 +375,7 @@ export const CategoriesBrandsView: React.FC<CategoriesBrandsViewProps> = ({
             Categories ({categories.length})
           </button>
           <button
-            onClick={() => setActiveTab('brands')}
+            onClick={() => handleTabChange('brands')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'brands'
                 ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30'
