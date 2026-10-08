@@ -133,17 +133,20 @@ export const ApproveAgentSubscriptionModal: React.FC<ApproveAgentSubscriptionMod
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
-      <div className="glass-panel bg-slate-950/95 border border-white/15 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-5 relative my-8 text-white">
-        {/* Header */}
-        <div className="flex items-start justify-between pb-4 border-b border-white/10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+      <div 
+        className="glass-panel bg-slate-950/95 border border-white/15 rounded-3xl max-w-xl w-full shadow-2xl relative text-white flex flex-col max-h-[88vh] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header - Fixed top */}
+        <div className="flex items-start justify-between p-5 sm:p-6 pb-4 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 text-emerald-400 border border-emerald-500/30">
-              <ShieldCheck className="w-6 h-6" />
+            <div className="p-2.5 sm:p-3 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
+              <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-black text-white">Verify Store & Assign Subscription</h3>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-base sm:text-lg font-black text-white">Verify Store & Assign Subscription</h3>
                 <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase">
                   Pending Verification
                 </span>
@@ -156,53 +159,56 @@ export const ApproveAgentSubscriptionModal: React.FC<ApproveAgentSubscriptionMod
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 text-slate-400 hover:text-white rounded-xl hover:bg-white/10 transition-colors cursor-pointer shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Store Info Card */}
-        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10 grid grid-cols-2 gap-2.5 text-xs">
-          <div>
-            <span className="text-slate-400 block text-[11px]">Store Name:</span>
-            <strong className="text-white text-sm font-bold truncate block">{shop.name}</strong>
-          </div>
-          <div>
-            <span className="text-slate-400 block text-[11px]">Dealer / Owner:</span>
-            <strong className="text-white text-sm font-bold truncate block">{shop.ownerName}</strong>
-          </div>
-          <div className="flex items-center gap-1.5 text-slate-300">
-            <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span className="truncate">{shop.phone || shop.whatsapp || 'N/A'}</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-slate-300">
-            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span className="truncate">{shop.city} • {shop.category}</span>
-          </div>
-        </div>
+        {/* Form Container with scrollable body and pinned footer */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          {/* Scrollable Form Content */}
+          <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 custom-scrollbar">
+            {/* Store Info Card */}
+            <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10 grid grid-cols-2 gap-2.5 text-xs">
+              <div>
+                <span className="text-slate-400 block text-[11px]">Store Name:</span>
+                <strong className="text-white text-sm font-bold truncate block">{shop.name}</strong>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[11px]">Dealer / Owner:</span>
+                <strong className="text-white text-sm font-bold truncate block">{shop.ownerName}</strong>
+              </div>
+              <div className="flex items-center gap-1.5 text-slate-300">
+                <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span className="truncate">{shop.phone || shop.whatsapp || 'N/A'}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-slate-300">
+                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span className="truncate">{shop.city} • {shop.category}</span>
+              </div>
+            </div>
 
-        {error && (
-          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
+            {error && (
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Plan Selection */}
-          <div className="space-y-2">
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <CreditCard className="w-3.5 h-3.5 text-orange-400" />
-                <span>1. Select Subscription Plan:</span>
-              </span>
-              <span className="text-[11px] text-slate-400 font-normal">
-                {displayPlans.length} plans available
-              </span>
-            </label>
+            {/* Plan Selection */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <CreditCard className="w-3.5 h-3.5 text-orange-400" />
+                  <span>1. Select Subscription Plan:</span>
+                </span>
+                <span className="text-[11px] text-slate-400 font-normal">
+                  {displayPlans.length} plans available
+                </span>
+              </label>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-56 overflow-y-auto pr-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {displayPlans.map((plan) => {
                 const isSelected = selectedPlanId === plan.id;
                 const pDuration = plan.durationDays || 30;
@@ -343,9 +349,10 @@ export const ApproveAgentSubscriptionModal: React.FC<ApproveAgentSubscriptionMod
               </div>
             </div>
           )}
+          </div>
 
-          {/* Action Buttons */}
-          <div className="pt-3 border-t border-white/10 flex items-center justify-end gap-3">
+          {/* Action Buttons - Pinned Bottom */}
+          <div className="p-4 sm:p-5 border-t border-white/10 flex items-center justify-end gap-3 bg-slate-950/90 shrink-0">
             <button
               type="button"
               onClick={onClose}

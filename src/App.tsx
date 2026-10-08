@@ -164,6 +164,7 @@ export const App: React.FC = () => {
     limit: 10,
   });
   const [isTransactionsLoading, setIsTransactionsLoading] = useState<boolean>(false);
+  const [transactionsRefreshKey, setTransactionsRefreshKey] = useState<number>(0);
 
   const [filterStatus, setFilterStatus] = useState<'all' | 'verified' | 'pending'>(() => {
     try {
@@ -647,28 +648,41 @@ export const App: React.FC = () => {
       showToast(`Store "${updatedShop.name}" verified and subscription plan assigned successfully!`);
       setShopToApprove(null);
 
+      // Fetch fresh shop by ID so full populated subscription details are guaranteed
+      let freshShop = updatedShop;
+      try {
+        freshShop = await fetchShopById(shopId);
+      } catch (e) {
+        // fallback to updatedShop
+      }
+
       // Update shop in state
-      setShops((prev) => prev.map((s) => (s.id === shopId ? updatedShop : s)));
+      setShops((prev) => prev.map((s) => (s.id === shopId ? freshShop : s)));
 
       // Update single view if active
       if (activeSingleView?.type === 'shop' && activeSingleView.shop.id === shopId) {
         setActiveSingleView({
           type: 'shop',
-          shop: updatedShop,
+          shop: freshShop,
         });
       }
 
       // Update drawer if open
       if (selectedShopForDrawer && selectedShopForDrawer.id === shopId) {
-        setSelectedShopForDrawer(updatedShop);
+        setSelectedShopForDrawer(freshShop);
       }
 
-      // Refresh platform statistics, transactions, and plans
-      const statsData = await fetchStats();
-      setStats(statsData);
-      loadTransactions();
-      const updatedPlans = await fetchSubscriptionPlans().catch(() => []);
-      if (Array.isArray(updatedPlans)) setSubscriptionPlans(updatedPlans);
+      // Trigger instant refresh for SingleShopView transaction logs
+      setTransactionsRefreshKey((prev) => prev + 1);
+
+      // Refresh platform statistics, transactions, and plans immediately
+      await Promise.all([
+        loadTransactions(),
+        loadData(),
+        fetchSubscriptionPlans().then((plans) => {
+          if (Array.isArray(plans)) setSubscriptionPlans(plans);
+        }).catch(() => {})
+      ]);
     } catch (err: any) {
       showToast(err.message || 'Failed to verify store and save transaction', 'error');
       throw err;
@@ -1026,6 +1040,7 @@ export const App: React.FC = () => {
               <SingleShopView
                 shop={activeSingleView.shop}
                 catalogProducts={products}
+                refreshTrigger={transactionsRefreshKey}
                 onBack={handleBackFromSingleView}
                 onToggleVerify={handleToggleVerify}
                 onEdit={(shop) => setSelectedShopForEdit(shop)}
@@ -1260,12 +1275,13 @@ export const App: React.FC = () => {
         isOpen={Boolean(selectedShopForSubscription)}
         onClose={() => setSelectedShopForSubscription(null)}
         plans={subscriptionPlans}
-        onAssignPlan={async (shopId, planId) => {
+        onAssignPlan={async (shopId, planId, extra) => {
           setIsActionLoading(true);
           try {
-            await assignSubscriptionToShop(shopId, planId);
+            await assignSubscriptionToShop(shopId, planId, extra);
             showToast('Subscription plan updated & transaction recorded successfully!');
             setSelectedShopForSubscription(null);
+            setTransactionsRefreshKey((prev) => prev + 1);
             await loadData();
             if (activeSingleView?.type === 'shop' && activeSingleView.shop.id === shopId) {
               try {
@@ -1273,9 +1289,7 @@ export const App: React.FC = () => {
                 setActiveSingleView({ type: 'shop', shop: freshShop });
               } catch (e) {}
             }
-            if (activeTab === 'transactions') {
-              loadTransactions();
-            }
+            await loadTransactions();
           } catch (err: any) {
             showToast(err.message || 'Failed to update subscription plan', 'error');
             throw err;

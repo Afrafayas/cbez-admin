@@ -1,13 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import { Shop, Product, getShopProductCount } from '../types';
-import { ShieldCheck, ShieldAlert, Edit2, Trash2, Eye, Phone, MessageSquare, MapPin, Tag, Star, CreditCard, Plus } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Edit2, Trash2, Eye, Phone, MessageSquare, MapPin, Tag, Star, CreditCard, Plus, Clock, AlertCircle } from 'lucide-react';
 import { Pagination } from './Pagination';
+
+export function getSubscriptionExpiryInfo(shop: Shop) {
+  const sub = shop.subscription;
+  const plan = sub?.plan;
+  const durationDays = plan?.durationDays || shop.subscriptionUsage?.durationDays || 30;
+
+  let startDate: Date;
+  if (sub?.startDate) {
+    startDate = new Date(sub.startDate);
+  } else if (shop.subscriptionUsage?.startDate) {
+    startDate = new Date(shop.subscriptionUsage.startDate);
+  } else if (sub?.createdAt) {
+    startDate = new Date(sub.createdAt);
+  } else if (shop.createdAt) {
+    startDate = new Date(shop.createdAt);
+  } else {
+    startDate = new Date();
+  }
+
+  let endDate: Date;
+  if (sub?.endDate) {
+    endDate = new Date(sub.endDate);
+  } else if (shop.subscriptionUsage?.endDate) {
+    endDate = new Date(shop.subscriptionUsage.endDate);
+  } else {
+    endDate = new Date(startDate.getTime() + durationDays * 86400000);
+  }
+
+  const now = new Date();
+  const diffMs = endDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (24 * 60 * 60 * 1000));
+  const isExpired = sub?.status === 'EXPIRED' || shop.isSubscriptionExpired || shop.subscriptionUsage?.isExpired || diffDays <= 0;
+  const isWarning = diffDays <= 5;
+
+  const formattedDate = endDate.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+
+  return {
+    endDate,
+    formattedDate,
+    diffDays,
+    isExpired,
+    isWarning,
+  };
+}
 
 interface ShopsTableProps {
   onOpenCreateShop?: () => void;
   shops: Shop[];
   products?: Product[];
-  onToggleVerify: (id: string, currentStatus: boolean, shop?: Shop) => void;
+  onToggleVerify?: (id: string, currentStatus: boolean, shop?: Shop) => void;
   onEdit: (shop: Shop) => void;
   onChangeSubscription?: (shop: Shop) => void;
   onDelete: (shop: Shop) => void;
@@ -33,6 +81,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
   const [selectedCity, setSelectedCity] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedSubscriptionPlan, setSelectedSubscriptionPlan] = useState<string>('all');
+  const [selectedExpiryFilter, setSelectedExpiryFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 
@@ -52,6 +101,19 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
       if (planName !== selectedSubscriptionPlan) return false;
     }
 
+    if (selectedExpiryFilter !== 'all') {
+      const exp = getSubscriptionExpiryInfo(shop);
+      if (selectedExpiryFilter === 'expiring_5d') {
+        if (exp.diffDays > 5) return false;
+      } else if (selectedExpiryFilter === 'expiring_10d') {
+        if (exp.diffDays > 10) return false;
+      } else if (selectedExpiryFilter === 'expired') {
+        if (!exp.isExpired) return false;
+      } else if (selectedExpiryFilter === 'active') {
+        if (exp.isExpired || exp.diffDays <= 5) return false;
+      }
+    }
+
     if (searchTerm.trim() !== '') {
       const term = searchTerm.toLowerCase();
       const matchName = shop.name.toLowerCase().includes(term);
@@ -67,7 +129,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterStatus, selectedCity, selectedCategory, selectedSubscriptionPlan, searchTerm]);
+  }, [filterStatus, selectedCity, selectedCategory, selectedSubscriptionPlan, selectedExpiryFilter, searchTerm]);
 
   const totalPages = Math.ceil(filteredShops.length / itemsPerPage);
   const paginatedShops = filteredShops.slice(
@@ -87,7 +149,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
             </span>
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Manage seller shop profiles, toggle verified status, edit store details, or remove store listings.
+            Manage seller shop profiles, inspect subscription validity & expirations, edit store details, or remove store listings.
           </p>
         </div>
 
@@ -97,8 +159,11 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
 
           <div className="flex p-1 rounded-xl bg-slate-950/80 border border-white/10 text-xs font-semibold overflow-x-auto max-w-full">
             <button
-              onClick={() => setFilterStatus('all')}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${filterStatus === 'all'
+              onClick={() => {
+                setFilterStatus('all');
+                if (selectedExpiryFilter === 'expiring_5d') setSelectedExpiryFilter('all');
+              }}
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${filterStatus === 'all' && selectedExpiryFilter === 'all'
                   ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20'
                   : 'text-slate-400 hover:text-white'
                 }`}
@@ -106,8 +171,11 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
               All ({shops.length})
             </button>
             <button
-              onClick={() => setFilterStatus('verified')}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${filterStatus === 'verified'
+              onClick={() => {
+                setFilterStatus('verified');
+                if (selectedExpiryFilter === 'expiring_5d') setSelectedExpiryFilter('all');
+              }}
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${filterStatus === 'verified' && selectedExpiryFilter === 'all'
                   ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
                   : 'text-slate-400 hover:text-white'
                 }`}
@@ -115,13 +183,29 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
               Verified ({shops.filter((s) => s.verified).length})
             </button>
             <button
-              onClick={() => setFilterStatus('pending')}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${filterStatus === 'pending'
+              onClick={() => {
+                setFilterStatus('pending');
+                if (selectedExpiryFilter === 'expiring_5d') setSelectedExpiryFilter('all');
+              }}
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${filterStatus === 'pending' && selectedExpiryFilter === 'all'
                   ? 'bg-amber-600 text-white shadow-md shadow-amber-500/20'
                   : 'text-slate-400 hover:text-white'
                 }`}
             >
               Pending ({shops.filter((s) => !s.verified).length})
+            </button>
+            <button
+              onClick={() => {
+                setSelectedExpiryFilter(selectedExpiryFilter === 'expiring_5d' ? 'all' : 'expiring_5d');
+              }}
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${selectedExpiryFilter === 'expiring_5d'
+                  ? 'bg-red-500 text-white shadow-md shadow-red-500/25 font-bold'
+                  : 'text-red-400 hover:text-red-300 hover:bg-red-500/10'
+                }`}
+              title="Filter stores with 5 days or less remaining"
+            >
+              <span className={`w-1.5 h-1.5 rounded-full bg-red-400 shrink-0 ${shops.some((s) => getSubscriptionExpiryInfo(s).diffDays <= 5) ? 'animate-ping' : ''}`} />
+              <span>Expiring Soon ({shops.filter((s) => getSubscriptionExpiryInfo(s).diffDays <= 5).length})</span>
             </button>
           </div>
 
@@ -135,7 +219,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
             </button>
           )}
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <select
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
@@ -168,6 +252,35 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                 <option key={plan} value={plan} className="bg-slate-900">{plan}</option>
               ))}
             </select>
+
+            <select
+              value={selectedExpiryFilter}
+              onChange={(e) => setSelectedExpiryFilter(e.target.value)}
+              className={`flex-1 sm:flex-none px-3 py-1.5 text-xs rounded-xl glass-input cursor-pointer font-medium ${
+                selectedExpiryFilter !== 'all' ? 'text-red-400 border-red-500/40 bg-red-500/10 font-bold' : 'text-slate-300'
+              }`}
+            >
+              <option value="all" className="bg-slate-900 text-slate-300">All Expiry Status</option>
+              <option value="expiring_5d" className="bg-slate-900 text-red-400 font-semibold">⚠️ Expiring Soon (≤ 5 Days)</option>
+              <option value="expiring_10d" className="bg-slate-900 text-amber-400">⏳ Expiring Soon (≤ 10 Days)</option>
+              <option value="expired" className="bg-slate-900 text-red-400">⛔ Already Expired</option>
+              <option value="active" className="bg-slate-900 text-emerald-400">✅ Active (&gt; 5 Days)</option>
+            </select>
+
+            {(selectedCity !== 'all' || selectedCategory !== 'all' || selectedSubscriptionPlan !== 'all' || selectedExpiryFilter !== 'all') && (
+              <button
+                onClick={() => {
+                  setSelectedCity('all');
+                  setSelectedCategory('all');
+                  setSelectedSubscriptionPlan('all');
+                  setSelectedExpiryFilter('all');
+                }}
+                className="px-2.5 py-1.5 text-[11px] font-semibold text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+                title="Reset all filters"
+              >
+                Reset Filters
+              </button>
+            )}
           </div>
 
 
@@ -186,6 +299,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
           paginatedShops.map((shop) => {
             const productCount = getShopProductCount(shop, products);
             const planName = shop.subscription?.plan?.name || 'Free Starter Plan';
+            const expiryInfo = getSubscriptionExpiryInfo(shop);
 
             return (
               <div
@@ -195,7 +309,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                     : 'border border-white/10 bg-slate-900/60 hover:border-orange-500/30'
                   }`}
               >
-                {/* Header: Name, Verified Badge & Verification Toggle */}
+                {/* Header: Name & Verified Badge */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <button
@@ -226,27 +340,6 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                       </div>
                     </div>
                   </div>
-
-                  {/* Verification Toggle */}
-                  <div className="flex flex-col items-end gap-1">
-                    <button
-                      onClick={() => onToggleVerify(shop.id, shop.verified, shop)}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${shop.verified ? 'bg-emerald-500' : 'bg-slate-700'
-                        }`}
-                      title={shop.verified ? 'Click to Unverify Shop' : 'Click to Verify Shop'}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition duration-200 ease-in-out ${shop.verified ? 'translate-x-5' : 'translate-x-0'
-                          }`}
-                      />
-                    </button>
-                    <span
-                      className={`text-[9px] font-bold uppercase tracking-wider ${shop.verified ? 'text-emerald-400' : 'text-amber-400'
-                        }`}
-                    >
-                      {shop.verified ? 'Verified' : 'Pending'}
-                    </span>
-                  </div>
                 </div>
 
                 {/* Details Badges */}
@@ -259,13 +352,41 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                     <Tag className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                     <span className="truncate">{shop.category}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-slate-300">
-                    <Phone className="w-3.5 h-3.5 text-orange-400 shrink-0" />
-                    <span className="truncate">{shop.phone}</span>
+                  <div className="flex flex-col gap-1 text-slate-300">
+                    <div className="flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                      <span className="truncate">{shop.phone}</span>
+                    </div>
+                    {shop.whatsapp && (
+                      <div className="flex items-center gap-1.5 text-emerald-400">
+                        <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">{shop.whatsapp}</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1.5 text-slate-300">
-                    <CreditCard className="w-3.5 h-3.5 shrink-0 text-indigo-400" />
-                    <span className="truncate text-indigo-300 font-medium">{planName}</span>
+                  <div className="flex flex-col gap-0.5 text-slate-300 col-span-2 sm:col-span-1 pt-1 sm:pt-0">
+                    <div className="flex items-center gap-1.5">
+                      <CreditCard className="w-3.5 h-3.5 shrink-0 text-indigo-400" />
+                      <span className="truncate text-indigo-300 font-medium">{planName}</span>
+                    </div>
+                    {/* Expiration date & days left */}
+                    <div className={`text-[10px] flex items-center gap-1.5 pl-5 ${expiryInfo.isWarning ? 'text-red-400 font-semibold' : 'text-slate-400'}`}>
+                      {expiryInfo.isWarning ? (
+                        <AlertCircle className="w-3 h-3 text-red-400 shrink-0 animate-pulse" />
+                      ) : (
+                        <Clock className="w-3 h-3 text-slate-500 shrink-0" />
+                      )}
+                      <span className={expiryInfo.isWarning ? 'text-red-400 font-bold' : 'text-slate-300'}>
+                        {expiryInfo.isExpired ? 'Expired:' : 'Expires:'} {expiryInfo.formattedDate}
+                      </span>
+                      <span className={`px-1.5 py-0.2 rounded text-[9px] ${expiryInfo.isWarning ? 'bg-red-500/20 text-red-300 font-bold border border-red-500/30' : 'text-slate-400'}`}>
+                        {expiryInfo.isExpired
+                          ? 'Expired'
+                          : expiryInfo.diffDays === 1
+                          ? '1d left'
+                          : `${expiryInfo.diffDays}d left`}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -330,8 +451,8 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
               <th className="px-5 py-3.5">Owner & Contact</th>
               <th className="px-5 py-3.5">Location & Category</th>
               <th className="px-5 py-3.5">Subscription Plan</th>
+              <th className="px-5 py-3.5">Plan Expiry</th>
               <th className="px-5 py-3.5">Products</th>
-              <th className="px-5 py-3.5 text-center">Verified Status</th>
               <th className="px-5 py-3.5 text-center">Rating</th>
               <th className="px-5 py-3.5 text-right">Actions</th>
             </tr>
@@ -351,6 +472,7 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
               paginatedShops.map((shop) => {
                 const productCount = getShopProductCount(shop, products);
                 const planName = shop.subscription?.plan?.name || 'Free Starter Plan';
+                const expiryInfo = getSubscriptionExpiryInfo(shop);
 
                 return (
                   <tr
@@ -395,16 +517,16 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                     </td>
 
                     <td className="px-5 py-4">
-                      <div className="text-slate-200 font-medium text-xs">{shop.ownerName}</div>
-                      <div className="flex items-center gap-3 text-xs text-slate-400 mt-1">
-                        <span className="flex items-center gap-1">
-                          <Phone className="w-3 h-3 text-orange-400" />
-                          {shop.phone}
+                      <div className="text-slate-200 font-medium text-xs mb-1">{shop.ownerName}</div>
+                      <div className="flex flex-col gap-1 text-xs text-slate-400">
+                        <span className="flex items-center gap-1.5 hover:text-slate-200 transition-colors">
+                          <Phone className="w-3 h-3 text-orange-400 shrink-0" />
+                          <span>{shop.phone}</span>
                         </span>
                         {shop.whatsapp && (
-                          <span className="flex items-center gap-1 text-emerald-400">
-                            <MessageSquare className="w-3 h-3" />
-                            {shop.whatsapp}
+                          <span className="flex items-center gap-1.5 text-emerald-400/90 hover:text-emerald-300 transition-colors">
+                            <MessageSquare className="w-3 h-3 text-emerald-400 shrink-0" />
+                            <span>{shop.whatsapp}</span>
                           </span>
                         )}
                       </div>
@@ -421,39 +543,56 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                       </div>
                     </td>
 
-                    <td className="px-5 py-4">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/90 border border-slate-700/80 text-slate-200 font-semibold text-xs">
-                        <CreditCard className="w-3.5 h-3.5 text-indigo-400" />
-                        {planName}
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700/80 text-slate-200 font-semibold text-xs shadow-sm">
+                        <CreditCard className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                        <span>{planName}</span>
                       </span>
+                    </td>
+
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <div className="flex flex-col gap-1">
+                        {/* Expiring Date */}
+                        <div className={`text-xs flex items-center gap-1.5 ${expiryInfo.isWarning ? 'text-red-400 font-bold' : 'text-slate-200 font-medium'}`}>
+                          {expiryInfo.isWarning ? (
+                            <AlertCircle className="w-3.5 h-3.5 text-red-400 shrink-0 animate-pulse" />
+                          ) : (
+                            <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          )}
+                          <span>{expiryInfo.formattedDate}</span>
+                        </div>
+
+                        {/* Days Left below date */}
+                        <div className="flex items-center">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center gap-1 ${
+                              expiryInfo.isWarning
+                                ? 'bg-red-500/20 text-red-300 border border-red-500/40 animate-pulse'
+                                : 'bg-slate-800 text-slate-400 border border-slate-700/60'
+                            }`}
+                          >
+                            {expiryInfo.isExpired ? (
+                              <span>
+                                {expiryInfo.diffDays === 0
+                                  ? 'Expired today'
+                                  : `Expired ${Math.abs(expiryInfo.diffDays)} ${Math.abs(expiryInfo.diffDays) === 1 ? 'day' : 'days'} ago`}
+                              </span>
+                            ) : (
+                              <span>
+                                {expiryInfo.diffDays === 1
+                                  ? '1 day left'
+                                  : `${expiryInfo.diffDays} days left`}
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                      </div>
                     </td>
 
                     <td className="px-5 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-200 whitespace-nowrap shrink-0">
                         {productCount} {productCount === 1 ? 'Item' : 'Items'}
                       </span>
-                    </td>
-
-                    <td className="px-5 py-4 text-center">
-                      <div className="flex flex-col items-center gap-1.5">
-                        <button
-                          onClick={() => onToggleVerify(shop.id, shop.verified, shop)}
-                          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${shop.verified ? 'bg-emerald-500' : 'bg-slate-700'
-                            }`}
-                          title={shop.verified ? 'Click to Unverify Shop' : 'Click to Verify Shop'}
-                        >
-                          <span
-                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${shop.verified ? 'translate-x-5' : 'translate-x-0'
-                              }`}
-                          />
-                        </button>
-                        <span
-                          className={`text-[10px] font-bold uppercase tracking-wider ${shop.verified ? 'text-emerald-400' : 'text-amber-400'
-                            }`}
-                        >
-                          {shop.verified ? 'Verified' : 'Pending'}
-                        </span>
-                      </div>
                     </td>
 
                     <td className="px-5 py-4 text-center">

@@ -42,6 +42,26 @@ body {
   background: #FF6F00;
 }
 
+/* Thin Custom Scrollbar Utility */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #FF6F00;
+}
+
 /* Premium Glassmorphism styling matching MLX User Theme */
 .glass-panel {
   background: rgba(22, 27, 38, 0.85);
