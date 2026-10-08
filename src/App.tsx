@@ -72,11 +72,71 @@ import {
 
 import { CheckCircle2, AlertCircle, RefreshCw, AlertTriangle, Loader2, ArrowLeft, ShieldAlert } from 'lucide-react';
 
+const VALID_TABS = [
+  'dashboard',
+  'shops',
+  'subscriptions',
+  'transactions',
+  'categories-brands',
+  'products',
+  'users',
+  'activity',
+  'settings',
+];
+
+type SingleViewType =
+  | { type: 'shop'; shop: Shop }
+  | { type: 'product'; product: Product }
+  | { type: 'user'; user: UserAccount }
+  | { type: 'category'; category: Category }
+  | { type: 'brand'; brand: Brand };
+
+const getInitialTab = (): string => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const tabFromUrl = params.get('tab');
+    if (tabFromUrl && VALID_TABS.includes(tabFromUrl)) {
+      return tabFromUrl;
+    }
+    const tabFromStorage = localStorage.getItem('cbez_admin_active_tab');
+    if (tabFromStorage && VALID_TABS.includes(tabFromStorage)) {
+      return tabFromStorage;
+    }
+  } catch (e) {
+    console.error('Failed reading initial tab:', e);
+  }
+  return 'shops';
+};
+
+const getInitialSingleView = (): SingleViewType | null => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const viewParam = params.get('view');
+    const idParam = params.get('id');
+
+    const cachedRaw = sessionStorage.getItem('cbez_admin_single_view');
+    if (cachedRaw) {
+      const cached = JSON.parse(cachedRaw);
+      if (cached && cached.type && cached.data) {
+        if (!viewParam || (viewParam === cached.type && (!idParam || idParam === cached.id))) {
+          return {
+            type: cached.type,
+            [cached.type]: cached.data,
+          } as SingleViewType;
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Failed reading initial single view:', e);
+  }
+  return null;
+};
+
 export const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return Boolean(localStorage.getItem('cbez_admin_token'));
   });
-  const [activeTab, setActiveTab] = useState<string>('shops');
+  const [activeTab, setActiveTab] = useState<string>(getInitialTab);
   const [stats, setStats] = useState<AdminStats>({
     totalShops: 0,
     verifiedShops: 0,
@@ -104,8 +164,16 @@ export const App: React.FC = () => {
     limit: 10,
   });
   const [isTransactionsLoading, setIsTransactionsLoading] = useState<boolean>(false);
+  const [transactionsRefreshKey, setTransactionsRefreshKey] = useState<number>(0);
 
-  const [filterStatus, setFilterStatus] = useState<'all' | 'verified' | 'pending'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'verified' | 'pending'>(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const f = params.get('filter');
+      if (f === 'verified' || f === 'pending' || f === 'all') return f;
+    } catch (e) {}
+    return 'all';
+  });
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -142,14 +210,7 @@ export const App: React.FC = () => {
   const [isCreateBrandOpen, setIsCreateBrandOpen] = useState(false);
 
   // Dedicated Single Page Views state
-  const [activeSingleView, setActiveSingleView] = useState<
-    | { type: 'shop'; shop: Shop }
-    | { type: 'product'; product: Product }
-    | { type: 'user'; user: UserAccount }
-    | { type: 'category'; category: Category }
-    | { type: 'brand'; brand: Brand }
-    | null
-  >(null);
+  const [activeSingleView, setActiveSingleView] = useState<SingleViewType | null>(getInitialSingleView);
 
   const [isActionLoading, setIsActionLoading] = useState<boolean>(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
@@ -203,6 +264,59 @@ export const App: React.FC = () => {
       if (Array.isArray(plansData)) setSubscriptionPlans(plansData);
       if (Array.isArray(catsData)) setCategories(catsData);
       if (Array.isArray(brandsData)) setBrands(brandsData);
+
+      // Refresh or resolve active single view with fresh data from backend
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlView = urlParams.get('view');
+        const urlId = urlParams.get('id');
+
+        setActiveSingleView((prev) => {
+          const targetType = prev?.type || urlView;
+          const targetId =
+            (prev?.type === 'shop'
+              ? prev.shop.id
+              : prev?.type === 'product'
+              ? prev.product.id
+              : prev?.type === 'user'
+              ? prev.user.id
+              : prev?.type === 'category'
+              ? prev.category.id
+              : prev?.type === 'brand'
+              ? prev.brand.id
+              : null) || urlId;
+
+          if (!targetType || !targetId) return prev;
+
+          if (targetType === 'shop') {
+            const fresh = shopsData.find((s) => s.id === targetId);
+            if (fresh) return { type: 'shop', shop: fresh };
+            fetchShopById(targetId)
+              .then((freshShop) => setActiveSingleView({ type: 'shop', shop: freshShop }))
+              .catch(() => {});
+            return prev;
+          } else if (targetType === 'product') {
+            const fresh = productsData.find((p) => p.id === targetId);
+            if (fresh) return { type: 'product', product: fresh };
+            return prev;
+          } else if (targetType === 'user') {
+            const fresh = usersData.find((u) => u.id === targetId);
+            if (fresh) return { type: 'user', user: fresh };
+            return prev;
+          } else if (targetType === 'category') {
+            const fresh = catsData.find((c) => c.id === targetId);
+            if (fresh) return { type: 'category', category: fresh };
+            return prev;
+          } else if (targetType === 'brand') {
+            const fresh = brandsData.find((b) => b.id === targetId);
+            if (fresh) return { type: 'brand', brand: fresh };
+            return prev;
+          }
+          return prev;
+        });
+      } catch (e) {
+        console.error('Error refreshing single view:', e);
+      }
     } catch (err: any) {
       console.error('Failed to fetch admin data:', err);
       showToast(err.message || 'Failed to connect to backend server', 'error');
@@ -391,6 +505,126 @@ export const App: React.FC = () => {
     }
   }, [activeTab]);
 
+  // Save single view object into sessionStorage for instant restoration on reload
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    try {
+      if (activeSingleView) {
+        const id =
+          activeSingleView.type === 'shop'
+            ? activeSingleView.shop.id
+            : activeSingleView.type === 'product'
+            ? activeSingleView.product.id
+            : activeSingleView.type === 'user'
+            ? activeSingleView.user.id
+            : activeSingleView.type === 'category'
+            ? activeSingleView.category.id
+            : activeSingleView.brand.id;
+
+        const data =
+          activeSingleView.type === 'shop'
+            ? activeSingleView.shop
+            : activeSingleView.type === 'product'
+            ? activeSingleView.product
+            : activeSingleView.type === 'user'
+            ? activeSingleView.user
+            : activeSingleView.type === 'category'
+            ? activeSingleView.category
+            : activeSingleView.brand;
+
+        sessionStorage.setItem(
+          'cbez_admin_single_view',
+          JSON.stringify({ type: activeSingleView.type, id, data })
+        );
+      } else {
+        sessionStorage.removeItem('cbez_admin_single_view');
+      }
+    } catch (e) {
+      console.error('Failed saving single view cache:', e);
+    }
+  }, [activeSingleView, isAuthenticated]);
+
+  // Sync activeTab, single view, and filter into URL query params and localStorage
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    try {
+      localStorage.setItem('cbez_admin_active_tab', activeTab);
+
+      const params = new URLSearchParams(window.location.search);
+      params.set('tab', activeTab);
+
+      if (activeSingleView) {
+        const id =
+          activeSingleView.type === 'shop'
+            ? activeSingleView.shop.id
+            : activeSingleView.type === 'product'
+            ? activeSingleView.product.id
+            : activeSingleView.type === 'user'
+            ? activeSingleView.user.id
+            : activeSingleView.type === 'category'
+            ? activeSingleView.category.id
+            : activeSingleView.brand.id;
+
+        params.set('view', activeSingleView.type);
+        if (id) {
+          params.set('id', id);
+        }
+      } else {
+        params.delete('view');
+        params.delete('id');
+      }
+
+      if (filterStatus && filterStatus !== 'all' && activeTab === 'shops') {
+        params.set('filter', filterStatus);
+      } else {
+        params.delete('filter');
+      }
+
+      const newQuery = params.toString();
+      const newUrl = `${window.location.pathname}${newQuery ? `?${newQuery}` : ''}${window.location.hash}`;
+      const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+      if (newUrl !== currentUrl) {
+        window.history.replaceState(null, '', newUrl);
+      }
+    } catch (e) {
+      console.error('Failed updating URL state:', e);
+    }
+  }, [activeTab, activeSingleView, filterStatus, isAuthenticated]);
+
+  // Browser back/forward button navigation listener
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const tabParam = params.get('tab');
+        if (tabParam && VALID_TABS.includes(tabParam)) {
+          setActiveTab(tabParam);
+        }
+        const viewParam = params.get('view');
+        const idParam = params.get('id');
+        if (!viewParam) {
+          setActiveSingleView(null);
+          sessionStorage.removeItem('cbez_admin_single_view');
+        } else if (idParam) {
+          const cachedRaw = sessionStorage.getItem('cbez_admin_single_view');
+          if (cachedRaw) {
+            const cached = JSON.parse(cachedRaw);
+            if (cached && cached.type === viewParam && cached.id === idParam && cached.data) {
+              setActiveSingleView({ type: cached.type, [cached.type]: cached.data } as SingleViewType);
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Error handling popstate:', e);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
 
     // Handler: Approve Agent Subscription Modal Submission
   const handleConfirmApproveAgent = async (
@@ -414,28 +648,41 @@ export const App: React.FC = () => {
       showToast(`Store "${updatedShop.name}" verified and subscription plan assigned successfully!`);
       setShopToApprove(null);
 
+      // Fetch fresh shop by ID so full populated subscription details are guaranteed
+      let freshShop = updatedShop;
+      try {
+        freshShop = await fetchShopById(shopId);
+      } catch (e) {
+        // fallback to updatedShop
+      }
+
       // Update shop in state
-      setShops((prev) => prev.map((s) => (s.id === shopId ? updatedShop : s)));
+      setShops((prev) => prev.map((s) => (s.id === shopId ? freshShop : s)));
 
       // Update single view if active
       if (activeSingleView?.type === 'shop' && activeSingleView.shop.id === shopId) {
         setActiveSingleView({
           type: 'shop',
-          shop: updatedShop,
+          shop: freshShop,
         });
       }
 
       // Update drawer if open
       if (selectedShopForDrawer && selectedShopForDrawer.id === shopId) {
-        setSelectedShopForDrawer(updatedShop);
+        setSelectedShopForDrawer(freshShop);
       }
 
-      // Refresh platform statistics, transactions, and plans
-      const statsData = await fetchStats();
-      setStats(statsData);
-      loadTransactions();
-      const updatedPlans = await fetchSubscriptionPlans().catch(() => []);
-      if (Array.isArray(updatedPlans)) setSubscriptionPlans(updatedPlans);
+      // Trigger instant refresh for SingleShopView transaction logs
+      setTransactionsRefreshKey((prev) => prev + 1);
+
+      // Refresh platform statistics, transactions, and plans immediately
+      await Promise.all([
+        loadTransactions(),
+        loadData(),
+        fetchSubscriptionPlans().then((plans) => {
+          if (Array.isArray(plans)) setSubscriptionPlans(plans);
+        }).catch(() => {})
+      ]);
     } catch (err: any) {
       showToast(err.message || 'Failed to verify store and save transaction', 'error');
       throw err;
@@ -664,6 +911,11 @@ export const App: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem('cbez_admin_token');
     localStorage.removeItem('cbez_admin_user');
+    localStorage.removeItem('cbez_admin_active_tab');
+    sessionStorage.removeItem('cbez_admin_single_view');
+    try {
+      window.history.replaceState(null, '', window.location.pathname);
+    } catch (e) {}
     setIsAuthenticated(false);
   };
 
@@ -788,6 +1040,7 @@ export const App: React.FC = () => {
               <SingleShopView
                 shop={activeSingleView.shop}
                 catalogProducts={products}
+                refreshTrigger={transactionsRefreshKey}
                 onBack={handleBackFromSingleView}
                 onToggleVerify={handleToggleVerify}
                 onEdit={(shop) => setSelectedShopForEdit(shop)}
@@ -1022,12 +1275,13 @@ export const App: React.FC = () => {
         isOpen={Boolean(selectedShopForSubscription)}
         onClose={() => setSelectedShopForSubscription(null)}
         plans={subscriptionPlans}
-        onAssignPlan={async (shopId, planId) => {
+        onAssignPlan={async (shopId, planId, extra) => {
           setIsActionLoading(true);
           try {
-            await assignSubscriptionToShop(shopId, planId);
+            await assignSubscriptionToShop(shopId, planId, extra);
             showToast('Subscription plan updated & transaction recorded successfully!');
             setSelectedShopForSubscription(null);
+            setTransactionsRefreshKey((prev) => prev + 1);
             await loadData();
             if (activeSingleView?.type === 'shop' && activeSingleView.shop.id === shopId) {
               try {
@@ -1035,9 +1289,7 @@ export const App: React.FC = () => {
                 setActiveSingleView({ type: 'shop', shop: freshShop });
               } catch (e) {}
             }
-            if (activeTab === 'transactions') {
-              loadTransactions();
-            }
+            await loadTransactions();
           } catch (err: any) {
             showToast(err.message || 'Failed to update subscription plan', 'error');
             throw err;

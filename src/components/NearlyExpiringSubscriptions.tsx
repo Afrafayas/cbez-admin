@@ -31,7 +31,22 @@ export const NearlyExpiringSubscriptions: React.FC<NearlyExpiringSubscriptionsPr
   onRenewPlan,
   onShowToast,
 }) => {
-  const [activeTab, setActiveTab] = useState<TabType>('expiring_soon');
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    try {
+      const stored = localStorage.getItem('cbez_admin_expiring_subtab');
+      if (stored && ['subscribed', 'expiring_soon', 'trial', 'expired'].includes(stored)) {
+        return stored as TabType;
+      }
+    } catch (e) {}
+    return 'expiring_soon';
+  });
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    try {
+      localStorage.setItem('cbez_admin_expiring_subtab', tab);
+    } catch (e) {}
+  };
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isSendingAlerts, setIsSendingAlerts] = useState<boolean>(false);
   const [lastAlertSummary, setLastAlertSummary] = useState<{
@@ -210,7 +225,7 @@ export const NearlyExpiringSubscriptions: React.FC<NearlyExpiringSubscriptionsPr
         <div className="flex items-center gap-2 flex-wrap">
           {/* Subscribed Tab */}
           <button
-            onClick={() => setActiveTab('subscribed')}
+            onClick={() => handleTabChange('subscribed')}
             className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'subscribed'
                 ? 'bg-white text-slate-900 shadow-md font-extrabold'
@@ -231,7 +246,7 @@ export const NearlyExpiringSubscriptions: React.FC<NearlyExpiringSubscriptionsPr
 
           {/* Expiring Soon Tab (Active highlight style) */}
           <button
-            onClick={() => setActiveTab('expiring_soon')}
+            onClick={() => handleTabChange('expiring_soon')}
             className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'expiring_soon'
                 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-md shadow-emerald-500/10 font-extrabold'
@@ -253,7 +268,7 @@ export const NearlyExpiringSubscriptions: React.FC<NearlyExpiringSubscriptionsPr
 
           {/* Trial Period Tab */}
           <button
-            onClick={() => setActiveTab('trial')}
+            onClick={() => handleTabChange('trial')}
             className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'trial'
                 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-extrabold'
@@ -272,7 +287,7 @@ export const NearlyExpiringSubscriptions: React.FC<NearlyExpiringSubscriptionsPr
 
           {/* Expired Tab */}
           <button
-            onClick={() => setActiveTab('expired')}
+            onClick={() => handleTabChange('expired')}
             className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'expired'
                 ? 'bg-red-500/20 text-red-300 border border-red-500/40 font-extrabold'

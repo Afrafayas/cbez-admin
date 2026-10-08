@@ -129,7 +129,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* System Status Quick Widget */}
-        <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
+        {/* <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
               <Server className="w-3.5 h-3.5 text-orange-400" />
@@ -151,7 +151,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
             </div>
           )}
-        </div>
+        </div> */}
       </div>
 
       {/* Admin User Card Footer */}

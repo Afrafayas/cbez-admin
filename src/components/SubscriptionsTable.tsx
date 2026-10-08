@@ -27,7 +27,27 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
   onViewShop,
   isLoading = false,
 }) => {
-  const [activeTab, setActiveTab] = useState<'dealers' | 'plans'>('dealers');
+  const [activeTab, setActiveTab] = useState<'dealers' | 'plans'>(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const sub = params.get('subtab');
+      if (sub === 'dealers' || sub === 'plans') return sub;
+      const stored = localStorage.getItem('cbez_admin_subtab_subscriptions');
+      if (stored === 'dealers' || stored === 'plans') return stored;
+    } catch (e) {}
+    return 'dealers';
+  });
+
+  const handleSubTabChange = (tab: 'dealers' | 'plans') => {
+    setActiveTab(tab);
+    try {
+      localStorage.setItem('cbez_admin_subtab_subscriptions', tab);
+      const params = new URLSearchParams(window.location.search);
+      params.set('subtab', tab);
+      const newUrl = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
+      window.history.replaceState(null, '', newUrl);
+    } catch (e) {}
+  };
   const [selectedPlanFilter, setSelectedPlanFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
@@ -172,7 +192,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
       {/* Navigation View Tabs */}
       <div className="flex border-b border-white/10 text-sm font-bold gap-6">
         <button
-          onClick={() => setActiveTab('dealers')}
+          onClick={() => handleSubTabChange('dealers')}
           className={`pb-3 flex items-center gap-2 cursor-pointer transition-colors relative ${
             activeTab === 'dealers' ? 'text-orange-400 border-b-2 border-orange-500' : 'text-slate-400 hover:text-slate-200'
           }`}
@@ -181,7 +201,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
           Subscribed Dealers Directory ({shops.length})
         </button>
         <button
-          onClick={() => setActiveTab('plans')}
+          onClick={() => handleSubTabChange('plans')}
           className={`pb-3 flex items-center gap-2 cursor-pointer transition-colors relative ${
             activeTab === 'plans' ? 'text-orange-400 border-b-2 border-orange-500' : 'text-slate-400 hover:text-slate-200'
           }`}

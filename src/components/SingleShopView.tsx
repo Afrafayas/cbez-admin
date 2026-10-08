@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Shop, Product, Transaction, getShopProductCount, getProductImages } from '../types';
 import { fetchTransactions } from '../services/adminApi';
 import {
@@ -22,11 +22,13 @@ import {
   Plus,
   Eye,
   Receipt,
+  RotateCw,
 } from 'lucide-react';
 
 interface SingleShopViewProps {
   shop: Shop;
   catalogProducts?: Product[];
+  refreshTrigger?: number;
   onBack: () => void;
   onToggleVerify?: (id: string, currentStatus: boolean, shop?: Shop) => Promise<void> | void;
   onEdit?: (shop: Shop) => void;
@@ -41,6 +43,7 @@ interface SingleShopViewProps {
 export const SingleShopView: React.FC<SingleShopViewProps> = ({
   shop,
   catalogProducts,
+  refreshTrigger,
   onBack,
   onToggleVerify,
   onEdit,
@@ -56,29 +59,32 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
   const [shopTransactions, setShopTransactions] = useState<Transaction[]>([]);
   const [isLoadingTx, setIsLoadingTx] = useState<boolean>(false);
 
-  useEffect(() => {
-    let isMounted = true;
-    if (shop?.id) {
-      setIsLoadingTx(true);
-      fetchTransactions({ shopId: shop.id })
-        .then((res) => {
-          if (isMounted) {
-            setShopTransactions(res.transactions || []);
-          }
-        })
-        .catch((err) => {
-          console.error('Failed to load shop transactions:', err);
-        })
-        .finally(() => {
-          if (isMounted) {
-            setIsLoadingTx(false);
-          }
-        });
-    }
-    return () => {
-      isMounted = false;
-    };
+  const loadShopTransactions = useCallback(() => {
+    if (!shop?.id) return;
+    setIsLoadingTx(true);
+    fetchTransactions({ shopId: shop.id })
+      .then((res) => {
+        setShopTransactions(res.transactions || []);
+      })
+      .catch((err) => {
+        console.error('Failed to load shop transactions:', err);
+      })
+      .finally(() => {
+        setIsLoadingTx(false);
+      });
   }, [shop?.id]);
+
+  useEffect(() => {
+    loadShopTransactions();
+  }, [
+    loadShopTransactions,
+    shop?.verified,
+    shop?.updatedAt,
+    shop?.subscriptionUsage?.planName,
+    shop?.subscriptionUsage?.startDate,
+    shop?.subscriptionUsage?.endDate,
+    refreshTrigger,
+  ]);
 
   const shopProducts = shop.products || [];
   const catalogMatchingProducts = (catalogProducts || []).filter(
@@ -229,12 +235,12 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
               </div>
               <p className="text-xs sm:text-sm text-slate-400 mt-1.5 flex flex-wrap items-center gap-3">
                 <span>Owned by <strong className="text-slate-200">{shop.ownerName}</strong></span>
-                <span>•</span>
+                <span>â€¢</span>
                 <span className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5 text-orange-400" />
                   {shop.city}
                 </span>
-                <span>•</span>
+                <span>â€¢</span>
                 <span className="flex items-center gap-1">
                   <Tag className="w-3.5 h-3.5 text-amber-400" />
                   {shop.category}
@@ -425,7 +431,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/5 text-xs text-slate-400">
-            <span>Monthly Rate: <strong className="text-white font-bold">₹{plan?.price ?? 0}/mo</strong></span>
+            <span>Monthly Rate: <strong className="text-white font-bold">â‚¹{plan?.price ?? 0}/mo</strong></span>
             <span>Plan Status: <strong className="text-emerald-400 font-bold">{plan?.status || 'ACTIVE'}</strong></span>
           </div>
         </div>
@@ -441,9 +447,20 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-white">Subscription & Payment Transaction Logs</h2>
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-white/10">
-                  {shopTransactions.length} {shopTransactions.length === 1 ? 'Record' : 'Records'}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-white/10">
+                    {shopTransactions.length} {shopTransactions.length === 1 ? 'Record' : 'Records'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={loadShopTransactions}
+                    disabled={isLoadingTx}
+                    title="Refresh transaction logs"
+                    className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    <RotateCw className={`w-3.5 h-3.5 ${isLoadingTx ? 'animate-spin text-orange-400' : ''}`} />
+                  </button>
+                </div>
               </div>
               <p className="text-xs text-slate-400">
                 Complete audit history of subscription plans assigned, renewals, and payment transaction IDs.
@@ -490,7 +507,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
                       {tx.planName || tx.plan?.name || 'Subscription Plan'}
                     </td>
                     <td className="px-3.5 py-3 font-extrabold text-emerald-400 whitespace-nowrap">
-                      ?{tx.amount}
+                      ₹{tx.amount}
                     </td>
                     <td className="px-3.5 py-3 whitespace-nowrap">
                       <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-500/15 text-blue-300 border border-blue-500/30">
@@ -645,7 +662,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
 
                   <div className="flex items-center justify-between pt-3 mt-3 border-t border-white/5">
                     <span className="font-black text-white text-sm">
-                      ₹{product.price?.toLocaleString('en-IN')}
+                      â‚¹{product.price?.toLocaleString('en-IN')}
                     </span>
                     <span className="text-xs text-orange-400 group-hover:translate-x-0.5 transition-transform flex items-center gap-1 font-semibold">
                       <span>View</span>
@@ -661,3 +678,4 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
     </div>
   );
 };
+
