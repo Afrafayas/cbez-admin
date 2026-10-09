@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Store, ShoppingBag, Users, Settings, ShieldCheck, LogOut, History, Server, CheckCircle2, X, CreditCard, Tags, Receipt } from 'lucide-react';
+import { LayoutDashboard, Store, ShoppingBag, Users, Settings, ShieldCheck, LogOut, History, Server, CheckCircle2, X, CreditCard, Tags, Receipt, Megaphone } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -24,6 +24,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard },
     { id: 'transactions', label: 'Transactions', icon: Receipt },
     { id: 'categories-brands', label: 'Categories & Brands', icon: Tags },
+    { id: 'banners', label: 'Banners', icon: Megaphone },
     { id: 'products', label: 'Products Directory', icon: ShoppingBag },
     { id: 'users', label: 'User Accounts', icon: Users },
     { id: 'activity', label: 'Activity Logs', icon: History },

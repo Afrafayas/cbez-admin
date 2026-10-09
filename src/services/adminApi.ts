@@ -1,4 +1,4 @@
-import { Shop, AdminStats, UserAccount, Product, SubscriptionPlan, Category, Brand, Transaction, TransactionFilter, RevenueStats, MlxDetails } from '../types';
+import { Shop, AdminStats, UserAccount, Product, SubscriptionPlan, Category, Brand, Transaction, TransactionFilter, RevenueStats, MlxDetails, Banner } from '../types';
 
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cbez-web-backend.onrender.com/api';
@@ -692,3 +692,82 @@ export async function triggerExpiryAlertsApi(): Promise<any> {
   const result = await res.json();
   return result;
 }
+
+export async function fetchBannersAdmin(): Promise<Banner[]> {
+  const res = await fetch(`${API_BASE_URL}/banners`, {
+    headers: getAuthHeaders(),
+  });
+  checkAuthResponse(res);
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to fetch banners');
+  return Array.isArray(result) ? result : (result.data ?? []);
+}
+
+export async function createBannerAdmin(data: {
+  title: string;
+  details?: string;
+  image: string;
+  type: 'banner' | 'ads';
+  shopId?: string;
+  isActive?: boolean;
+}): Promise<Banner> {
+  const res = await fetch(`${API_BASE_URL}/banners`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(data),
+  });
+  checkAuthResponse(res);
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to create banner');
+  return result.data ?? result;
+}
+
+export async function updateBannerAdmin(id: string, data: {
+  title?: string;
+  details?: string;
+  image?: string;
+  type?: 'banner' | 'ads';
+  shopId?: string | null;
+  isActive?: boolean;
+}): Promise<Banner> {
+  const res = await fetch(`${API_BASE_URL}/banners/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(data),
+  });
+  checkAuthResponse(res);
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to update banner');
+  return result.data ?? result;
+}
+
+export async function toggleBannerStatusAdmin(id: string, isActive: boolean): Promise<Banner> {
+  const res = await fetch(`${API_BASE_URL}/banners/${id}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ isActive }),
+  });
+  checkAuthResponse(res);
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to toggle banner status');
+  return result.data ?? result;
+}
+
+export async function deleteBannerAdmin(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/banners/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  checkAuthResponse(res);
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || 'Failed to delete banner');
+}
