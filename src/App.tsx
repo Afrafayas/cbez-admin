@@ -31,8 +31,10 @@ import { EditCategoryModal } from './components/EditCategoryModal';
 import { EditBrandModal } from './components/EditBrandModal';
 import { ApproveAgentSubscriptionModal } from './components/ApproveAgentSubscriptionModal';
 import { NearlyExpiringSubscriptions } from './components/NearlyExpiringSubscriptions';
+import { BannersView } from './components/BannersView';
+import { AddEditBannerModal } from './components/AddEditBannerModal';
 import { triggerExpiryAlertsApi } from './services/adminApi';
-import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan, Category, Brand, Transaction, TransactionFilter } from './types';
+import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan, Category, Brand, Transaction, TransactionFilter, Banner } from './types';
 import {
   fetchStats,
   fetchShops,
@@ -68,6 +70,11 @@ import {
   fetchTransactions,
   fetchRevenueStats,
   deleteTransaction,
+  fetchBannersAdmin,
+  createBannerAdmin,
+  updateBannerAdmin,
+  toggleBannerStatusAdmin,
+  deleteBannerAdmin,
 } from './services/adminApi';
 
 import { CheckCircle2, AlertCircle, RefreshCw, AlertTriangle, Loader2, ArrowLeft, ShieldAlert } from 'lucide-react';
@@ -78,6 +85,7 @@ const VALID_TABS = [
   'subscriptions',
   'transactions',
   'categories-brands',
+  'banners',
   'products',
   'users',
   'activity',
@@ -152,6 +160,7 @@ export const App: React.FC = () => {
   const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
 
   // Transactions State
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -209,6 +218,10 @@ export const App: React.FC = () => {
   const [selectedBrandForEdit, setSelectedBrandForEdit] = useState<Brand | null>(null);
   const [isCreateBrandOpen, setIsCreateBrandOpen] = useState(false);
 
+  // Banner Modals state
+  const [selectedBannerForEdit, setSelectedBannerForEdit] = useState<Banner | null>(null);
+  const [isBannerModalOpen, setIsBannerModalOpen] = useState(false);
+
   // Dedicated Single Page Views state
   const [activeSingleView, setActiveSingleView] = useState<SingleViewType | null>(getInitialSingleView);
 
@@ -239,11 +252,11 @@ export const App: React.FC = () => {
     }
   }, [transactionFilter]);
 
-  // Load stats, shops, products, users, activity logs, plans, categories, and brands from backend
+  // Load stats, shops, products, users, activity logs, plans, categories, brands, and banners from backend
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [statsData, revenueStatsData, shopsData, usersData, logsData, productsData, plansData, catsData, brandsData] = await Promise.all([
+      const [statsData, revenueStatsData, shopsData, usersData, logsData, productsData, plansData, catsData, brandsData, bannersData] = await Promise.all([
         fetchStats(),
         fetchRevenueStats().catch(() => ({ totalRevenue: 0, totalTransactions: 0, completedTransactions: 0 })),
         fetchShops(),
@@ -253,6 +266,7 @@ export const App: React.FC = () => {
         fetchSubscriptionPlans().catch(() => []),
         fetchCategories().catch(() => []),
         fetchBrands().catch(() => []),
+        fetchBannersAdmin().catch(() => []),
       ]);
       const currentRevenue = statsData.totalRevenue ?? revenueStatsData?.totalRevenue ?? 0;
       setStats({ ...statsData, totalRevenue: currentRevenue });
@@ -264,6 +278,7 @@ export const App: React.FC = () => {
       if (Array.isArray(plansData)) setSubscriptionPlans(plansData);
       if (Array.isArray(catsData)) setCategories(catsData);
       if (Array.isArray(brandsData)) setBrands(brandsData);
+      if (Array.isArray(bannersData)) setBanners(bannersData);
 
       // Refresh or resolve active single view with fresh data from backend
       try {
@@ -964,6 +979,70 @@ export const App: React.FC = () => {
     }
   };
 
+  // Banner Handlers
+  const handleCreateBanner = async (bannerData: any) => {
+    setIsActionLoading(true);
+    try {
+      await createBannerAdmin(bannerData);
+      showToast('Promotional banner created successfully!');
+      setIsBannerModalOpen(false);
+      const updatedBanners = await fetchBannersAdmin().catch(() => []);
+      setBanners(updatedBanners);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to create banner', 'error');
+      throw err;
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleUpdateBanner = async (id: string, bannerData: any) => {
+    setIsActionLoading(true);
+    try {
+      await updateBannerAdmin(id, bannerData);
+      showToast('Banner updated successfully!');
+      setIsBannerModalOpen(false);
+      setSelectedBannerForEdit(null);
+      const updatedBanners = await fetchBannersAdmin().catch(() => []);
+      setBanners(updatedBanners);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update banner', 'error');
+      throw err;
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleToggleBannerStatus = async (bannerId: string, currentStatus: boolean) => {
+    try {
+      // Optimistic update
+      setBanners((prev) =>
+        prev.map((b) => (b.id === bannerId ? { ...b, isActive: !currentStatus } : b))
+      );
+      await toggleBannerStatusAdmin(bannerId, !currentStatus);
+      showToast(`Banner ${!currentStatus ? 'activated and live' : 'paused'} successfully!`);
+    } catch (err: any) {
+      // Revert optimistic update
+      setBanners((prev) =>
+        prev.map((b) => (b.id === bannerId ? { ...b, isActive: currentStatus } : b))
+      );
+      showToast(err.message || 'Failed to toggle banner status', 'error');
+    }
+  };
+
+  const handleDeleteBanner = async (bannerId: string) => {
+    setIsActionLoading(true);
+    try {
+      await deleteBannerAdmin(bannerId);
+      setBanners((prev) => prev.filter((b) => b.id !== bannerId));
+      showToast('Banner deleted successfully!');
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete banner', 'error');
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0F1117] text-slate-100 flex flex-col md:flex-row font-['Poppins',sans-serif]">
       {/* Sidebar Navigation */}
@@ -1194,6 +1273,24 @@ export const App: React.FC = () => {
                   onViewBrand={handleOpenSingleBrand}
                   isLoading={isLoading}
                   searchTerm={searchTerm}
+                />
+              ) : activeTab === 'banners' ? (
+                <BannersView
+                  banners={banners}
+                  shops={shops}
+                  onOpenCreate={() => {
+                    setSelectedBannerForEdit(null);
+                    setIsBannerModalOpen(true);
+                  }}
+                  onEdit={(banner) => {
+                    setSelectedBannerForEdit(banner);
+                    setIsBannerModalOpen(true);
+                  }}
+                  onDelete={handleDeleteBanner}
+                  onToggleStatus={handleToggleBannerStatus}
+                  isLoading={isLoading}
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
                 />
               ) : activeTab === 'products' ? (
                 <ProductsTable
@@ -1461,8 +1558,28 @@ export const App: React.FC = () => {
         brandToEdit={selectedBrandForEdit}
         isLoading={isActionLoading}
       />
+
+      {/* Banner Modal */}
+      <AddEditBannerModal
+        isOpen={isBannerModalOpen}
+        onClose={() => {
+          setIsBannerModalOpen(false);
+          setSelectedBannerForEdit(null);
+        }}
+        onSave={async (bannerData) => {
+          if (selectedBannerForEdit) {
+            await handleUpdateBanner(selectedBannerForEdit.id, bannerData);
+          } else {
+            await handleCreateBanner(bannerData);
+          }
+        }}
+        bannerToEdit={selectedBannerForEdit}
+        shops={shops}
+        isLoading={isActionLoading}
+      />
     </div>
   );
 };
 
 export default App;
+
