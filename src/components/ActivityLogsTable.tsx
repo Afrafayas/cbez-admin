@@ -38,6 +38,16 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
+  const isAgent = (() => {
+    try {
+      const raw = localStorage.getItem('cbez_admin_user');
+      const u = raw ? JSON.parse(raw) : null;
+      return u?.role === 'seller' || u?.role === 'agent';
+    } catch (e) {
+      return false;
+    }
+  })();
+
   const handleManualRefresh = async () => {
     if (!onRefresh || isRefreshing) return;
     try {
@@ -224,7 +234,7 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
         <div>
           <div className="flex items-center gap-2.5">
             <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-              User Activity Audit Logs
+              {isAgent ? 'Customer Activity Logs' : 'User Activity Audit Logs'}
               <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30">
                 {filteredLogs.length} Events
               </span>
