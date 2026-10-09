@@ -37,7 +37,9 @@ export async function uploadImageToS3(fileOrBase64: File | Blob | string, folder
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result.message || 'Failed to upload base64 image to S3');
-      return result.data?.url || result.url || fileOrBase64;
+      const uploadedUrl = result.data?.url || result.url;
+      if (!uploadedUrl) throw new Error('S3 upload succeeded but no URL was returned');
+      return uploadedUrl;
     }
     return fileOrBase64;
   }
@@ -51,7 +53,9 @@ export async function uploadImageToS3(fileOrBase64: File | Blob | string, folder
   });
   const result = await res.json();
   if (!res.ok) throw new Error(result.message || 'Failed to upload file to S3');
-  return result.data?.url || result.url || '';
+  const uploadedUrl = result.data?.url || result.url;
+  if (!uploadedUrl) throw new Error('S3 upload succeeded but no URL was returned');
+  return uploadedUrl;
 }
 
 export async function uploadMultipleImagesToS3(filesOrBase64: (File | Blob | string)[], folder: string = 'products'): Promise<string[]> {
@@ -711,13 +715,17 @@ export async function createBannerAdmin(data: {
   shopId?: string;
   isActive?: boolean;
 }): Promise<Banner> {
+  const bannerData = { ...data };
+  if (bannerData.image && bannerData.image.startsWith('data:')) {
+    bannerData.image = await uploadImageToS3(bannerData.image, 'banners');
+  }
   const res = await fetch(`${API_BASE_URL}/banners`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(bannerData),
   });
   checkAuthResponse(res);
   const result = await res.json();
@@ -733,13 +741,17 @@ export async function updateBannerAdmin(id: string, data: {
   shopId?: string | null;
   isActive?: boolean;
 }): Promise<Banner> {
+  const bannerData = { ...data };
+  if (bannerData.image && bannerData.image.startsWith('data:')) {
+    bannerData.image = await uploadImageToS3(bannerData.image, 'banners');
+  }
   const res = await fetch(`${API_BASE_URL}/banners/${id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(bannerData),
   });
   checkAuthResponse(res);
   const result = await res.json();
