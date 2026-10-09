@@ -82,23 +82,23 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* Refresh Data Button */}
-          <button
+          {/* <button
             onClick={onRefresh}
             disabled={isLoading}
             className="flex items-center gap-1.5 sm:gap-2 px-3 py-2 rounded-xl glass-panel glass-panel-hover text-slate-300 text-xs font-semibold hover:text-white transition-all disabled:opacity-50 cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-orange-500' : ''}`} />
             <span className="hidden sm:inline">Refresh Data</span>
-          </button>
+          </button> */}
 
           {/* Notification Bell */}
-          <button
+          {/* <button
             className="relative p-2 rounded-xl glass-panel text-slate-400 hover:text-white transition-colors cursor-pointer"
             aria-label="Notifications"
           >
             <Bell className="w-4 h-4" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
-          </button>
+          </button> */}
         </div>
       </div>
 
