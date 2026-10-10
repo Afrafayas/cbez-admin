@@ -40,7 +40,7 @@ export const ActivityLogsTable: React.FC<ActivityLogsTableProps> = ({
 
   const isAgent = (() => {
     try {
-      const raw = localStorage.getItem('cbez_admin_user');
+      const raw = sessionStorage.getItem('cbez_admin_user') || localStorage.getItem('cbez_admin_user');
       const u = raw ? JSON.parse(raw) : null;
       return u?.role === 'seller' || u?.role === 'agent';
     } catch (e) {

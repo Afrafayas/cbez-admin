@@ -1,17 +1,17 @@
+import { getAdminToken, clearAdminAuthSession } from '../utils/authStorage';
 import { Shop, AdminStats, UserAccount, Product, SubscriptionPlan, Category, Brand, Transaction, TransactionFilter, RevenueStats, MlxDetails, Banner } from '../types';
 
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cbez-web-backend.onrender.com/api';
+const API_BASE_URL: string = import.meta.env.VITE_API_URL || '/api';
 
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('cbez_admin_token');
+  const token = getAdminToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 function checkAuthResponse(res: Response) {
   if (res.status === 401) {
-    localStorage.removeItem('cbez_admin_token');
-    localStorage.removeItem('cbez_admin_user');
+    clearAdminAuthSession();
     setTimeout(() => {
       window.location.reload();
     }, 1500);

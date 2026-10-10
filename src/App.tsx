@@ -1,3 +1,4 @@
+import { getAdminToken, clearAdminAuthSession } from './utils/authStorage';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Navbar } from './components/Navbar';
@@ -142,7 +143,7 @@ const getInitialSingleView = (): SingleViewType | null => {
 
 export const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return Boolean(localStorage.getItem('cbez_admin_token'));
+    return Boolean(getAdminToken());
   });
   const [activeTab, setActiveTab] = useState<string>(getInitialTab);
   const [stats, setStats] = useState<AdminStats>({
@@ -924,10 +925,7 @@ export const App: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('cbez_admin_token');
-    localStorage.removeItem('cbez_admin_user');
-    localStorage.removeItem('cbez_admin_active_tab');
-    sessionStorage.removeItem('cbez_admin_single_view');
+    clearAdminAuthSession();
     try {
       window.history.replaceState(null, '', window.location.pathname);
     } catch (e) {}
