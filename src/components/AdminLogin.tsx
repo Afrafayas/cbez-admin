@@ -1,3 +1,4 @@
+import { saveAdminAuthSession } from '../utils/authStorage';
 import React, { useState } from 'react';
 import { ShieldCheck, Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
 
@@ -35,8 +36,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
 
       if (token && user) {
         // Store in localStorage
-        localStorage.setItem('cbez_admin_token', token);
-        localStorage.setItem('cbez_admin_user', JSON.stringify(user));
+        saveAdminAuthSession(token, user);
         onLoginSuccess(token, user);
       } else {
         throw new Error('Invalid response structure from server.');

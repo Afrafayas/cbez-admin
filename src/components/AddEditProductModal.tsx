@@ -416,7 +416,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     const tempImg = new Image();
                     tempImg.onload = () => {
                       const canvas = document.createElement('canvas');
-                      const MAX_DIM = 1200;
+                      const MAX_DIM = 960;
                       let w = tempImg.width;
                       let h = tempImg.height;
 
@@ -437,7 +437,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                       const ctx = canvas.getContext('2d');
                       ctx?.drawImage(tempImg, 0, 0, w, h);
 
-                      const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+                      const compressedBase64 = canvas.toDataURL('image/jpeg', 0.72);
                       const updated = [...formImages];
                       updated[idx] = compressedBase64;
                       setFormImages(updated);

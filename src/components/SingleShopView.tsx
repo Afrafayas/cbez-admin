@@ -235,12 +235,12 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
               </div>
               <p className="text-xs sm:text-sm text-slate-400 mt-1.5 flex flex-wrap items-center gap-3">
                 <span>Owned by <strong className="text-slate-200">{shop.ownerName}</strong></span>
-                <span>â€¢</span>
+                <span>•</span>
                 <span className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5 text-orange-400" />
                   {shop.city}
                 </span>
-                <span>â€¢</span>
+                <span>•</span>
                 <span className="flex items-center gap-1">
                   <Tag className="w-3.5 h-3.5 text-amber-400" />
                   {shop.category}
@@ -431,7 +431,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/5 text-xs text-slate-400">
-            <span>Monthly Rate: <strong className="text-white font-bold">â‚¹{plan?.price ?? 0}/mo</strong></span>
+            <span>Monthly Rate: <strong className="text-white font-bold">₹{plan?.price ?? 0}/mo</strong></span>
             <span>Plan Status: <strong className="text-emerald-400 font-bold">{plan?.status || 'ACTIVE'}</strong></span>
           </div>
         </div>
@@ -662,7 +662,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
 
                   <div className="flex items-center justify-between pt-3 mt-3 border-t border-white/5">
                     <span className="font-black text-white text-sm">
-                      â‚¹{product.price?.toLocaleString('en-IN')}
+                      ₹{product.price?.toLocaleString('en-IN')}
                     </span>
                     <span className="text-xs text-orange-400 group-hover:translate-x-0.5 transition-transform flex items-center gap-1 font-semibold">
                       <span>View</span>
