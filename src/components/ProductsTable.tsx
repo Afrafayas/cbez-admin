@@ -5,22 +5,28 @@ import { Pagination } from './Pagination';
 
 interface ProductsTableProps {
   products: Product[];
+  shops?: Shop[];
   onViewDetails: (product: Product) => void;
   onDelete: (product: Product) => void;
   onEditProduct?: (product: Product) => void;
   onOpenCreateProduct?: () => void;
   onViewShop?: (shop: Shop) => void;
   searchTerm: string;
+  onCleanupOrphans?: () => void;
+  isActionLoading?: boolean;
 }
 
 export const ProductsTable: React.FC<ProductsTableProps> = ({
   products,
+  shops = [],
   onViewDetails,
   onDelete,
   onEditProduct,
   onOpenCreateProduct,
   onViewShop,
   searchTerm,
+  onCleanupOrphans,
+  isActionLoading = false,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedBrand, setSelectedBrand] = useState<string>('all');
@@ -60,6 +66,10 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
   const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
+  );
+
+  const orphanProducts = products.filter(
+    (p) => !p.shop || !shops.some((s) => String(s.id) === String(p.shopId || p.shop?.id))
   );
 
   return (
@@ -155,6 +165,32 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
         </div>
       </div>
 
+      {/* Orphaned Products Alert Banner */}
+      {orphanProducts.length > 0 && onCleanupOrphans && (
+        <div className="m-4 sm:m-5 p-4 rounded-xl bg-amber-500/15 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-fade-in shadow-lg">
+          <div className="flex items-start sm:items-center gap-2.5 text-amber-300">
+            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5 sm:mt-0" />
+            <div>
+              <span className="font-bold text-white text-sm">
+                {orphanProducts.length} product{orphanProducts.length > 1 ? 's' : ''} belong to deleted store(s)
+              </span>
+              <p className="text-slate-300 text-xs mt-0.5">
+                These items were left behind when their store was removed. Click below to delete them all from the platform and website.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onCleanupOrphans}
+            disabled={isActionLoading}
+            className="px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md shrink-0 cursor-pointer disabled:opacity-50"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Clean Up {orphanProducts.length} Product{orphanProducts.length > 1 ? 's' : ''}</span>
+          </button>
+        </div>
+      )}
+
       {/* Mobile Card List View (< md) */}
       <div className="block md:hidden p-4 space-y-3">
         {paginatedProducts.length === 0 ? (
@@ -216,7 +252,10 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                         <span className="underline-offset-2 hover:underline">{product.shop.name}</span>
                       </button>
                     ) : (
-                      <span className="font-semibold text-slate-200">{product.shop?.name || 'Unknown Store'}</span>
+                      <span className="font-semibold text-red-400 text-xs flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3 text-red-400" />
+                        Store Deleted
+                      </span>
                     )}
                   </div>
                   <div className="text-right">
@@ -368,7 +407,13 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                           </div>
                         </div>
                       ) : (
-                        <div className="text-xs text-slate-500 italic">Store info unavailable</div>
+                        <div>
+                          <div className="text-xs text-red-400 font-semibold flex items-center gap-1">
+                            <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                            Store Deleted
+                          </div>
+                          <div className="text-[11px] text-slate-500 mt-0.5">Orphaned product</div>
+                        </div>
                       )}
                     </td>
 

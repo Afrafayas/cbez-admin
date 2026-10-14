@@ -283,38 +283,31 @@ export const App: React.FC = () => {
 
       // Refresh or resolve active single view with fresh data from backend
       try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlView = urlParams.get('view');
-        const urlId = urlParams.get('id');
-
         setActiveSingleView((prev) => {
-          const targetType = prev?.type || urlView;
-          const targetId =
-            (prev?.type === 'shop'
-              ? prev.shop.id
-              : prev?.type === 'product'
-              ? prev.product.id
-              : prev?.type === 'user'
-              ? prev.user.id
-              : prev?.type === 'category'
-              ? prev.category.id
-              : prev?.type === 'brand'
-              ? prev.brand.id
-              : null) || urlId;
+          if (!prev) return null;
 
-          if (!targetType || !targetId) return prev;
+          const targetType = prev.type;
+          const targetId =
+            prev.type === 'shop'
+              ? prev.shop.id
+              : prev.type === 'product'
+              ? prev.product.id
+              : prev.type === 'user'
+              ? prev.user.id
+              : prev.type === 'category'
+              ? prev.category.id
+              : prev.brand.id;
+
+          if (!targetId) return prev;
 
           if (targetType === 'shop') {
             const fresh = shopsData.find((s) => s.id === targetId);
             if (fresh) return { type: 'shop', shop: fresh };
-            fetchShopById(targetId)
-              .then((freshShop) => setActiveSingleView({ type: 'shop', shop: freshShop }))
-              .catch(() => {});
             return prev;
           } else if (targetType === 'product') {
             const fresh = productsData.find((p) => p.id === targetId);
             if (fresh) return { type: 'product', product: fresh };
-            return prev;
+            return null; // Product was deleted, close view!
           } else if (targetType === 'user') {
             const fresh = usersData.find((u) => u.id === targetId);
             if (fresh) return { type: 'user', user: fresh };
@@ -826,16 +819,62 @@ export const App: React.FC = () => {
   const handleConfirmDeleteShop = async () => {
     if (!selectedShopForDelete) return;
     setIsActionLoading(true);
+    const shopIdToDelete = selectedShopForDelete.id;
     try {
-      await deleteShop(selectedShopForDelete.id);
-      if (activeSingleView?.type === 'shop' && activeSingleView.shop.id === selectedShopForDelete.id) {
+      // 1. Delete all products belonging to this store first so they are no longer visible on the website
+      const storeProducts = products.filter(
+        (p) => String(p.shopId) === String(shopIdToDelete) || String(p.shop?.id) === String(shopIdToDelete)
+      );
+
+      if (storeProducts.length > 0) {
+        await Promise.allSettled(
+          storeProducts.map((p) => deleteProduct(p.id))
+        );
+      }
+
+      // 2. Delete the shop itself
+      await deleteShop(shopIdToDelete);
+
+      if (activeSingleView?.type === 'shop' && activeSingleView.shop.id === shopIdToDelete) {
         setActiveSingleView(null);
       }
-      showToast(`Store "${selectedShopForDelete.name}" deleted successfully!`);
+      showToast(
+        storeProducts.length > 0
+          ? `Store "${selectedShopForDelete.name}" and its ${storeProducts.length} product(s) deleted successfully!`
+          : `Store "${selectedShopForDelete.name}" deleted successfully!`
+      );
       setSelectedShopForDelete(null);
-      loadData();
+      await loadData();
     } catch (err: any) {
       showToast(err.message || 'Failed to delete store', 'error');
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  // Handler: Clean up all orphan products (belonging to deleted stores)
+  const handleCleanupOrphanProducts = async () => {
+    const orphanProducts = products.filter(
+      (p) => !p.shop || !shops.some((s) => String(s.id) === String(p.shopId || p.shop?.id))
+    );
+    if (orphanProducts.length === 0) {
+      showToast('No orphaned products found.');
+      return;
+    }
+    if (
+      !window.confirm(
+        `Are you sure you want to permanently delete ${orphanProducts.length} product(s) belonging to deleted store(s)? This will remove them from the website immediately.`
+      )
+    ) {
+      return;
+    }
+    setIsActionLoading(true);
+    try {
+      await Promise.allSettled(orphanProducts.map((p) => deleteProduct(p.id)));
+      showToast(`Successfully cleaned up ${orphanProducts.length} product(s) from deleted stores!`);
+      await loadData();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to clean up orphaned products', 'error');
     } finally {
       setIsActionLoading(false);
     }
@@ -846,36 +885,22 @@ export const App: React.FC = () => {
     if (!selectedProductForDelete) return;
     setIsActionLoading(true);
 
-    const targetShopId =
-      selectedProductForDelete.shopId ||
-      selectedProductForDelete.shop?.id ||
-      (activeSingleView?.type === 'shop' ? activeSingleView.shop.id : null);
-    const wasViewingShop = activeSingleView?.type === 'shop';
-
     try {
       await deleteProduct(selectedProductForDelete.id);
       showToast(`Product "${selectedProductForDelete.name}" deleted successfully!`);
       setSelectedProductForDelete(null);
-      await loadData();
 
-      // If user deleted while inside a store view or deleted a product of a store, stay on the store page!
-      if (wasViewingShop && targetShopId) {
-        try {
-          const freshShop = await fetchShopById(targetShopId);
-          setActiveSingleView({ type: 'shop', shop: freshShop });
-        } catch (e) {
-          console.error('Failed to refresh shop view after product delete', e);
-        }
-      } else if (targetShopId) {
-        try {
-          const freshShop = await fetchShopById(targetShopId);
-          setActiveSingleView({ type: 'shop', shop: freshShop });
-        } catch (e) {
-          setActiveSingleView(null);
-        }
-      } else {
-        setActiveSingleView(null);
-      }
+      // Always reset active single view so that no store view page opens automatically
+      setActiveSingleView(null);
+      sessionStorage.removeItem('cbez_admin_single_view');
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('view');
+        url.searchParams.delete('id');
+        window.history.replaceState(null, '', url.toString());
+      } catch (e) {}
+
+      await loadData();
     } catch (err: any) {
       showToast(err.message || 'Failed to delete product', 'error');
     } finally {
@@ -1293,12 +1318,15 @@ export const App: React.FC = () => {
               ) : activeTab === 'products' ? (
                 <ProductsTable
                   products={products}
+                  shops={shops}
                   onViewDetails={handleOpenSingleProduct}
                   onEditProduct={(product) => setSelectedProductForEdit(product)}
                   onOpenCreateProduct={() => setIsAddProductOpen(true)}
                   onDelete={(product) => setSelectedProductForDelete(product)}
                   onViewShop={handleOpenSingleShop}
                   searchTerm={searchTerm}
+                  onCleanupOrphans={handleCleanupOrphanProducts}
+                  isActionLoading={isActionLoading}
                 />
               ) : activeTab === 'users' ? (
                 <UsersTable
@@ -1429,6 +1457,15 @@ export const App: React.FC = () => {
         onClose={() => setSelectedShopForDelete(null)}
         onConfirm={handleConfirmDeleteShop}
         isLoading={isActionLoading}
+        productsCount={
+          selectedShopForDelete
+            ? products.filter(
+                (p) =>
+                  String(p.shopId) === String(selectedShopForDelete.id) ||
+                  String(p.shop?.id) === String(selectedShopForDelete.id)
+              ).length
+            : 0
+        }
       />
 
       {/* Product Modals */}
