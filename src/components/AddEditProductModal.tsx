@@ -40,7 +40,10 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
     category: 'Mobiles',
     description: '',
     price: '',
+    offerPrice: '',
     stock: '1',
+    deviceAge: '',
+
 
     // Mobile / Common specs
     ram: '',
@@ -112,13 +115,22 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
       if (productToEdit) {
         setSelectedShopId(productToEdit.shopId || (availableShops[0]?.id || ''));
         const sp = productToEdit.specs || {};
+        const rawOffer = productToEdit.offerPrice !== undefined && productToEdit.offerPrice !== null
+          ? String(productToEdit.offerPrice)
+          : (sp['offerPrice'] || sp['Offer Price'] || '');
+        const rawAge = productToEdit.deviceAge || sp['Device Age'] || sp['Device Age / Purchase Date'] || sp['Purchase Date'] || '';
+        const rawIncluded = productToEdit.includedItems || sp['Included Items'] || sp['Included items'] || sp['Included Accessories'] || '';
+
         setProductForm({
           name: productToEdit.name || '',
           brand: productToEdit.brand || '',
           category: productToEdit.category || 'Mobiles',
           description: productToEdit.description || '',
           price: productToEdit.price ? String(productToEdit.price) : '',
+          offerPrice: rawOffer,
           stock: productToEdit.stock !== undefined ? String(productToEdit.stock) : '1',
+          deviceAge: rawAge,
+          includedItems: rawIncluded,
 
           ram: sp['RAM'] || '',
           storage: sp['Storage'] || '',
@@ -149,7 +161,6 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
           productType: sp['Product Type'] || sp['Product type'] || '',
           model: sp['Model'] || '',
           compatibility: sp['Compatibility'] || '',
-          includedItems: sp['Included Items'] || sp['Included items'] || '',
           technicalSpecifications: sp['Technical Specifications'] || sp['Technical specifications'] || ''
         });
 
@@ -169,7 +180,10 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
           category: 'Mobiles',
           description: '',
           price: '',
+          offerPrice: '',
           stock: '1',
+          deviceAge: '',
+          includedItems: '',
 
           ram: '',
           storage: '',
@@ -200,7 +214,6 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
           productType: '',
           model: '',
           compatibility: '',
-          includedItems: '',
           technicalSpecifications: ''
         });
       }
@@ -291,17 +304,58 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
       };
     }
 
-    const payload = {
+    const priceNum = Number(productForm.price);
+    if (isNaN(priceNum) || priceNum < 0) {
+      alert('Price must be a valid number and cannot be negative.');
+      return;
+    }
+
+    let parsedOfferPrice: number | undefined = undefined;
+    if (productForm.offerPrice && productForm.offerPrice.trim() !== '') {
+      const offerNum = Number(productForm.offerPrice);
+      if (isNaN(offerNum) || offerNum < 0) {
+        alert('Offer Price must be a valid non-negative number.');
+        return;
+      }
+      if (offerNum > priceNum) {
+        alert('Offer Price cannot be higher than Regular Price.');
+        return;
+      }
+      parsedOfferPrice = offerNum;
+    }
+
+    if (parsedOfferPrice !== undefined) {
+      categorySpecs['offerPrice'] = String(parsedOfferPrice);
+      categorySpecs['Offer Price'] = String(parsedOfferPrice);
+    }
+    if (productForm.deviceAge && productForm.deviceAge.trim()) {
+      categorySpecs['Device Age'] = productForm.deviceAge.trim();
+      categorySpecs['Device Age / Purchase Date'] = productForm.deviceAge.trim();
+    }
+    if (productForm.includedItems && productForm.includedItems.trim()) {
+      categorySpecs['Included Items'] = productForm.includedItems.trim();
+    }
+
+    const payload: any = {
       shopId: selectedShopId,
       name: productForm.name,
       brand: productForm.brand,
       category: productForm.category,
       description: productForm.description,
-      price: Number(productForm.price),
+      price: priceNum,
       stock: Number(productForm.stock),
       specs: categorySpecs,
       images: validImgs,
     };
+    if (parsedOfferPrice !== undefined) {
+      payload.offerPrice = parsedOfferPrice;
+    }
+    if (productForm.deviceAge && productForm.deviceAge.trim()) {
+      payload.deviceAge = productForm.deviceAge.trim();
+    }
+    if (productForm.includedItems && productForm.includedItems.trim()) {
+      payload.includedItems = productForm.includedItems.trim();
+    }
 
     try {
       setIsSubmitting(true);
@@ -585,6 +639,18 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
           </div>
 
           <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-300">Offer Price (₹)</label>
+            <input
+              type="number"
+              min={0}
+              placeholder="e.g. 42000 (Optional discount price)"
+              value={productForm.offerPrice}
+              onChange={(e) => setProductForm({ ...productForm, offerPrice: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white font-medium text-xs outline-none focus:border-orange-500"
+            />
+          </div>
+
+          <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-300">Stock Units *</label>
             <input
               type="number"
@@ -593,6 +659,28 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               placeholder="1"
               value={productForm.stock}
               onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white font-medium text-xs outline-none focus:border-orange-500"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-300">Device Age / Purchase Date</label>
+            <input
+              type="text"
+              placeholder="e.g. 6 Months Old, Purchased Jan 2024"
+              value={productForm.deviceAge}
+              onChange={(e) => setProductForm({ ...productForm, deviceAge: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white font-medium text-xs outline-none focus:border-orange-500"
+            />
+          </div>
+
+          <div className="col-span-2 space-y-1.5">
+            <label className="text-xs font-bold text-slate-300">Included Items</label>
+            <input
+              type="text"
+              placeholder="e.g. Original Box, Fast Charger & Cable, Invoice Bill"
+              value={productForm.includedItems}
+              onChange={(e) => setProductForm({ ...productForm, includedItems: e.target.value })}
               className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white font-medium text-xs outline-none focus:border-orange-500"
             />
           </div>
@@ -1252,10 +1340,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="No Warranty">No Warranty</option>
                   </select>
                 </div>
-                <div className="col-span-2">
-                  <label className="block text-slate-400 font-semibold mb-1">Included Items</label>
-                  <input type="text" value={productForm.includedItems} onChange={(e) => setProductForm({ ...productForm, includedItems: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />
-                </div>
+
                 <div className="col-span-2">
                   <label className="block text-slate-400 font-semibold mb-1">Technical Specifications</label>
                   <input type="text" value={productForm.technicalSpecifications} onChange={(e) => setProductForm({ ...productForm, technicalSpecifications: e.target.value })} className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200" />

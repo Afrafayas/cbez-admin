@@ -8,6 +8,7 @@ interface DeleteShopModalProps {
   onClose: () => void;
   onConfirm: () => void;
   isLoading: boolean;
+  productsCount?: number;
 }
 
 export const DeleteShopModal: React.FC<DeleteShopModalProps> = ({
@@ -16,6 +17,7 @@ export const DeleteShopModal: React.FC<DeleteShopModalProps> = ({
   onClose,
   onConfirm,
   isLoading,
+  productsCount,
 }) => {
   if (!isOpen || !shop) return null;
 
@@ -30,7 +32,7 @@ export const DeleteShopModal: React.FC<DeleteShopModalProps> = ({
           <h3 className="text-lg font-bold text-white mb-1">Delete Store Listing?</h3>
           <p className="text-xs text-slate-400 mb-4">
             Are you sure you want to delete <span className="font-semibold text-white">"{shop.name}"</span>?
-            This will permanently remove the store profile, products, and associated leads from the platform.
+            This will permanently remove the store profile{productsCount !== undefined && productsCount > 0 ? `, all its ${productsCount} product(s),` : ', products,'} and associated leads from the platform and website.
           </p>
 
           <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-[11px] mb-6 font-medium text-left">

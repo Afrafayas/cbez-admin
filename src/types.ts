@@ -94,7 +94,10 @@ export interface Product {
   category: string;
   description: string;
   price: number;
+  offerPrice?: number;
   stock: number;
+  deviceAge?: string;
+  includedItems?: string;
   shopId: string;
   shop?: {
     id: string;
