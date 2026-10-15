@@ -336,7 +336,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
       categorySpecs['Included Items'] = productForm.includedItems.trim();
     }
 
-    const payload: any = {
+    const payload = {
       shopId: selectedShopId,
       name: productForm.name,
       brand: productForm.brand,
@@ -347,15 +347,6 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
       specs: categorySpecs,
       images: validImgs,
     };
-    if (parsedOfferPrice !== undefined) {
-      payload.offerPrice = parsedOfferPrice;
-    }
-    if (productForm.deviceAge && productForm.deviceAge.trim()) {
-      payload.deviceAge = productForm.deviceAge.trim();
-    }
-    if (productForm.includedItems && productForm.includedItems.trim()) {
-      payload.includedItems = productForm.includedItems.trim();
-    }
 
     try {
       setIsSubmitting(true);
