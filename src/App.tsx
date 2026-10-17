@@ -34,8 +34,7 @@ import { ApproveAgentSubscriptionModal } from './components/ApproveAgentSubscrip
 import { NearlyExpiringSubscriptions } from './components/NearlyExpiringSubscriptions';
 import { BannersView } from './components/BannersView';
 import { AddEditBannerModal } from './components/AddEditBannerModal';
-import { triggerExpiryAlertsApi } from './services/adminApi';
-import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan, Category, Brand, Transaction, TransactionFilter, Banner } from './types';
+import { Shop, AdminStats, UserAccount, ActivityLogItem, Product, SubscriptionPlan, Category, Brand, Transaction, TransactionFilter, Banner, normalizeProduct } from './types';
 import {
   fetchStats,
   fetchShops,
@@ -48,6 +47,7 @@ import {
   deleteUser,
   fetchAllActivityLogs,
   fetchProducts,
+  fetchProductById,
   deleteProduct,
   fetchSubscriptionPlans,
   createSubscriptionPlan,
@@ -95,7 +95,7 @@ const VALID_TABS = [
 
 type SingleViewType =
   | { type: 'shop'; shop: Shop }
-  | { type: 'product'; product: Product }
+  | { type: 'product'; product: Product; previousView?: SingleViewType | null }
   | { type: 'user'; user: UserAccount }
   | { type: 'category'; category: Category }
   | { type: 'brand'; brand: Brand };
@@ -128,9 +128,11 @@ const getInitialSingleView = (): SingleViewType | null => {
       const cached = JSON.parse(cachedRaw);
       if (cached && cached.type && cached.data) {
         if (!viewParam || (viewParam === cached.type && (!idParam || idParam === cached.id))) {
+          const rawData = cached.data;
+          const data = cached.type === 'product' ? normalizeProduct(rawData) : rawData;
           return {
             type: cached.type,
-            [cached.type]: cached.data,
+            [cached.type]: data,
           } as SingleViewType;
         }
       }
@@ -306,7 +308,22 @@ export const App: React.FC = () => {
             return prev;
           } else if (targetType === 'product') {
             const fresh = productsData.find((p) => p.id === targetId);
-            if (fresh) return { type: 'product', product: fresh };
+            const prevProduct = prev.type === 'product' ? prev.product : null;
+            if (fresh) {
+              const merged = { ...prevProduct, ...fresh };
+              return {
+                type: 'product',
+                product: normalizeProduct(merged),
+                previousView: prev.type === 'product' ? prev.previousView : null,
+              };
+            }
+            if (prevProduct) {
+              return {
+                type: 'product',
+                product: normalizeProduct(prevProduct),
+                previousView: prev.type === 'product' ? prev.previousView : null,
+              };
+            }
             return null; // Product was deleted, close view!
           } else if (targetType === 'user') {
             const fresh = usersData.find((u) => u.id === targetId);
@@ -749,15 +766,59 @@ export const App: React.FC = () => {
   };
 
   // Handler: Open Single Product View
-  const handleOpenSingleProduct = (product: Product) => {
-    let resolvedProduct = product;
+  const handleOpenSingleProduct = async (product: Product, customPreviousView?: SingleViewType | null) => {
+    // 1. Find matched product in products catalog state (which already has parsed specs from /api/products)
+    const catalogProduct = products.find((p) => p.id === product.id);
+    const base = catalogProduct ? { ...catalogProduct, ...product } : product;
+
+    // 2. Normalize and ensure specs/conditionInfo from catalog are prioritized if non-empty
+    let resolvedProduct = normalizeProduct({
+      ...base,
+      specs: (catalogProduct?.specs && Object.keys(catalogProduct.specs).length > 0)
+        ? catalogProduct.specs
+        : base.specs,
+      conditionInfo: (catalogProduct?.conditionInfo && Object.keys(catalogProduct.conditionInfo).length > 0)
+        ? catalogProduct.conditionInfo
+        : base.conditionInfo,
+    });
+
+    // 3. Ensure shop details are attached
     if (!resolvedProduct.shop && resolvedProduct.shopId) {
       const foundShop = shops.find((s) => s.id === resolvedProduct.shopId);
-      if (foundShop) {
-        resolvedProduct = { ...resolvedProduct, shop: foundShop };
-      }
+      if (foundShop) resolvedProduct.shop = foundShop;
+    } else if (resolvedProduct.shop && (!resolvedProduct.shop.address || !resolvedProduct.shop.phone)) {
+      const foundShop = shops.find((s) => s.id === (resolvedProduct.shop?.id || resolvedProduct.shopId));
+      if (foundShop) resolvedProduct.shop = { ...foundShop, ...resolvedProduct.shop };
     }
-    setActiveSingleView({ type: 'product', product: resolvedProduct });
+
+    const prev = customPreviousView !== undefined
+      ? customPreviousView
+      : (activeSingleView?.type === 'shop' ? activeSingleView : null);
+
+    // Immediately render with all merged/normalized specifications
+    setActiveSingleView({ type: 'product', product: resolvedProduct, previousView: prev });
+
+    // In parallel, fetch full fresh product by ID from backend to guarantee 100% updated specs & conditionInfo
+    try {
+      const fullProduct = await fetchProductById(product.id);
+      if (fullProduct) {
+        setActiveSingleView((current) => {
+          if (current?.type === 'product' && current.product.id === product.id) {
+            return {
+              ...current,
+              product: normalizeProduct({
+                ...resolvedProduct,
+                ...fullProduct,
+                shop: fullProduct.shop || resolvedProduct.shop,
+              }),
+            };
+          }
+          return current;
+        });
+      }
+    } catch (e) {
+      console.warn('Background fetchProductById skipped or failed:', e);
+    }
   };
 
   // Handler: Open Single User View
@@ -885,20 +946,26 @@ export const App: React.FC = () => {
     if (!selectedProductForDelete) return;
     setIsActionLoading(true);
 
+    const productToDelete = selectedProductForDelete;
     try {
-      await deleteProduct(selectedProductForDelete.id);
-      showToast(`Product "${selectedProductForDelete.name}" deleted successfully!`);
+      await deleteProduct(productToDelete.id);
+      showToast(`Product "${productToDelete.name}" deleted successfully from database!`);
       setSelectedProductForDelete(null);
 
-      // Always reset active single view so that no store view page opens automatically
-      setActiveSingleView(null);
-      sessionStorage.removeItem('cbez_admin_single_view');
-      try {
-        const url = new URL(window.location.href);
-        url.searchParams.delete('view');
-        url.searchParams.delete('id');
-        window.history.replaceState(null, '', url.toString());
-      } catch (e) {}
+      // Immediately remove from local state so UI updates instantly
+      setProducts((prev) => prev.filter((p) => p.id !== productToDelete.id));
+
+      // Reset active single view if deleting the product currently in view
+      if (activeSingleView?.type === 'product' && activeSingleView.product.id === productToDelete.id) {
+        setActiveSingleView(null);
+        sessionStorage.removeItem('cbez_admin_single_view');
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('view');
+          url.searchParams.delete('id');
+          window.history.replaceState(null, '', url.toString());
+        } catch (e) {}
+      }
 
       await loadData();
     } catch (err: any) {
@@ -1148,7 +1215,7 @@ export const App: React.FC = () => {
                 onEdit={(shop) => setSelectedShopForEdit(shop)}
                 onChangeSubscription={(shop) => setSelectedShopForSubscription(shop)}
                 onDelete={(shop) => setSelectedShopForDelete(shop)}
-                onViewProduct={handleOpenSingleProduct}
+                onViewProduct={(prod) => handleOpenSingleProduct(prod, activeSingleView)}
                 onAddProduct={() => setIsAddProductOpen(true)}
                 onEditProduct={(product) => setSelectedProductForEdit(product)}
                 onDeleteProduct={(product) => setSelectedProductForDelete(product)}
@@ -1156,10 +1223,21 @@ export const App: React.FC = () => {
             ) : activeSingleView.type === 'product' ? (
               <SingleProductView
                 product={activeSingleView.product}
-                onBack={handleBackFromSingleView}
+                onBack={() => {
+                  if (activeSingleView.previousView) {
+                    setActiveSingleView(activeSingleView.previousView);
+                  } else {
+                    handleBackFromSingleView();
+                  }
+                }}
                 onEdit={(product) => setSelectedProductForEdit(product)}
                 onDelete={(product) => setSelectedProductForDelete(product)}
                 onViewShop={handleOpenSingleShop}
+                backLabel={
+                  activeSingleView.previousView?.type === 'shop'
+                    ? `Back to ${activeSingleView.previousView.shop.name}`
+                    : undefined
+                }
               />
             ) : activeSingleView.type === 'user' ? (
               <SingleUserView
@@ -1180,7 +1258,7 @@ export const App: React.FC = () => {
                     await handleDeleteCategory(cat.id);
                   }
                 }}
-                onViewProduct={handleOpenSingleProduct}
+                onViewProduct={(prod) => handleOpenSingleProduct(prod, activeSingleView)}
                 onAddProduct={() => setIsAddProductOpen(true)}
               />
             ) : (
@@ -1194,7 +1272,7 @@ export const App: React.FC = () => {
                     await handleDeleteBrand(brand.id);
                   }
                 }}
-                onViewProduct={handleOpenSingleProduct}
+                onViewProduct={(prod) => handleOpenSingleProduct(prod, activeSingleView)}
                 onAddProduct={() => setIsAddProductOpen(true)}
               />
             )

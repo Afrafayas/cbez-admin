@@ -1,6 +1,6 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { X, Store, Loader2, Image as ImageIcon, Sparkles } from 'lucide-react';
-import { Product, Shop, SubscriptionPlan, Category, Brand } from '../types';
+import { Product, Shop, SubscriptionPlan, Category, Brand, normalizeProduct } from '../types';
 
 interface AddEditProductModalProps {
   isOpen: boolean;
@@ -113,20 +113,21 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       if (productToEdit) {
-        setSelectedShopId(productToEdit.shopId || (availableShops[0]?.id || ''));
-        const sp = productToEdit.specs || {};
-        const rawOffer = productToEdit.offerPrice !== undefined && productToEdit.offerPrice !== null
-          ? String(productToEdit.offerPrice)
+        const prod = normalizeProduct(productToEdit);
+        setSelectedShopId(prod.shopId || (availableShops[0]?.id || ''));
+        const sp = prod.specs || {};
+        const rawOffer = prod.offerPrice !== undefined && prod.offerPrice !== null
+          ? String(prod.offerPrice)
           : (sp['offerPrice'] || sp['Offer Price'] || '');
-        const rawAge = productToEdit.deviceAge || sp['Device Age'] || sp['Device Age / Purchase Date'] || sp['Purchase Date'] || '';
-        const rawIncluded = productToEdit.includedItems || sp['Included Items'] || sp['Included items'] || sp['Included Accessories'] || '';
+        const rawAge = prod.deviceAge || sp['Device Age'] || sp['Device Age / Purchase Date'] || sp['Purchase Date'] || '';
+        const rawIncluded = prod.includedItems || sp['Included Items'] || sp['Included items'] || sp['Included Accessories'] || '';
 
         setProductForm({
-          name: productToEdit.name || '',
-          brand: productToEdit.brand || '',
-          category: productToEdit.category || 'Mobiles',
-          description: productToEdit.description || '',
-          price: productToEdit.price ? String(productToEdit.price) : '',
+          name: prod.name || '',
+          brand: prod.brand || '',
+          category: prod.category || 'Mobiles',
+          description: prod.description || '',
+          price: prod.price ? String(prod.price) : '',
           offerPrice: rawOffer,
           stock: productToEdit.stock !== undefined ? String(productToEdit.stock) : '1',
           deviceAge: rawAge,

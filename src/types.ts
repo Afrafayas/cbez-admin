@@ -87,6 +87,145 @@ export function getProductImages(product?: Product | null): string[] {
   return [];
 }
 
+export function normalizeProduct(product: any): Product {
+  if (!product) return product;
+
+  // 1. Resolve specs from specs, specsJson, or string
+  let specs: Record<string, any> = {};
+  if (product.specs && typeof product.specs === 'object' && !Array.isArray(product.specs)) {
+    specs = { ...product.specs };
+  } else if (typeof product.specs === 'string') {
+    try {
+      const parsed = JSON.parse(product.specs);
+      if (parsed && typeof parsed === 'object') specs = parsed;
+    } catch (e) {}
+  }
+
+  if (Object.keys(specs).length === 0 && (product.specsJson || (product as any).specs_json)) {
+    const rawSpecsJson = product.specsJson || (product as any).specs_json;
+    try {
+      const parsed = typeof rawSpecsJson === 'string' ? JSON.parse(rawSpecsJson) : rawSpecsJson;
+      if (parsed && typeof parsed === 'object') specs = parsed;
+    } catch (e) {}
+  }
+
+  // 2. Resolve conditionInfo from conditionInfo, conditionJson, or string
+  let conditionInfo: Record<string, any> = {};
+  if (product.conditionInfo && typeof product.conditionInfo === 'object' && !Array.isArray(product.conditionInfo)) {
+    conditionInfo = { ...product.conditionInfo };
+  } else if (typeof product.conditionInfo === 'string') {
+    try {
+      const parsed = JSON.parse(product.conditionInfo);
+      if (parsed && typeof parsed === 'object') conditionInfo = parsed;
+    } catch (e) {}
+  }
+
+  if (Object.keys(conditionInfo).length === 0 && (product.conditionJson || (product as any).condition_json)) {
+    const rawCondJson = product.conditionJson || (product as any).condition_json;
+    try {
+      const parsed = typeof rawCondJson === 'string' ? JSON.parse(rawCondJson) : rawCondJson;
+      if (parsed && typeof parsed === 'object') conditionInfo = parsed;
+    } catch (e) {}
+  }
+
+  // 3. Resolve images
+  const images = getProductImages(product);
+
+  // Helper to extract values from specs case-insensitively
+  const findSpec = (keys: string[]): string | undefined => {
+    for (const key of keys) {
+      if (specs[key] !== undefined && specs[key] !== null && String(specs[key]).trim() !== '') {
+        return String(specs[key]).trim();
+      }
+      const norm = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+      for (const [sk, sv] of Object.entries(specs)) {
+        if (sk.toLowerCase().replace(/[^a-z0-9]/g, '') === norm && sv !== undefined && sv !== null && String(sv).trim() !== '') {
+          return String(sv).trim();
+        }
+      }
+    }
+    return undefined;
+  };
+
+  // Resolve top-level device attributes from specs or conditionInfo
+  const condition =
+    product.condition ||
+    conditionInfo.condition ||
+    findSpec(['Condition', 'condition', 'Device Condition']);
+
+  const batteryHealth =
+    product.batteryHealth ||
+    conditionInfo.batteryHealth ||
+    findSpec(['Battery Health', 'batteryHealth', 'Battery Percentage', 'Battery', 'battery']);
+
+  const warranty =
+    product.warranty ||
+    conditionInfo.warrantyStatus ||
+    findSpec(['Warranty', 'warranty', 'Warranty Status', 'Store Warranty']);
+
+  const deviceAge =
+    product.deviceAge ||
+    conditionInfo.usageDuration ||
+    (conditionInfo.purchaseYear ? `Purchased in ${conditionInfo.purchaseYear}` : undefined) ||
+    findSpec(['Device Age', 'deviceAge', 'Age', 'Usage Duration']);
+
+  const storage = product.storage || findSpec(['Storage', 'storage', 'ROM', 'Internal Storage', 'Storage Capacity']);
+  const ram = product.ram || findSpec(['RAM', 'ram', 'Ram', 'Memory']);
+  const color = product.color || findSpec(['Color', 'color', 'Colour']);
+  const network = product.network || findSpec(['Network (5G/4G)', 'Network', 'network']);
+  const simType = product.simType || findSpec(['SIM Type', 'simType', 'SIM']);
+  const includedItems = product.includedItems || findSpec(['Included Items', 'includedItems', 'Accessories']);
+
+  // Resolve offerPrice
+  let offerPrice = product.offerPrice;
+  if (offerPrice === undefined || offerPrice === null || isNaN(Number(offerPrice))) {
+    const rawOffer = findSpec(['offerPrice', 'Offer Price', 'offer_price']);
+    if (rawOffer && !isNaN(Number(rawOffer))) {
+      offerPrice = Number(rawOffer);
+    }
+  }
+
+  // Backfill specs map so any renderer reading specs receives these values
+  if (storage && !specs['Storage'] && !specs['storage']) specs['Storage'] = storage;
+  if (ram && !specs['RAM'] && !specs['ram']) specs['RAM'] = ram;
+  if (batteryHealth && !specs['Battery Health'] && !specs['batteryHealth']) specs['Battery Health'] = batteryHealth;
+  if (warranty && !specs['Warranty'] && !specs['warranty']) specs['Warranty'] = warranty;
+  if (condition && !specs['Condition'] && !specs['condition']) specs['Condition'] = condition;
+  if (color && !specs['Color'] && !specs['color']) specs['Color'] = color;
+  if (network && !specs['Network (5G/4G)'] && !specs['network']) specs['Network (5G/4G)'] = network;
+  if (simType && !specs['SIM Type'] && !specs['simType']) specs['SIM Type'] = simType;
+
+  return {
+    ...product,
+    id: product.id || product._id || '',
+    name: product.name || '',
+    brand: product.brand || '',
+    category: product.category || '',
+    description: product.description || '',
+    price: Number(product.price) || 0,
+    offerPrice: offerPrice !== undefined ? Number(offerPrice) : undefined,
+    stock: typeof product.stock === 'number' ? product.stock : Number(product.stock) || 0,
+    isSoldOut: Boolean(product.isSoldOut || (typeof product.stock === 'number' && product.stock <= 0)),
+    storage,
+    ram,
+    color,
+    batteryHealth,
+    warranty,
+    condition,
+    deviceAge,
+    network,
+    simType,
+    includedItems,
+    specs,
+    conditionInfo,
+    images: images.length > 0 ? images : (product.images || []),
+    shopId: product.shopId || product.shop?.id || '',
+    shop: product.shop,
+    createdAt: product.createdAt || '',
+    updatedAt: product.updatedAt || '',
+  };
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -96,8 +235,32 @@ export interface Product {
   price: number;
   offerPrice?: number;
   stock: number;
+  isSoldOut?: boolean;
   deviceAge?: string;
   includedItems?: string;
+  condition?: string;
+  warranty?: string;
+  batteryHealth?: string;
+  storage?: string;
+  ram?: string;
+  color?: string;
+  network?: string;
+  simType?: string;
+  conditionInfo?: {
+    condition?: string;
+    batteryHealth?: string;
+    warrantyStatus?: string;
+    purchaseYear?: number;
+    usageDuration?: string;
+    repairHistory?: string;
+    replacedParts?: string;
+    originalBox?: boolean;
+    originalInvoice?: boolean;
+    includedAccessories?: string[];
+    defects?: string;
+    sellerNotes?: string;
+    [key: string]: any;
+  };
   shopId: string;
   shop?: {
     id: string;
@@ -107,11 +270,12 @@ export interface Product {
     whatsapp?: string;
     address?: string;
     city?: string;
+    district?: string;
     category?: string;
     verified?: boolean;
     rating?: number;
   };
-  specs?: Record<string, string>;
+  specs?: Record<string, any>;
   images?: string[];
   createdAt: string;
   updatedAt: string;
