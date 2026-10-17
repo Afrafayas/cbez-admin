@@ -1,5 +1,5 @@
 import { getAdminToken, clearAdminAuthSession } from '../utils/authStorage';
-import { Shop, AdminStats, UserAccount, Product, SubscriptionPlan, Category, Brand, Transaction, TransactionFilter, RevenueStats, MlxDetails, Banner } from '../types';
+import { Shop, AdminStats, UserAccount, Product, SubscriptionPlan, Category, Brand, Transaction, TransactionFilter, RevenueStats, MlxDetails, Banner, normalizeProduct } from '../types';
 
 
 const API_BASE_URL: string = import.meta.env.VITE_API_URL || '/api';
@@ -249,16 +249,31 @@ export async function fetchProducts(params?: {
   });
   if (!res.ok) throw new Error('Failed to fetch products catalog');
   const result = await res.json();
-  return result.data?.products ?? [];
+  const rawList = result.data?.products ?? [];
+  return Array.isArray(rawList) ? rawList.map(normalizeProduct) : [];
+}
+
+export async function fetchProductById(id: string): Promise<Product> {
+  const res = await fetch(`${API_BASE_URL}/products/${id}`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch product details');
+  const result = await res.json();
+  const raw = result.data?.product ?? result.product ?? result;
+  return normalizeProduct(raw);
 }
 
 export async function deleteProduct(id: string): Promise<{ success: boolean; message: string }> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...getAuthHeaders(),
+  };
   const res = await fetch(`${API_BASE_URL}/products/${id}`, {
     method: 'DELETE',
-    headers: getAuthHeaders(),
+    headers,
   });
-  const result = await res.json();
-  if (!res.ok) throw new Error(result.message || 'Failed to delete product');
+  const result = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(result.message || 'Failed to delete product from database');
   return result;
 }
 

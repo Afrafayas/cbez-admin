@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Shop, Product, Transaction, getShopProductCount, getProductImages } from '../types';
+import { Shop, Product, Transaction, getShopProductCount, getProductImages, normalizeProduct } from '../types';
 import { fetchTransactions } from '../services/adminApi';
 import {
   ArrowLeft,
@@ -95,12 +95,38 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
   );
 
   const productMap = new Map<string, Product>();
-  shopProducts.forEach((p) => {
-    if (p && p.id) productMap.set(p.id, p);
-  });
+
+  // 1. First add catalogMatchingProducts (richest details from products catalog)
   catalogMatchingProducts.forEach((p) => {
-    if (p && p.id && !productMap.has(p.id)) {
-      productMap.set(p.id, p);
+    if (p && p.id) {
+      productMap.set(p.id, normalizeProduct({ ...p, shop: p.shop || shop }));
+    }
+  });
+
+  // 2. Merge in shopProducts from shop details without overwriting richer specs
+  shopProducts.forEach((p) => {
+    if (p && p.id) {
+      const existing = productMap.get(p.id);
+      if (existing) {
+        const mergedSpecs = (existing.specs && Object.keys(existing.specs).length > 0)
+          ? existing.specs
+          : (p.specs || {});
+        const mergedCondition = (existing.conditionInfo && Object.keys(existing.conditionInfo).length > 0)
+          ? existing.conditionInfo
+          : (p.conditionInfo || {});
+        productMap.set(
+          p.id,
+          normalizeProduct({
+            ...p,
+            ...existing,
+            specs: mergedSpecs,
+            conditionInfo: mergedCondition,
+            shop: existing.shop || p.shop || shop,
+          })
+        );
+      } else {
+        productMap.set(p.id, normalizeProduct({ ...p, shop: p.shop || shop }));
+      }
     }
   });
 
@@ -599,7 +625,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
               return (
                 <div
                   key={product.id}
-                  onClick={() => onViewProduct && onViewProduct({ ...product, shop })}
+                  onClick={() => onViewProduct && onViewProduct(normalizeProduct({ ...product, shop: product.shop || shop }))}
                   className="p-4 rounded-2xl glass-panel border border-white/10 bg-slate-950/60 hover:border-orange-500/40 transition-all hover:shadow-xl hover:shadow-orange-500/5 cursor-pointer group flex flex-col justify-between overflow-hidden"
                 >
                   <div className="space-y-3">
@@ -627,7 +653,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
                         {onEditProduct && (
                           <button
                             type="button"
-                            onClick={() => onEditProduct({ ...product, shop })}
+                            onClick={() => onEditProduct(normalizeProduct({ ...product, shop: product.shop || shop }))}
                             className="w-7 h-7 rounded-lg bg-black/70 hover:bg-slate-900/90 backdrop-blur-md border border-white/15 text-slate-300 hover:text-white flex items-center justify-center transition-all shadow-md cursor-pointer"
                             title="Edit Product"
                           >
@@ -637,7 +663,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
                         {onDeleteProduct && (
                           <button
                             type="button"
-                            onClick={() => onDeleteProduct({ ...product, shop })}
+                            onClick={() => onDeleteProduct(normalizeProduct({ ...product, shop: product.shop || shop }))}
                             className="w-7 h-7 rounded-lg bg-black/70 hover:bg-orange-950/90 backdrop-blur-md border border-white/15 hover:border-orange-500/40 text-orange-400 hover:text-orange-300 flex items-center justify-center transition-all shadow-md cursor-pointer"
                             title="Delete Product"
                           >
