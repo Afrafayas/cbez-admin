@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Shop, Product, Transaction, getShopProductCount, getProductImages, normalizeProduct } from '../types';
-import { fetchTransactions } from '../services/adminApi';
+import { fetchTransactions, formatImageUrl } from '../services/adminApi';
 import {
   ArrowLeft,
   ShieldCheck,
@@ -10,7 +11,6 @@ import {
   MessageSquare,
   Tag,
   ShoppingBag,
-  Star,
   Calendar,
   CreditCard,
   Edit2,
@@ -23,6 +23,7 @@ import {
   Eye,
   Receipt,
   RotateCw,
+  X,
 } from 'lucide-react';
 
 interface SingleShopViewProps {
@@ -55,6 +56,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
   onDeleteProduct,
 }) => {
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
+  const [showVerifyFirstModal, setShowVerifyFirstModal] = useState<boolean>(false);
   const [productSearch, setProductSearch] = useState<string>('');
   const [shopTransactions, setShopTransactions] = useState<Transaction[]>([]);
   const [isLoadingTx, setIsLoadingTx] = useState<boolean>(false);
@@ -157,6 +159,16 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
     }
   };
 
+  const handleChangePlanClick = () => {
+    if (!shop.verified) {
+      setShowVerifyFirstModal(true);
+      return;
+    }
+    if (onChangeSubscription) {
+      onChangeSubscription(shop);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in pb-12">
       {/* Top Navigation & Breadcrumb */}
@@ -180,15 +192,15 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2.5">
-          {onChangeSubscription && (
+          {/* {onChangeSubscription && (
             <button
-              onClick={() => onChangeSubscription(shop)}
+              onClick={handleChangePlanClick}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/40 text-orange-300 text-xs font-bold transition-all shadow-md cursor-pointer"
             >
               <CreditCard className="w-3.5 h-3.5 text-orange-400" />
               <span>Change Subscription</span>
             </button>
-          )}
+          )} */}
 
           {onEdit && (
             <button
@@ -214,11 +226,10 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
             <button
               onClick={handleActionVerify}
               disabled={isVerifying}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-50 ${
-                shop.verified
-                  ? 'bg-red-500/15 text-red-300 border border-red-500/30 hover:bg-red-500/25 shadow-red-500/10'
-                  : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20'
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-50 ${shop.verified
+                ? 'bg-red-500/15 text-red-300 border border-red-500/30 hover:bg-red-500/25 shadow-red-500/10'
+                : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20'
+                }`}
             >
               {isVerifying ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -239,8 +250,22 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
 
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
           <div className="flex items-start sm:items-center gap-5">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-orange-500 via-amber-500 to-orange-600 flex items-center justify-center text-white font-black text-2xl sm:text-3xl shadow-xl shadow-orange-500/25 border border-orange-400/30 shrink-0">
-              {shop.name.charAt(0).toUpperCase()}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-orange-500 via-amber-500 to-orange-600 flex items-center justify-center text-white font-black text-2xl sm:text-3xl shadow-xl shadow-orange-500/25 border border-orange-400/30 shrink-0 overflow-hidden">
+              {shop.profileImage ? (
+                <img
+                  src={formatImageUrl(shop.profileImage)}
+                  alt={shop.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                    if (e.currentTarget.parentElement) {
+                      e.currentTarget.parentElement.innerText = (shop.name || 'D').charAt(0).toUpperCase();
+                    }
+                  }}
+                />
+              ) : (
+                shop.name.charAt(0).toUpperCase()
+              )}
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-3">
@@ -276,11 +301,6 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-            <div className="flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm font-bold">
-              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-              <span>{shop.rating ? shop.rating.toFixed(1) : '4.8'}</span>
-              <span className="text-[11px] text-slate-400 font-normal ml-1">rating</span>
-            </div>
             <div className="px-3.5 py-1.5 rounded-xl bg-slate-800/80 border border-white/10 text-slate-200 text-xs font-semibold">
               <span className="text-orange-400 font-bold">{productCount}</span> Products
             </div>
@@ -350,10 +370,10 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
             <div className="text-sm font-bold text-slate-200">
               {shop.createdAt
                 ? new Date(shop.createdAt).toLocaleDateString(undefined, {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })
                 : 'Recent'}
             </div>
           </div>
@@ -409,7 +429,7 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
                 </span>
                 {onChangeSubscription && (
                   <button
-                    onClick={() => onChangeSubscription(shop)}
+                    onClick={handleChangePlanClick}
                     className="px-3 py-1 rounded-xl bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 border border-orange-500/40 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                   >
                     <CreditCard className="w-3.5 h-3.5 text-orange-400" />
@@ -430,13 +450,12 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
               {/* Progress bar */}
               <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden border border-white/5">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    usagePercentage >= 100
-                      ? 'bg-red-500'
-                      : usagePercentage > 80
+                  className={`h-full rounded-full transition-all duration-500 ${usagePercentage >= 100
+                    ? 'bg-red-500'
+                    : usagePercentage > 80
                       ? 'bg-amber-500'
                       : 'bg-gradient-to-r from-orange-500 to-amber-400'
-                  }`}
+                    }`}
                   style={{ width: `${usagePercentage}%` }}
                 />
               </div>
@@ -514,7 +533,6 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
                   <th className="px-3.5 py-2.5 font-semibold">Amount</th>
                   <th className="px-3.5 py-2.5 font-semibold">Payment Mode</th>
                   <th className="px-3.5 py-2.5 font-semibold">Transaction ID / Ref</th>
-                  <th className="px-3.5 py-2.5 font-semibold">Type</th>
                   <th className="px-3.5 py-2.5 font-semibold">Status</th>
                   <th className="px-3.5 py-2.5 font-semibold">Notes</th>
                 </tr>
@@ -548,9 +566,6 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
                       ) : (
                         <span className="text-slate-500">N/A</span>
                       )}
-                    </td>
-                    <td className="px-3.5 py-3 text-[10px] font-semibold text-orange-300">
-                      {tx.type}
                     </td>
                     <td className="px-3.5 py-3">
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
@@ -701,6 +716,71 @@ export const SingleShopView: React.FC<SingleShopViewProps> = ({
           </div>
         )}
       </div>
+
+      {/* Verify First Required Modal (Portaled to document.body for exact viewport centering) */}
+      {showVerifyFirstModal && typeof document !== 'undefined' && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+          onClick={() => setShowVerifyFirstModal(false)}
+        >
+          <div
+            className="glass-panel w-full max-w-md rounded-2xl border border-amber-500/30 overflow-hidden shadow-2xl bg-slate-900/95 p-6 text-center space-y-4 relative animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={() => setShowVerifyFirstModal(false)}
+              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 mx-auto shadow-lg shadow-amber-500/10">
+              <ShieldAlert className="w-7 h-7" />
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold text-white">Verification Required</h3>
+              <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                Please verify <span className="font-semibold text-white">"{shop.name}"</span> first to select or assign a subscription plan.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-medium text-left flex items-start gap-2.5">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <span>
+                Subscription plans and product listing quotas can only be managed for verified and approved stores.
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowVerifyFirstModal(false)}
+                className="flex-1 py-2.5 text-xs font-semibold rounded-xl text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              {onToggleVerify && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowVerifyFirstModal(false);
+                    handleActionVerify();
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Verify Store Now</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };

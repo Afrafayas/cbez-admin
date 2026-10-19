@@ -1158,6 +1158,7 @@ export const App: React.FC = () => {
           isLoading={isLoading}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
           activeTab={activeSingleView ? 'single-view' : activeTab}
+          isSingleView={Boolean(activeSingleView)}
           onBackToShops={() => {
             if (activeSingleView) {
               handleBackFromSingleView();

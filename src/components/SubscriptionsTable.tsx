@@ -169,16 +169,6 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
-          {onAssignPlanToShop && (
-            <button
-              onClick={() => handleOpenAssignModal()}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold shadow-lg shadow-orange-500/25 transition-all cursor-pointer"
-            >
-              <UserCheck className="w-4 h-4" />
-              Assign Plan to Dealer
-            </button>
-          )}
-
           <button
             onClick={handleOpenCreatePlan}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-slate-200 text-xs font-bold transition-all cursor-pointer"
@@ -438,6 +428,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {/* Active / Inactive status toggle button commented out
                           <button
                             onClick={() => onToggleStatus(p.id)}
                             title="Toggle Active Status"
@@ -445,6 +436,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
                           >
                             <Power className="w-3.5 h-3.5" />
                           </button>
+                          */}
                           <button
                             onClick={() => handleOpenEditPlan(p)}
                             title="Edit Plan Details"

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Shop, Product, getShopProductCount } from '../types';
-import { ShieldCheck, ShieldAlert, Edit2, Trash2, Eye, Phone, MessageSquare, MapPin, Tag, Star, CreditCard, Plus, Clock, AlertCircle } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Edit2, Trash2, Eye, Phone, MessageSquare, MapPin, Tag, CreditCard, Plus, Clock, AlertCircle } from 'lucide-react';
 import { Pagination } from './Pagination';
+import { formatImageUrl } from '../services/adminApi';
 
 export function getSubscriptionExpiryInfo(shop: Shop) {
   const sub = shop.subscription;
@@ -396,10 +397,6 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                     <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 border border-slate-700 text-slate-200 whitespace-nowrap shrink-0">
                       {productCount} {productCount === 1 ? 'Item' : 'Items'}
                     </span>
-                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] font-bold">
-                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                      {shop.rating ? shop.rating.toFixed(1) : '4.5'}
-                    </div>
                   </div>
 
                   <div className="flex items-center gap-1.5">
@@ -453,14 +450,13 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
               <th className="px-5 py-3.5">Subscription Plan</th>
               <th className="px-5 py-3.5">Plan Expiry</th>
               <th className="px-5 py-3.5">Products</th>
-              <th className="px-5 py-3.5 text-center">Rating</th>
               <th className="px-5 py-3.5 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
             {paginatedShops.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-12 text-slate-400">
+                <td colSpan={7} className="text-center py-12 text-slate-400">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <ShieldAlert className="w-8 h-8 text-slate-500 opacity-60" />
                     <p className="font-semibold text-slate-300">No stores found</p>
@@ -487,10 +483,24 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                         <button
                           type="button"
                           onClick={() => onViewDetails(shop)}
-                          className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-base shrink-0 hover:scale-105 hover:bg-orange-500/25 transition-all cursor-pointer"
+                          className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-base shrink-0 hover:scale-105 hover:bg-orange-500/25 transition-all cursor-pointer overflow-hidden"
                           title="View Store Details"
                         >
-                          {shop.name.charAt(0).toUpperCase()}
+                          {shop.profileImage ? (
+                            <img
+                              src={formatImageUrl(shop.profileImage)}
+                              alt={shop.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = 'none';
+                                if (e.currentTarget.parentElement) {
+                                  e.currentTarget.parentElement.innerText = (shop.name || 'D').charAt(0).toUpperCase();
+                                }
+                              }}
+                            />
+                          ) : (
+                            shop.name.charAt(0).toUpperCase()
+                          )}
                         </button>
                         <div>
                           <button
@@ -595,13 +605,6 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                       </span>
                     </td>
 
-                    <td className="px-5 py-4 text-center">
-                      <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-bold">
-                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                        {shop.rating ? shop.rating.toFixed(1) : '4.5'}
-                      </div>
-                    </td>
-
                     <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         {!shop.verified ? (
@@ -620,16 +623,6 @@ export const ShopsTable: React.FC<ShopsTableProps> = ({
                             title="View Store Products & Details"
                           >
                             <Eye className="w-4 h-4" />
-                          </button>
-                        )}
-
-                        {onChangeSubscription && (
-                          <button
-                            onClick={() => onChangeSubscription(shop)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 transition-colors cursor-pointer"
-                            title="Change Subscription Plan"
-                          >
-                            <CreditCard className="w-4 h-4 text-orange-400" />
                           </button>
                         )}
 
