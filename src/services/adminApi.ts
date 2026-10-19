@@ -238,11 +238,15 @@ export async function fetchProducts(params?: {
   category?: string;
   brand?: string;
   search?: string;
+  page?: number;
+  limit?: number;
 }): Promise<Product[]> {
   const query = new URLSearchParams();
   if (params?.category && params.category !== 'all') query.append('category', params.category);
   if (params?.brand && params.brand !== 'all') query.append('brand', params.brand);
   if (params?.search) query.append('search', params.search);
+  if (params?.page) query.append('page', params.page.toString());
+  if (params?.limit) query.append('limit', params.limit.toString());
 
   const res = await fetch(`${API_BASE_URL}/products?${query.toString()}`, {
     headers: getAuthHeaders(),
