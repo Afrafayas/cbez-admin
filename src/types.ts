@@ -7,7 +7,9 @@ export interface Shop {
   address: string;
   city: string;
   category: string;
+  profileImage?: string;
   verified: boolean;
+  verificationStatus?: string;
   rating: number;
   createdAt: string;
   updatedAt: string;

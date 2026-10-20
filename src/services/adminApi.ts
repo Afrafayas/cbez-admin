@@ -87,6 +87,7 @@ export async function fetchShops(params?: {
   search?: string;
 }): Promise<Shop[]> {
   const query = new URLSearchParams();
+  query.append('includeUnverified', 'true');
   if (params?.city) query.append('city', params.city);
   if (params?.category) query.append('category', params.category);
   if (params?.search) query.append('search', params.search);
@@ -238,11 +239,15 @@ export async function fetchProducts(params?: {
   category?: string;
   brand?: string;
   search?: string;
+  page?: number;
+  limit?: number;
 }): Promise<Product[]> {
   const query = new URLSearchParams();
   if (params?.category && params.category !== 'all') query.append('category', params.category);
   if (params?.brand && params.brand !== 'all') query.append('brand', params.brand);
   if (params?.search) query.append('search', params.search);
+  if (params?.page) query.append('page', params.page.toString());
+  if (params?.limit) query.append('limit', params.limit.toString());
 
   const res = await fetch(`${API_BASE_URL}/products?${query.toString()}`, {
     headers: getAuthHeaders(),
@@ -797,4 +802,16 @@ export async function deleteBannerAdmin(id: string): Promise<void> {
   checkAuthResponse(res);
   const result = await res.json();
   if (!res.ok) throw new Error(result.message || 'Failed to delete banner');
-}
+}
+export function formatImageUrl(path?: string): string {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+    return path;
+  }
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  if (cleanPath.startsWith('/uploads/')) {
+    const origin = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/api\/?$/, '');
+    return `${origin}${cleanPath}`;
+  }
+  return path;
+}

@@ -17,7 +17,6 @@ import {
   ExternalLink,
   ChevronRight,
   Info,
-  Copy,
   Check,
   Battery,
   Shield,
@@ -58,14 +57,6 @@ export const SingleProductView: React.FC<SingleProductViewProps> = ({
       : ['https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800'];
 
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
-  const [copiedId, setCopiedId] = useState<boolean>(false);
-
-  const handleCopyId = () => {
-    if (!product.id) return;
-    navigator.clipboard.writeText(product.id);
-    setCopiedId(true);
-    setTimeout(() => setCopiedId(false), 2000);
-  };
 
   // Safe helper to extract spec values case-insensitively
   const getSpec = (keys: string[]): string | undefined => {
@@ -389,40 +380,6 @@ export const SingleProductView: React.FC<SingleProductViewProps> = ({
                 )}
               </div>
             )}
-          </div>
-
-          {/* Product Metadata & Quick ID Card */}
-          <div className="glass-panel p-4 rounded-2xl border border-white/10 bg-slate-900/60 space-y-2.5 text-xs text-slate-400">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                System Identifiers
-              </span>
-              <button
-                type="button"
-                onClick={handleCopyId}
-                className="flex items-center gap-1 text-[11px] text-orange-400 hover:text-orange-300 transition-colors cursor-pointer"
-              >
-                {copiedId ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                <span>{copiedId ? 'Copied ID' : 'Copy ID'}</span>
-              </button>
-            </div>
-
-            <div className="p-2.5 rounded-xl bg-slate-950 border border-white/5 font-mono text-[11px] text-slate-300 flex items-center justify-between">
-              <span className="text-slate-500">Product ID:</span>
-              <span className="truncate max-w-[200px]">{product.id}</span>
-            </div>
-
-            {product.shopId && (
-              <div className="p-2.5 rounded-xl bg-slate-950 border border-white/5 font-mono text-[11px] text-slate-300 flex items-center justify-between">
-                <span className="text-slate-500">Shop ID:</span>
-                <span className="truncate max-w-[200px]">{product.shopId}</span>
-              </div>
-            )}
-
-            <div className="flex items-center justify-between text-[11px] pt-1">
-              <span>Added: {product.createdAt ? new Date(product.createdAt).toLocaleDateString() : 'N/A'}</span>
-              <span>Updated: {product.updatedAt ? new Date(product.updatedAt).toLocaleDateString() : 'N/A'}</span>
-            </div>
           </div>
         </div>
 

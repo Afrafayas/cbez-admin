@@ -9,6 +9,7 @@ interface NavbarProps {
   onOpenMobileMenu?: () => void;
   activeTab?: string;
   onBackToShops?: () => void;
+  isSingleView?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -19,8 +20,21 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenMobileMenu,
   activeTab,
   onBackToShops,
+  isSingleView,
 }) => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
+  const hiddenSearchTabs = [
+    'dashboard',
+    'subscriptions',
+    'transactions',
+    'banners',
+    'banner',
+    'activity',
+    'single-view',
+  ];
+
+  const showSearch = !isSingleView && !hiddenSearchTabs.includes(activeTab || '');
 
   return (
     <header className="glass-panel sticky top-0 z-30 px-4 sm:px-6 py-3.5 border-b border-white/10 flex flex-col gap-3">
@@ -59,27 +73,31 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Global Desktop Search Bar */}
-        <div className="relative flex-1 max-w-md hidden sm:block">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search shops by name, owner, city or category..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm rounded-xl glass-input text-slate-200 placeholder:text-slate-500"
-          />
-        </div>
+        {showSearch && (
+          <div className="relative flex-1 max-w-md hidden sm:block">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search shops by name, owner, city or category..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm rounded-xl glass-input text-slate-200 placeholder:text-slate-500"
+            />
+          </div>
+        )}
 
         {/* Right Controls */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Mobile Search Toggle Button */}
-          <button
-            onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-            className="sm:hidden p-2 rounded-xl glass-panel text-slate-300 hover:text-white transition-colors cursor-pointer"
-            aria-label="Toggle Search Bar"
-          >
-            {isMobileSearchOpen ? <X className="w-4 h-4 text-orange-400" /> : <Search className="w-4 h-4 text-slate-300" />}
-          </button>
+          {showSearch && (
+            <button
+              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+              className="sm:hidden p-2 rounded-xl glass-panel text-slate-300 hover:text-white transition-colors cursor-pointer"
+              aria-label="Toggle Search Bar"
+            >
+              {isMobileSearchOpen ? <X className="w-4 h-4 text-orange-400" /> : <Search className="w-4 h-4 text-slate-300" />}
+            </button>
+          )}
 
           {/* Refresh Data Button */}
           {/* <button
@@ -103,7 +121,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Expandable Mobile Search Field Input */}
-      {isMobileSearchOpen && (
+      {showSearch && isMobileSearchOpen && (
         <div className="relative sm:hidden animate-fade-in pt-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
