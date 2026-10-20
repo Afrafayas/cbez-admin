@@ -502,6 +502,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
                     min={1}
                     value={planFormData.productLimit}
                     onChange={(e) => setPlanFormData({ ...planFormData, productLimit: Number(e.target.value) })}
+                    onWheel={(e) => e.currentTarget.blur()}
                     placeholder="e.g. 50"
                     className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-orange-500"
                   />
@@ -515,6 +516,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
                     min={1}
                     value={planFormData.durationDays}
                     onChange={(e) => setPlanFormData({ ...planFormData, durationDays: Number(e.target.value) })}
+                    onWheel={(e) => e.currentTarget.blur()}
                     placeholder="e.g. 30"
                     className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-orange-500"
                   />
@@ -528,6 +530,7 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({
                     min={0}
                     value={planFormData.price}
                     onChange={(e) => setPlanFormData({ ...planFormData, price: Number(e.target.value) })}
+                    onWheel={(e) => e.currentTarget.blur()}
                     placeholder="e.g. 999"
                     className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-orange-500"
                   />

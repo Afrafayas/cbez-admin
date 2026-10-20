@@ -119,7 +119,23 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
         const rawOffer = prod.offerPrice !== undefined && prod.offerPrice !== null
           ? String(prod.offerPrice)
           : (sp['offerPrice'] || sp['Offer Price'] || '');
-        const rawAge = prod.deviceAge || sp['Device Age'] || sp['Device Age / Purchase Date'] || sp['Purchase Date'] || '';
+        const rawAge =
+          prod.deviceAge ||
+          (prod as any).device_age ||
+          sp['Device Age'] ||
+          sp['Device Age / Purchase Date'] ||
+          sp['Purchase Date'] ||
+          sp['purchaseDate'] ||
+          sp['deviceAge'] ||
+          sp['device_age'] ||
+          sp['Usage Duration'] ||
+          sp['usageDuration'] ||
+          sp['Age'] ||
+          (prod.conditionInfo as any)?.usageDuration ||
+          (prod.conditionInfo as any)?.deviceAge ||
+          (prod.conditionInfo as any)?.purchaseDate ||
+          ((prod.conditionInfo as any)?.purchaseYear ? `Purchased in ${(prod.conditionInfo as any).purchaseYear}` : '') ||
+          '';
         const rawIncluded = prod.includedItems || sp['Included Items'] || sp['Included items'] || sp['Included Accessories'] || '';
 
         setProductForm({
@@ -329,15 +345,18 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
       categorySpecs['offerPrice'] = String(parsedOfferPrice);
       categorySpecs['Offer Price'] = String(parsedOfferPrice);
     }
-    if (productForm.deviceAge && productForm.deviceAge.trim()) {
-      categorySpecs['Device Age'] = productForm.deviceAge.trim();
-      categorySpecs['Device Age / Purchase Date'] = productForm.deviceAge.trim();
+    const trimmedAge = productForm.deviceAge ? productForm.deviceAge.trim() : '';
+    if (trimmedAge) {
+      categorySpecs['Device Age'] = trimmedAge;
+      categorySpecs['Device Age / Purchase Date'] = trimmedAge;
+      categorySpecs['deviceAge'] = trimmedAge;
+      categorySpecs['Usage Duration'] = trimmedAge;
     }
     if (productForm.includedItems && productForm.includedItems.trim()) {
       categorySpecs['Included Items'] = productForm.includedItems.trim();
     }
 
-    const payload = {
+    const payload: any = {
       shopId: selectedShopId,
       name: productForm.name,
       brand: productForm.brand,
@@ -346,6 +365,13 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
       price: priceNum,
       stock: Number(productForm.stock),
       specs: categorySpecs,
+      conditionInfo: {
+        ...(productToEdit?.conditionInfo || {}),
+        condition: productForm.condition || (productToEdit?.conditionInfo as any)?.condition || 'Good',
+        usageDuration: trimmedAge,
+        warrantyStatus: productForm.warranty || (productToEdit?.conditionInfo as any)?.warrantyStatus,
+        batteryHealth: productForm.batteryHealth || (productToEdit?.conditionInfo as any)?.batteryHealth,
+      },
       images: validImgs,
     };
 
@@ -626,6 +652,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               placeholder="e.g. 45000"
               value={productForm.price}
               onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+              onWheel={(e) => e.currentTarget.blur()}
               className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white font-medium text-xs outline-none focus:border-orange-500"
             />
           </div>
@@ -638,6 +665,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               placeholder="e.g. 42000 (Optional discount price)"
               value={productForm.offerPrice}
               onChange={(e) => setProductForm({ ...productForm, offerPrice: e.target.value })}
+              onWheel={(e) => e.currentTarget.blur()}
               className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white font-medium text-xs outline-none focus:border-orange-500"
             />
           </div>
@@ -651,6 +679,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               placeholder="1"
               value={productForm.stock}
               onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })}
+              onWheel={(e) => e.currentTarget.blur()}
               className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white font-medium text-xs outline-none focus:border-orange-500"
             />
           </div>

@@ -98,8 +98,11 @@ export const SingleProductView: React.FC<SingleProductViewProps> = ({
   const deviceAge =
     cond.usageDuration ||
     product.deviceAge ||
+    (product as any).device_age ||
+    cond.deviceAge ||
+    cond.purchaseDate ||
     (cond.purchaseYear ? `Purchased in ${cond.purchaseYear}` : undefined) ||
-    getSpec(['Device Age', 'deviceAge', 'Age', 'Usage Duration']);
+    getSpec(['Device Age', 'deviceAge', 'device_age', 'Device Age / Purchase Date', 'Purchase Date', 'purchaseDate', 'purchase_date', 'Age', 'Usage Duration', 'usageDuration']);
 
   const ram = product.ram || getSpec(['RAM', 'ram', 'Ram', 'Memory']);
   const storage = product.storage || getSpec(['Storage', 'storage', 'ROM', 'Internal Storage', 'Storage Capacity']);

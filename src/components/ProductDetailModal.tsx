@@ -67,7 +67,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const rawBatt = cond.batteryHealth || product.batteryHealth || getSpec(['Battery Health', 'batteryHealth', 'Battery', 'battery', 'Battery Percentage']);
   const batteryHealth = rawBatt ? (String(rawBatt).includes('%') ? String(rawBatt) : `${rawBatt}%`) : undefined;
   const warranty = cond.warrantyStatus || product.warranty || getSpec(['Warranty', 'warranty', 'Warranty Status']) || 'Shop Warranty';
-  const deviceAge = cond.usageDuration || product.deviceAge || (cond.purchaseYear ? `Purchased in ${cond.purchaseYear}` : undefined) || getSpec(['Device Age', 'deviceAge']);
+  const deviceAge =
+    cond.usageDuration ||
+    product.deviceAge ||
+    (product as any).device_age ||
+    cond.deviceAge ||
+    cond.purchaseDate ||
+    (cond.purchaseYear ? `Purchased in ${cond.purchaseYear}` : undefined) ||
+    getSpec(['Device Age', 'deviceAge', 'device_age', 'Device Age / Purchase Date', 'Purchase Date', 'purchaseDate', 'purchase_date', 'Age', 'Usage Duration', 'usageDuration']);
   const storage = product.storage || getSpec(['Storage', 'storage', 'ROM', 'Internal Storage']);
   const ram = product.ram || getSpec(['RAM', 'ram', 'Ram', 'Memory']);
   const processor = getSpec(['Processor / Chipset', 'Processor', 'processor']);
