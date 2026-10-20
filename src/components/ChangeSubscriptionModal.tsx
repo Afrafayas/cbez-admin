@@ -248,6 +248,7 @@ export const ChangeSubscriptionModal: React.FC<ChangeSubscriptionModalProps> = (
                     min="0"
                     value={amount}
                     onChange={(e) => setAmount(Number(e.target.value))}
+                    onWheel={(e) => e.currentTarget.blur()}
                     className="w-full px-3 py-1.5 bg-slate-900 border border-white/15 rounded-xl text-white text-xs font-bold"
                   />
                 </div>

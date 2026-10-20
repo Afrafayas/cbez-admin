@@ -213,6 +213,7 @@ export const EditShopModal: React.FC<EditShopModalProps> = ({
                 max="5"
                 value={rating}
                 onChange={(e) => setRating(parseFloat(e.target.value))}
+                onWheel={(e) => e.currentTarget.blur()}
                 className="w-full px-3 py-1.5 text-sm rounded-xl glass-input"
               />
             </div>

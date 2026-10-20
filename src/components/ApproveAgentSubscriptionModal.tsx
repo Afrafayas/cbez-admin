@@ -275,6 +275,7 @@ export const ApproveAgentSubscriptionModal: React.FC<ApproveAgentSubscriptionMod
                     min="0"
                     value={amount}
                     onChange={(e) => setAmount(Number(e.target.value))}
+                    onWheel={(e) => e.currentTarget.blur()}
                     required
                     className="w-full pl-7 pr-3 py-2 bg-slate-900 border border-white/15 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-orange-500 transition-colors"
                     placeholder="0"

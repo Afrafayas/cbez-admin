@@ -626,6 +626,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               placeholder="e.g. 45000"
               value={productForm.price}
               onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+              onWheel={(e) => e.currentTarget.blur()}
               className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white font-medium text-xs outline-none focus:border-orange-500"
             />
           </div>
@@ -638,6 +639,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               placeholder="e.g. 42000 (Optional discount price)"
               value={productForm.offerPrice}
               onChange={(e) => setProductForm({ ...productForm, offerPrice: e.target.value })}
+              onWheel={(e) => e.currentTarget.blur()}
               className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white font-medium text-xs outline-none focus:border-orange-500"
             />
           </div>
@@ -651,6 +653,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               placeholder="1"
               value={productForm.stock}
               onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })}
+              onWheel={(e) => e.currentTarget.blur()}
               className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white font-medium text-xs outline-none focus:border-orange-500"
             />
           </div>

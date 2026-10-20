@@ -366,6 +366,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onShowToast, onBackT
                   type="number"
                   value={maxProductsPerShop}
                   onChange={(e) => setMaxProductsPerShop(Number(e.target.value))}
+                  onWheel={(e) => e.currentTarget.blur()}
                   className="w-24 px-3 py-1.5 rounded-xl glass-input text-xs text-white text-center"
                 />
               </div>
