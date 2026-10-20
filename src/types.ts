@@ -167,9 +167,12 @@ export function normalizeProduct(product: any): Product {
 
   const deviceAge =
     product.deviceAge ||
+    (product as any).device_age ||
     conditionInfo.usageDuration ||
+    conditionInfo.deviceAge ||
+    conditionInfo.purchaseDate ||
     (conditionInfo.purchaseYear ? `Purchased in ${conditionInfo.purchaseYear}` : undefined) ||
-    findSpec(['Device Age', 'deviceAge', 'Age', 'Usage Duration']);
+    findSpec(['Device Age', 'deviceAge', 'device_age', 'Device Age / Purchase Date', 'Purchase Date', 'purchaseDate', 'purchase_date', 'Age', 'Usage Duration', 'usageDuration']);
 
   const storage = product.storage || findSpec(['Storage', 'storage', 'ROM', 'Internal Storage', 'Storage Capacity']);
   const ram = product.ram || findSpec(['RAM', 'ram', 'Ram', 'Memory']);
@@ -196,6 +199,11 @@ export function normalizeProduct(product: any): Product {
   if (color && !specs['Color'] && !specs['color']) specs['Color'] = color;
   if (network && !specs['Network (5G/4G)'] && !specs['network']) specs['Network (5G/4G)'] = network;
   if (simType && !specs['SIM Type'] && !specs['simType']) specs['SIM Type'] = simType;
+  if (deviceAge) {
+    if (!specs['Device Age']) specs['Device Age'] = deviceAge;
+    if (!specs['Device Age / Purchase Date']) specs['Device Age / Purchase Date'] = deviceAge;
+    if (!specs['deviceAge']) specs['deviceAge'] = deviceAge;
+  }
 
   return {
     ...product,

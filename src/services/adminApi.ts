@@ -409,8 +409,10 @@ export async function createShopByAdmin(shopData: any): Promise<Shop> {
 
 
 export async function createProductByAdmin(productData: any): Promise<Product> {
-  if (productData?.images && Array.isArray(productData.images) && productData.images.length > 0) {
-    productData.images = await uploadMultipleImagesToS3(productData.images, 'products');
+  const payload = { ...productData };
+  delete payload.deviceAge;
+  if (payload?.images && Array.isArray(payload.images) && payload.images.length > 0) {
+    payload.images = await uploadMultipleImagesToS3(payload.images, 'products');
   }
   const res = await fetch(`${API_BASE_URL}/products`, {
     method: 'POST',
@@ -418,7 +420,7 @@ export async function createProductByAdmin(productData: any): Promise<Product> {
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
     },
-    body: JSON.stringify(productData),
+    body: JSON.stringify(payload),
   });
   checkAuthResponse(res);
   const result = await res.json();
@@ -427,8 +429,10 @@ export async function createProductByAdmin(productData: any): Promise<Product> {
 }
 
 export async function updateProductByAdmin(id: string, productData: any): Promise<Product> {
-  if (productData?.images && Array.isArray(productData.images) && productData.images.length > 0) {
-    productData.images = await uploadMultipleImagesToS3(productData.images, 'products');
+  const payload = { ...productData };
+  delete payload.deviceAge;
+  if (payload?.images && Array.isArray(payload.images) && payload.images.length > 0) {
+    payload.images = await uploadMultipleImagesToS3(payload.images, 'products');
   }
   const res = await fetch(`${API_BASE_URL}/products/${id}`, {
     method: 'PUT',
@@ -436,7 +440,7 @@ export async function updateProductByAdmin(id: string, productData: any): Promis
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
     },
-    body: JSON.stringify(productData),
+    body: JSON.stringify(payload),
   });
   checkAuthResponse(res);
   const result = await res.json();
