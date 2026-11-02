@@ -1,3 +1,6 @@
+import { SearchableSelect } from './SearchableSelect';
+import { AdditionalSpecifications } from './AdditionalSpecifications';
+import { formSpecifications, formOptions, fieldAliases, representedFields, fieldVisible, editableSpecifications } from '../utils/productFormOptions';
 import React, { useState, useEffect, FormEvent } from 'react';
 import { X, Store, Loader2, Image as ImageIcon, Sparkles } from 'lucide-react';
 import { Product, Shop, SubscriptionPlan, Category, Brand, normalizeProduct } from '../types';
@@ -51,10 +54,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
     processor: '',
     displaySize: '',
     batteryHealth: '',
-    batteryPercentage: '',
+    batteryCapacity: '',
     simType: '',
     network: '',
     camera: '',
+    frontCamera: '',
+    rearCamera: '',
     os: '',
     imeiNumber: '',
     color: '',
@@ -101,7 +106,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
       lower.includes('earbud') ||
       lower.includes('speaker') ||
       lower.includes('charger') ||
-      lower.includes('gadget')
+      lower.includes('gadget') || lower.includes('camera') || lower.includes('photo') || lower.includes('gaming') || lower.includes('console')
     ) {
       return 'accessory';
     }
@@ -109,13 +114,19 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
   };
 
   const currentCategoryGroup = getCategoryGroup(productForm.category);
+  const isAppleMobile = currentCategoryGroup === 'mobile' && productForm.brand.trim().toLowerCase() === 'apple';
+  const specificationFields = formSpecifications(productForm.category, categories.find(category => category.name === productForm.category)?.specConfig);
+  const [additionalSpecs, setAdditionalSpecs] = useState<Record<string, string>>({});
+  useEffect(() => { setAdditionalSpecs({ ...(productToEdit?.specs || {}) }); }, [productToEdit, isOpen]);
+  const optionsFor = (key: string) => key === 'brand' ? Array.from(new Set(['Apple', 'Samsung', 'Google', 'OnePlus', 'Xiaomi', 'HP', 'Dell', 'Lenovo', 'Asus', 'Sony', ...brands.map(brand => brand.name)])) : formOptions(key, specificationFields);
+
 
   useEffect(() => {
     if (isOpen) {
       if (productToEdit) {
         const prod = normalizeProduct(productToEdit);
         setSelectedShopId(prod.shopId || (availableShops[0]?.id || ''));
-        const sp = prod.specs || {};
+        const sp = editableSpecifications(prod.specs || {});
         const rawOffer = prod.offerPrice !== undefined && prod.offerPrice !== null
           ? String(prod.offerPrice)
           : (sp['offerPrice'] || sp['Offer Price'] || '');
@@ -154,10 +165,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
           processor: sp['Processor / Chipset'] || sp['Processor'] || '',
           displaySize: sp['Display Size'] || sp['Display size'] || '',
           batteryHealth: sp['Battery Health'] || '',
-          batteryPercentage: sp['Battery Percentage'] || sp['Battery percentage'] || '',
+          batteryCapacity: sp['Battery Capacity'] || sp['batteryCapacity'] || '',
           simType: sp['SIM Type'] || sp['SIM type'] || '',
           network: sp['Network (5G/4G)'] || sp['5G / 4G'] || '',
           camera: sp['Camera'] || '',
+          frontCamera: sp['Front Camera'] || sp['frontCamera'] || '',
+          rearCamera: sp['Rear Camera'] || sp['rearCamera'] || '',
           os: sp['Operating System'] || sp['OS'] || '',
           imeiNumber: sp['IMEI'] || '',
           color: sp['Color'] || '',
@@ -207,10 +220,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
           processor: '',
           displaySize: '',
           batteryHealth: '',
-          batteryPercentage: '',
+          batteryCapacity: '',
           simType: '',
           network: '',
           camera: '',
+          frontCamera: '',
+          rearCamera: '',
           os: '',
           imeiNumber: '',
           color: '',
@@ -265,10 +280,11 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
         'Processor / Chipset': productForm.processor,
         'Display Size': productForm.displaySize,
         'Battery Health': productForm.batteryHealth,
-        'Battery Percentage': productForm.batteryPercentage,
+        'Battery Capacity': productForm.batteryCapacity,
         'SIM Type': productForm.simType,
         'Network (5G/4G)': productForm.network,
-        'Camera': productForm.camera,
+        'Front Camera': productForm.frontCamera,
+        'Rear Camera': productForm.rearCamera,
         'Operating System': productForm.os,
         'IMEI': productForm.imeiNumber,
         'Color': productForm.color,
@@ -356,6 +372,20 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
       categorySpecs['Included Items'] = productForm.includedItems.trim();
     }
 
+
+    const mergedSpecs: Record<string, string> = { ...(productToEdit?.specs || {}), ...categorySpecs };
+    if (currentCategoryGroup === 'mobile' && !isAppleMobile) {
+      if (productToEdit?.specs?.['Battery Health'] === undefined) delete mergedSpecs['Battery Health'];
+      else mergedSpecs['Battery Health'] = productToEdit.specs['Battery Health'];
+    }
+    for (const field of specificationFields) {
+      if (!fieldVisible(field, productForm.brand)) continue;
+      const formKey = Object.keys(fieldAliases).find(key => fieldAliases[key] === field.key && (key !== 'storageCapacity' || currentCategoryGroup === 'laptop')) || field.key;
+      const extra = !representedFields(currentCategoryGroup).includes(field.key);
+      const value = extra ? (additionalSpecs[field.key] ?? additionalSpecs[field.label]) : (productForm as unknown as Record<string, string>)[formKey];
+      if (value !== undefined) { mergedSpecs[field.key] = value; mergedSpecs[field.label] = value; }
+    }
+    categorySpecs = mergedSpecs;
     const payload: any = {
       shopId: selectedShopId,
       name: productForm.name,
@@ -426,7 +456,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               )}
             </div>
 
-            <select
+            <SearchableSelect allowCustomValue={false} aria-label="Dealer shop"
               required
               value={selectedShopId}
               onChange={(e) => setSelectedShopId(e.target.value)}
@@ -438,7 +468,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                   {s.name} - {s.ownerName} ({s.city}) {s.verified ? '[APPROVED]' : '[PENDING]'}
                 </option>
               ))}
-            </select>
+            </SearchableSelect>
 
             {currentSelectedShop && (
               <div className="text-xs text-slate-300 flex items-center justify-between pt-1 border-t border-orange-500/20">
@@ -588,7 +618,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
           {/* Core Product Fields */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-300">Category *</label>
-            <select
+            <SearchableSelect allowCustomValue={false} options={optionsFor('category')} aria-label="category"
               value={productForm.category}
               onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
               className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white font-medium text-xs outline-none focus:border-orange-500"
@@ -608,15 +638,13 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                   <option value="Smart Watches">Smart Watches</option>
                 </>
               )}
-            </select>
+            </SearchableSelect>
           </div>
 
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-300">Brand *</label>
-            <input
-              type="text"
+            <SearchableSelect options={optionsFor('brand')} aria-label="brand"
               required
-              list="registered-brands-list"
               placeholder="e.g. Apple, Samsung, Dell, HP"
               value={productForm.brand}
               onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
@@ -686,8 +714,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-300">Device Age / Purchase Date</label>
-            <input
-              type="text"
+            <SearchableSelect options={optionsFor('deviceAge')} aria-label="deviceAge"
               placeholder="e.g. 6 Months Old, Purchased Jan 2024"
               value={productForm.deviceAge}
               onChange={(e) => setProductForm({ ...productForm, deviceAge: e.target.value })}
@@ -697,8 +724,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
           <div className="col-span-2 space-y-1.5">
             <label className="text-xs font-bold text-slate-300">Included Items</label>
-            <input
-              type="text"
+            <SearchableSelect options={optionsFor('includedItems')} aria-label="includedItems"
               placeholder="e.g. Original Box, Fast Charger & Cable, Invoice Bill"
               value={productForm.includedItems}
               onChange={(e) => setProductForm({ ...productForm, includedItems: e.target.value })}
@@ -728,7 +754,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">RAM</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('ram')} aria-label="ram"
                     value={productForm.ram}
                     onChange={(e) => setProductForm({ ...productForm, ram: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -742,12 +768,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="12GB">12GB</option>
                     <option value="16GB">16GB</option>
                     <option value="24GB">24GB</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Storage</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('storage')} aria-label="storage"
                     value={productForm.storage}
                     onChange={(e) => setProductForm({ ...productForm, storage: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -759,13 +785,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="256GB">256GB</option>
                     <option value="512GB">512GB</option>
                     <option value="1TB">1TB</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Processor / Chipset</label>
-                  <input
-                    type="text"
+                  <SearchableSelect options={optionsFor('processor')} aria-label="processor"
                     placeholder="e.g. Apple A17 Pro / Snapdragon 8 Gen 3"
                     value={productForm.processor}
                     onChange={(e) => setProductForm({ ...productForm, processor: e.target.value })}
@@ -775,8 +800,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Display Size</label>
-                  <input
-                    type="text"
+                  <SearchableSelect options={optionsFor('displaySize')} aria-label="displaySize"
                     placeholder="e.g. 6.7 inches Super Retina XDR"
                     value={productForm.displaySize}
                     onChange={(e) => setProductForm({ ...productForm, displaySize: e.target.value })}
@@ -784,9 +808,9 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                   />
                 </div>
 
-                <div>
+                {isAppleMobile && (<div>
                   <label className="block text-slate-400 font-semibold mb-1">Battery Health</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('batteryHealth')} aria-label="batteryHealth"
                     value={productForm.batteryHealth}
                     onChange={(e) => setProductForm({ ...productForm, batteryHealth: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -798,23 +822,22 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="85% - 89%">85% - 89%</option>
                     <option value="80% - 84%">80% - 84%</option>
                     <option value="Below 80%">Below 80%</option>
-                  </select>
-                </div>
+                  </SearchableSelect>
+                </div>)}
 
                 <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Battery Percentage</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 100% / 5000 mAh"
-                    value={productForm.batteryPercentage}
-                    onChange={(e) => setProductForm({ ...productForm, batteryPercentage: e.target.value })}
+                  <label className="block text-slate-400 font-semibold mb-1">Battery Capacity (mAh)</label>
+                  <SearchableSelect options={optionsFor('batteryCapacity')} aria-label="batteryCapacity"
+                    placeholder="e.g. 5000 mAh"
+                    value={productForm.batteryCapacity}
+                    onChange={(e) => setProductForm({ ...productForm, batteryCapacity: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
                   />
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">SIM Type</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('simType')} aria-label="simType"
                     value={productForm.simType}
                     onChange={(e) => setProductForm({ ...productForm, simType: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -824,12 +847,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="Single SIM">Single SIM</option>
                     <option value="eSIM + Physical SIM">eSIM + Physical SIM</option>
                     <option value="Dual eSIM">Dual eSIM</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Network (5G/4G)</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('network')} aria-label="network"
                     value={productForm.network}
                     onChange={(e) => setProductForm({ ...productForm, network: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -838,23 +861,31 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="5G">5G</option>
                     <option value="4G LTE">4G LTE</option>
                     <option value="3G / Wi-Fi">3G / Wi-Fi</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Camera</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 48MP Triple Camera"
-                    value={productForm.camera}
-                    onChange={(e) => setProductForm({ ...productForm, camera: e.target.value })}
+                  <label className="block text-slate-400 font-semibold mb-1">Front Camera</label>
+                  <SearchableSelect options={optionsFor('frontCamera')} aria-label="frontCamera"
+                    placeholder="Select or enter front camera"
+                    value={productForm.frontCamera}
+                    onChange={(e) => setProductForm({ ...productForm, frontCamera: e.target.value })}
+                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
+                  />
+                </div>
+<div>
+                  <label className="block text-slate-400 font-semibold mb-1">Rear Camera</label>
+                  <SearchableSelect options={optionsFor('rearCamera')} aria-label="rearCamera"
+                    placeholder="Select or enter rear camera"
+                    value={productForm.rearCamera}
+                    onChange={(e) => setProductForm({ ...productForm, rearCamera: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 placeholder:text-slate-600 outline-none focus:border-orange-500"
                   />
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Operating System</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('os')} aria-label="os"
                     value={productForm.os}
                     onChange={(e) => setProductForm({ ...productForm, os: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -865,7 +896,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="Android 14">Android 14</option>
                     <option value="Android 13">Android 13</option>
                     <option value="Android 12">Android 12</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
@@ -881,8 +912,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Color</label>
-                  <input
-                    type="text"
+                  <SearchableSelect options={optionsFor('color')} aria-label="color"
                     placeholder="e.g. Natural Titanium, Space Black"
                     value={productForm.color}
                     onChange={(e) => setProductForm({ ...productForm, color: e.target.value })}
@@ -892,7 +922,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Condition Grade</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('condition')} aria-label="condition"
                     value={productForm.condition}
                     onChange={(e) => setProductForm({ ...productForm, condition: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -903,12 +933,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="Grade A (Excellent)">Grade A (Excellent)</option>
                     <option value="Grade B (Good Used)">Grade B (Good Used)</option>
                     <option value="Open Box / Refurbished">Open Box / Refurbished</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Warranty Details</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('warranty')} aria-label="warranty"
                     value={productForm.warranty}
                     onChange={(e) => setProductForm({ ...productForm, warranty: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -919,7 +949,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="3 Months Shop Warranty">3 Months Shop Warranty</option>
                     <option value="1 Month Testing Warranty">1 Month Testing Warranty</option>
                     <option value="No Warranty">No Warranty</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
               </div>
             )}
@@ -928,8 +958,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Processor</label>
-                  <input
-                    type="text"
+                  <SearchableSelect options={optionsFor('processor')} aria-label="processor"
                     placeholder="e.g. Intel Core i7-13700H / Apple M3 Pro"
                     value={productForm.processor}
                     onChange={(e) => setProductForm({ ...productForm, processor: e.target.value })}
@@ -939,7 +968,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">RAM</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('ram')} aria-label="ram"
                     value={productForm.ram}
                     onChange={(e) => setProductForm({ ...productForm, ram: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -950,12 +979,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="24GB">24GB</option>
                     <option value="32GB">32GB</option>
                     <option value="64GB">64GB</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Storage Type (SSD/HDD)</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('storageType')} aria-label="storageType"
                     value={productForm.storageType}
                     onChange={(e) => setProductForm({ ...productForm, storageType: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -965,12 +994,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="SATA SSD">SATA SSD</option>
                     <option value="HDD">HDD</option>
                     <option value="SSD + HDD Dual">SSD + HDD Dual</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Storage Capacity</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('storageCapacity')} aria-label="storageCapacity"
                     value={productForm.storageCapacity}
                     onChange={(e) => setProductForm({ ...productForm, storageCapacity: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -981,13 +1010,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="1TB">1TB</option>
                     <option value="2TB">2TB</option>
                     <option value="4TB">4TB</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Graphics / GPU</label>
-                  <input
-                    type="text"
+                  <SearchableSelect options={optionsFor('graphics')} aria-label="graphics"
                     placeholder="e.g. Integrated Intel Iris Xe / RTX 4060 / Apple M3 GPU"
                     value={productForm.graphics}
                     onChange={(e) => setProductForm({ ...productForm, graphics: e.target.value })}
@@ -997,8 +1025,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Display Size</label>
-                  <input
-                    type="text"
+                  <SearchableSelect options={optionsFor('displaySize')} aria-label="displaySize"
                     placeholder="e.g. 15.6 inches FHD / 14 inches Liquid Retina XDR"
                     value={productForm.displaySize}
                     onChange={(e) => setProductForm({ ...productForm, displaySize: e.target.value })}
@@ -1008,7 +1035,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Resolution</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('resolution')} aria-label="resolution"
                     value={productForm.resolution}
                     onChange={(e) => setProductForm({ ...productForm, resolution: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -1018,12 +1045,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="2560x1600 (QHD+)">2560x1600 (QHD+)</option>
                     <option value="3024x1964 (MacBook Liquid Retina)">3024x1964 (MacBook Liquid Retina)</option>
                     <option value="3840x2160 (4K UHD)">3840x2160 (4K UHD)</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Battery Health</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('batteryHealth')} aria-label="batteryHealth"
                     value={productForm.batteryHealth}
                     onChange={(e) => setProductForm({ ...productForm, batteryHealth: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -1035,13 +1062,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="85% - 89%">85% - 89%</option>
                     <option value="80% - 84%">80% - 84%</option>
                     <option value="Normal / Good Backup">Normal / Good Backup</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Battery Backup</label>
-                  <input
-                    type="text"
+                  <SearchableSelect options={optionsFor('batteryBackup')} aria-label="batteryBackup"
                     placeholder="e.g. 6-8 Hours Backup"
                     value={productForm.batteryBackup}
                     onChange={(e) => setProductForm({ ...productForm, batteryBackup: e.target.value })}
@@ -1051,7 +1077,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Operating System</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('os')} aria-label="os"
                     value={productForm.os}
                     onChange={(e) => setProductForm({ ...productForm, os: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -1063,12 +1089,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="Windows 11 Pro">Windows 11 Pro</option>
                     <option value="Windows 10">Windows 10</option>
                     <option value="ChromeOS">ChromeOS</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Keyboard Layout</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('keyboardLayout')} aria-label="keyboardLayout"
                     value={productForm.keyboardLayout}
                     onChange={(e) => setProductForm({ ...productForm, keyboardLayout: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -1078,7 +1104,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="US English QWERTY">US English QWERTY</option>
                     <option value="UK English">UK English</option>
                     <option value="Arabic / English Dual">Arabic / English Dual</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
@@ -1094,8 +1120,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Color</label>
-                  <input
-                    type="text"
+                  <SearchableSelect options={optionsFor('color')} aria-label="color"
                     placeholder="e.g. Space Gray, Silver, Midnight"
                     value={productForm.color}
                     onChange={(e) => setProductForm({ ...productForm, color: e.target.value })}
@@ -1105,7 +1130,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Condition Grade</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('condition')} aria-label="condition"
                     value={productForm.condition}
                     onChange={(e) => setProductForm({ ...productForm, condition: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -1116,7 +1141,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="Grade A (Excellent)">Grade A (Excellent)</option>
                     <option value="Grade B (Good Used)">Grade B (Good Used)</option>
                     <option value="Open Box / Refurbished">Open Box / Refurbished</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
               </div>
             )}
@@ -1125,7 +1150,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">RAM</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('ram')} aria-label="ram"
                     value={productForm.ram}
                     onChange={(e) => setProductForm({ ...productForm, ram: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -1136,12 +1161,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="6GB">6GB</option>
                     <option value="8GB">8GB</option>
                     <option value="16GB">16GB</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Storage</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('storage')} aria-label="storage"
                     value={productForm.storage}
                     onChange={(e) => setProductForm({ ...productForm, storage: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -1153,13 +1178,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="512GB">512GB</option>
                     <option value="1TB">1TB</option>
                     <option value="2TB">2TB</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Processor</label>
-                  <input
-                    type="text"
+                  <SearchableSelect options={optionsFor('processor')} aria-label="processor"
                     placeholder="e.g. Apple M2 / Apple A14 / Snapdragon 8 Gen 2"
                     value={productForm.processor}
                     onChange={(e) => setProductForm({ ...productForm, processor: e.target.value })}
@@ -1169,8 +1193,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Display Size</label>
-                  <input
-                    type="text"
+                  <SearchableSelect options={optionsFor('displaySize')} aria-label="displaySize"
                     placeholder="e.g. 10.9 inches Liquid Retina"
                     value={productForm.displaySize}
                     onChange={(e) => setProductForm({ ...productForm, displaySize: e.target.value })}
@@ -1180,7 +1203,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">SIM / Wi-Fi</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('simWifi')} aria-label="simWifi"
                     value={productForm.simWifi}
                     onChange={(e) => setProductForm({ ...productForm, simWifi: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -1189,12 +1212,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="Wi-Fi Only">Wi-Fi Only</option>
                     <option value="Wi-Fi + Cellular (5G)">Wi-Fi + Cellular (5G)</option>
                     <option value="Wi-Fi + Cellular (4G LTE)">Wi-Fi + Cellular (4G LTE)</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Battery Health</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('batteryHealth')} aria-label="batteryHealth"
                     value={productForm.batteryHealth}
                     onChange={(e) => setProductForm({ ...productForm, batteryHealth: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -1205,12 +1228,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="90% - 94%">90% - 94%</option>
                     <option value="85% - 89%">85% - 89%</option>
                     <option value="Normal / Good Backup">Normal / Good Backup</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Operating System</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('os')} aria-label="os"
                     value={productForm.os}
                     onChange={(e) => setProductForm({ ...productForm, os: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -1220,13 +1243,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="iPadOS 16">iPadOS 16</option>
                     <option value="Android 14 Tablet OS">Android 14 Tablet OS</option>
                     <option value="Android 13">Android 13</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Camera</label>
-                  <input
-                    type="text"
+                  <SearchableSelect options={optionsFor('camera')} aria-label="camera"
                     placeholder="e.g. 12MP Wide Rear / 12MP Ultra Wide Front"
                     value={productForm.camera}
                     onChange={(e) => setProductForm({ ...productForm, camera: e.target.value })}
@@ -1236,8 +1258,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Color</label>
-                  <input
-                    type="text"
+                  <SearchableSelect options={optionsFor('color')} aria-label="color"
                     placeholder="e.g. Space Gray, Starlight, Silver, Pink"
                     value={productForm.color}
                     onChange={(e) => setProductForm({ ...productForm, color: e.target.value })}
@@ -1262,7 +1283,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Product Type</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('productType')} aria-label="productType"
                     value={productForm.productType}
                     onChange={(e) => setProductForm({ ...productForm, productType: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -1276,13 +1297,13 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="Power Bank">Power Bank</option>
                     <option value="Stylus / Apple Pencil">Stylus / Apple Pencil</option>
                     <option value="Case & Protection">Case & Protection</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Brand</label>
                   {brands.length > 0 ? (
-                    <select
+                    <SearchableSelect allowCustomValue={true} options={optionsFor('brand')} aria-label="brand"
                       value={productForm.brand}
                       onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
                       className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -1293,10 +1314,9 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                           {b.name}
                         </option>
                       ))}
-                    </select>
+                    </SearchableSelect>
                   ) : (
-                    <input
-                      type="text"
+                    <SearchableSelect options={optionsFor('brand')} aria-label="brand"
                       placeholder="e.g. Apple, Sony, Bose, Anker"
                       value={productForm.brand}
                       onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
@@ -1307,8 +1327,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Model</label>
-                  <input
-                    type="text"
+                  <SearchableSelect options={optionsFor('model')} aria-label="model"
                     placeholder="e.g. Apple Watch Ultra 2 / AirPods Pro 2"
                     value={productForm.model}
                     onChange={(e) => setProductForm({ ...productForm, model: e.target.value })}
@@ -1318,7 +1337,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Compatibility</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('compatibility')} aria-label="compatibility"
                     value={productForm.compatibility}
                     onChange={(e) => setProductForm({ ...productForm, compatibility: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -1327,12 +1346,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="Universal (iOS & Android)">Universal (iOS & Android)</option>
                     <option value="Apple iOS / WatchOS Only">Apple iOS / WatchOS Only</option>
                     <option value="Android Only">Android Only</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Condition Grade</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('condition')} aria-label="condition"
                     value={productForm.condition}
                     onChange={(e) => setProductForm({ ...productForm, condition: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -1343,12 +1362,12 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="Grade A+ (Like New)">Grade A+ (Like New)</option>
                     <option value="Grade A (Excellent)">Grade A (Excellent)</option>
                     <option value="Grade B (Used)">Grade B (Used)</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Warranty Details</label>
-                  <select
+                  <SearchableSelect allowCustomValue={true} options={optionsFor('warranty')} aria-label="warranty"
                     value={productForm.warranty}
                     onChange={(e) => setProductForm({ ...productForm, warranty: e.target.value })}
                     className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500"
@@ -1359,7 +1378,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="3 Months Shop Warranty">3 Months Shop Warranty</option>
                     <option value="1 Month Testing Warranty">1 Month Testing Warranty</option>
                     <option value="No Warranty">No Warranty</option>
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div className="col-span-2">
@@ -1370,6 +1389,7 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
             )}
           </div>
 
+          <AdditionalSpecifications fields={specificationFields} group={currentCategoryGroup} brand={productForm.brand} values={additionalSpecs} onChange={(key, value) => setAdditionalSpecs(previous => ({ ...previous, [key]: value }))} dark />
           <div className="col-span-2 flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
             <button
               type="button"
