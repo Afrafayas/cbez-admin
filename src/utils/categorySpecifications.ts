@@ -91,8 +91,10 @@ const display = select('displaySize', 'Display Size', [
   '6.9 inch',
   '8 inch',
   '10.2 inch',
+  '10.5 inch',
   '10.9 inch',
   '11 inch',
+  '12.4 inch',
   '12.9 inch',
   '13 inch',
   '13.3 inch',
@@ -128,6 +130,10 @@ const common = [
     'White',
     'Silver',
     'Grey',
+    'Space Gray',
+    'Space Black',
+    'Midnight',
+    'Starlight',
     'Blue',
     'Green',
     'Red',
@@ -169,7 +175,16 @@ const mobile = [
     'iOS',
     'HarmonyOS',
   ]),
-  select('network', 'Network', ['5G', '4G LTE', '3G', '2G']),
+  select('network', 'Network', [
+    '5G',
+    '4G LTE',
+    '5G Network Supported',
+    '4G VoLTE',
+    '3G / Wi-Fi',
+    '3G / 2G Only',
+    '3G',
+    '2G',
+  ]),
   select('simType', 'SIM Type', [
     'Single SIM',
     'Dual SIM',
@@ -362,7 +377,34 @@ export function categorySpecifications(
   else if (/laptop|macbook|notebook/.test(identity)) defaults = laptop;
   else if (/tablet|ipad/.test(identity))
     defaults = [
-      ...mobile.filter((f) => f.key !== 'operatingSystem'),
+      ...mobile.filter(
+        (f) =>
+          f.key !== 'operatingSystem' &&
+          f.key !== 'processor' &&
+          f.key !== 'camera',
+      ),
+      select('processor', 'Processor', [
+        'Apple M1',
+        'Apple M2',
+        'Apple M3',
+        'Apple M4',
+        'Apple A14 Bionic',
+        'Apple A15 Bionic',
+        'Apple A16 Bionic',
+        'Apple A17 Pro',
+        'Apple A18',
+        'Apple A18 Pro',
+        'Snapdragon 8 Gen 1',
+        'Snapdragon 8 Gen 2',
+        'Snapdragon 8 Gen 3',
+        'Snapdragon 8 Elite',
+        'Snapdragon 870',
+        'MediaTek Dimensity',
+        'MediaTek Helio',
+        'Samsung Exynos',
+        'Google Tensor',
+      ]),
+      select('camera', 'Camera', camera, 'MP'),
       select('operatingSystem', 'Operating System', [
         'Android',
         'iPadOS',

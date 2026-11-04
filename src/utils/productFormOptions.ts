@@ -16,7 +16,7 @@ const common: Record<string, string[]> = {
   batteryBackup: ['1 Hour', '2 Hours', '4 Hours', '6 Hours', '8 Hours', '10 Hours', '12 Hours', '18 Hours'],
   resolution: ['HD', 'Full HD', '2K', 'QHD', '4K', 'Retina'],
   simWifi: ['Wi-Fi Only', 'Wi-Fi + Cellular', 'Wi-Fi + 5G', 'Wi-Fi + 4G LTE'],
-  camera: ['8 MP', '12 MP', '13 MP', '16 MP', '48 MP', '50 MP'],
+  camera: ['2 MP', '5 MP', '8 MP', '12 MP', '13 MP', '16 MP', '20 MP', '32 MP', '48 MP', '50 MP', '64 MP', '108 MP', '200 MP'],
 };
 export function formSpecifications(category: string, stored?: unknown) {
   return categorySpecifications(category, '', stored);
