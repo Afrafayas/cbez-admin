@@ -357,22 +357,8 @@ export function categorySpecifications(
           values: ['Apple'],
           caseInsensitive: true,
         },
-      },
-    ];
-  else if (/laptop|macbook|notebook/.test(identity)) defaults = laptop;
-  else if (/tablet|ipad/.test(identity))
-    defaults = [
-      ...mobile.filter((f) => f.key !== 'operatingSystem'),
-      select('operatingSystem', 'Operating System', [
-        'Android',
-        'iPadOS',
-        'Windows',
-      ]),
-    ];
-  else if (/audio|earbud|headphone|earphone|speaker/.test(identity))
-    defaults = audio;
-  else if (/gaming|console/.test(identity))
-    defaults = [
+
+        
       select('platform', 'Console Platform', [
         'PlayStation 5',
         'PlayStation 4 Pro',

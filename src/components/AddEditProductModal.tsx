@@ -861,6 +861,9 @@ export const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                     <option value="5G">5G</option>
                     <option value="4G LTE">4G LTE</option>
                     <option value="3G / Wi-Fi">3G / Wi-Fi</option>
+                    <option value="5G Network Supported">5G Network Supported</option>
+                    <option value="4G VoLTE">4G VoLTE</option>
+                    <option value="3G / 2G Only">3G / 2G Only</option>
                   </SearchableSelect>
                 </div>
 
